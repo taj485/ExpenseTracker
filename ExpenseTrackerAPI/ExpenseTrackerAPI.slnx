@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="folder-structure.md" />
+    <File Path="TestPlan.md" />
+  </Folder>
+  <Project Path="../ExpenseTracker.Domain/ExpenseTracker.Domain.csproj" />
+  <Project Path="../ExpenseTracker.Tests/ExpenseTracker.Tests.csproj" Id="5c8835a2-e7c2-493c-8e96-00f23dc8306c" />
+  <Project Path="ExpenseTrackerAPI.csproj" />
+</Solution>
