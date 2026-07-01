@@ -427,3 +427,31 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Angular (Client/)
+Client/dist/
+Client/tmp/
+Client/out-tsc/
+Client/bazel-out/
+Client/npm-debug.log
+Client/yarn-error.log
+Client/.angular/cache
+Client/connect.lock
+Client/coverage/
+Client/libpeerconnection.log
+Client/testem.log
+Client/typings/
+Client/__screenshots__/
+
+# IDE
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# System
+.DS_Store
+Thumbs.db
