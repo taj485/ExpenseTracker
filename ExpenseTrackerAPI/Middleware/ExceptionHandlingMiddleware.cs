@@ -43,6 +43,17 @@ namespace ExpenseTrackerAPI.Middleware
                     error = ex.Message
                 });
             }
+            catch (NotFoundException ex)
+            {
+                context.Response.StatusCode = 404;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    status = 404,
+                    title = "Not found",
+                    error = ex.Message
+                });
+            }
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;

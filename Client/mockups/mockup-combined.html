@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpenseTracker — Combined Mockup</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
+
+    /* ── Layout shell ─────────────────────────────────── */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      width: 230px;
+      background: #fff;
+      border-right: 1px solid #e9ecef;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 200;
+      transition: transform 0.25s ease;
+    }
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #212529;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .sidebar-logo span { color: #00897b; }
+    .sidebar-nav { padding: 12px 0; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6c757d;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-item:hover { background: #f0faf8; color: #00897b; }
+    .nav-item.active { color: #00897b; background: #e8f5f3; border-left-color: #00897b; font-weight: 600; }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; font-size: 0.78rem; color: #aaa; }
+
+    /* ── Main area ────────────────────────────────────── */
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Top bar (shared) ─────────────────────────────── */
+    .topbar {
+      height: 60px;
+      background: #fff;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      flex-shrink: 0;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: #212529; }
+    .topbar-subtitle { font-size: 0.8rem; color: #aaa; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: #495057; font-size: 1.2rem; }
+    .mobile-logo { display: none; font-size: 1rem; font-weight: 800; color: #212529; }
+    .mobile-logo span { color: #00897b; }
+    .btn-add-top { background: #00897b; color: #fff; border: none; padding: 8px 16px; border-radius: 7px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-add-top:hover { background: #00796b; }
+
+    /* ── Content area ─────────────────────────────────── */
+    .content { flex: 1; display: flex; overflow: hidden; }
+    .page { flex: 1; padding: 28px; overflow-y: auto; display: none; }
+    .page.active { display: block; }
+
+    /* ── Dashboard page ───────────────────────────────── */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 1rem; font-weight: 700; color: #212529; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .summary-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #e9ecef;
+    }
+    .summary-card .s-label { font-size: 0.75rem; color: #6c757d; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .summary-card .s-value { font-size: 1.6rem; font-weight: 800; color: #212529; line-height: 1; }
+    .summary-card .s-value.teal { color: #00897b; }
+    .summary-card .s-sub { font-size: 0.75rem; color: #aaa; margin-top: 6px; }
+
+    /* ── Category breakdown ───────────────────────────── */
+    .category-breakdown { display: flex; flex-direction: column; gap: 12px; }
+    .category-row {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .cat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .cat-info { flex: 1; min-width: 0; }
+    .cat-name { font-size: 0.875rem; font-weight: 600; color: #212529; margin-bottom: 6px; }
+    .cat-bar-track { height: 6px; background: #f1f3f5; border-radius: 3px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .cat-right { text-align: right; flex-shrink: 0; min-width: 90px; }
+    .cat-amount { font-size: 0.95rem; font-weight: 700; color: #212529; }
+    .cat-count { font-size: 0.72rem; color: #aaa; margin-top: 2px; }
+
+    /* ── All Expenses page ────────────────────────────── */
+    .stats-bar { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+    .stat-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 14px 20px; min-width: 130px; }
+    .stat-card .st-label { font-size: 0.72rem; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+    .stat-card .st-value { font-size: 1.25rem; font-weight: 700; color: #212529; }
+
+    .table-wrapper { background: #fff; border-radius: 10px; border: 1px solid #e9ecef; overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead { background: #f8f9fa; }
+    th { padding: 12px 18px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    td { padding: 14px 18px; font-size: 0.875rem; color: #212529; border-top: 1px solid #f1f3f5; }
+    tr:hover td { background: #f8f9fa; }
+    .amount-cell { font-weight: 600; color: #00897b; }
+    .view-btn { color: #00897b; background: none; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 0; }
+
+    /* ── Category badges ──────────────────────────────── */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+    .badge-food         { background: #fff3e0; color: #e65100; }
+    .badge-transport    { background: #e3f2fd; color: #1565c0; }
+    .badge-utilities    { background: #e8f5e9; color: #2e7d32; }
+    .badge-entertainment{ background: #f3e5f5; color: #6a1b9a; }
+    .badge-health       { background: #fce4ec; color: #880e4f; }
+
+    /* ── Add Expense panel ────────────────────────────── */
+    .add-panel {
+      width: 290px;
+      background: #fff;
+      border-left: 1px solid #e9ecef;
+      padding: 24px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .add-panel h2 { font-size: 1rem; font-weight: 700; color: #212529; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #e9ecef; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: #495057; margin-bottom: 6px; }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #dee2e6;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      color: #212529;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #00897b; box-shadow: 0 0 0 3px rgba(0,137,123,0.1); }
+    .btn-submit { width: 100%; padding: 10px; background: #00897b; border: none; border-radius: 7px; color: #fff; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: auto; }
+    .btn-submit:hover { background: #00796b; }
+
+    /* ── Mobile overlay & drawer ──────────────────────── */
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; }
+    .mobile-drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 300;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .mobile-drawer {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      padding: 16px 24px 36px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .drawer-handle { width: 40px; height: 4px; background: #dee2e6; border-radius: 2px; margin: 0 auto 20px; }
+    .mobile-drawer h2 { font-size: 1.1rem; font-weight: 700; color: #212529; margin-bottom: 18px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .expense-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .add-panel { display: none; }
+      .btn-add-top { display: flex; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .hamburger { display: block; }
+      .mobile-logo { display: block; }
+      .topbar-title, .topbar-subtitle { display: none; }
+      .page { padding: 20px 16px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+      .summary-card .s-value { font-size: 1.3rem; }
+      .expense-cards { grid-template-columns: 1fr; }
+      .stats-bar { gap: 10px; }
+      .stat-card { min-width: unset; flex: 1; padding: 12px 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Expense<span>Tracker</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('expenses', this)">
+        <span class="nav-icon">📋</span> All Expenses
+      </div>
+    </nav>
+    <div class="sidebar-footer">ExpenseTracker v1.0</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Main wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()">☰</button>
+        <div class="mobile-logo">Expense<span>Tracker</span></div>
+        <div>
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-subtitle">June 2026</div>
+        </div>
+      </div>
+      <button class="btn-add-top" onclick="openDrawer()">+ Add Expense</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Dashboard page -->
+      <div class="page active" id="dashboard">
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="s-label">Total Spent</div>
+            <div class="s-value teal">£1,240.50</div>
+            <div class="s-sub">All time</div>
+          </div>
+          <div class="summary-card">
+            <div class="s-label">This Month</div>
+            <div class="s-value">£380.00</div>
+            <div class="s-sub">June 2026</div>
+          </div>
+          <div class="summary-card">
+            <div class="s-label">Transactions</div>
+            <div class="s-value">12</div>
+            <div class="s-sub">All time</div>
+          </div>
+          <div class="summary-card">
+            <div class="s-label">Top Category</div>
+            <div class="s-value" style="font-size:1.05rem">🍔 Food</div>
+            <div class="s-sub">£420.00 total</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Spending by Category</div>
+        </div>
+
+        <div class="category-breakdown">
+          <div class="category-row">
+            <div class="cat-icon" style="background:#fff3e0">🍔</div>
+            <div class="cat-info">
+              <div class="cat-name">Food</div>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" style="width:33.9%; background:#e65100"></div>
+              </div>
+            </div>
+            <div class="cat-right">
+              <div class="cat-amount">£420.00</div>
+              <div class="cat-count">5 transactions</div>
+            </div>
+          </div>
+
+          <div class="category-row">
+            <div class="cat-icon" style="background:#e8f5e9">⚡</div>
+            <div class="cat-info">
+              <div class="cat-name">Utilities</div>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" style="width:19.4%; background:#2e7d32"></div>
+              </div>
+            </div>
+            <div class="cat-right">
+              <div class="cat-amount">£240.00</div>
+              <div class="cat-count">2 transactions</div>
+            </div>
+          </div>
+
+          <div class="category-row">
+            <div class="cat-icon" style="background:#f3e5f5">🎬</div>
+            <div class="cat-info">
+              <div class="cat-name">Entertainment</div>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" style="width:17.7%; background:#6a1b9a"></div>
+              </div>
+            </div>
+            <div class="cat-right">
+              <div class="cat-amount">£220.00</div>
+              <div class="cat-count">4 transactions</div>
+            </div>
+          </div>
+
+          <div class="category-row">
+            <div class="cat-icon" style="background:#e3f2fd">🚌</div>
+            <div class="cat-info">
+              <div class="cat-name">Transport</div>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" style="width:14.5%; background:#1565c0"></div>
+              </div>
+            </div>
+            <div class="cat-right">
+              <div class="cat-amount">£180.00</div>
+              <div class="cat-count">3 transactions</div>
+            </div>
+          </div>
+
+          <div class="category-row">
+            <div class="cat-icon" style="background:#fce4ec">💊</div>
+            <div class="cat-info">
+              <div class="cat-name">Health</div>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" style="width:14.6%; background:#880e4f"></div>
+              </div>
+            </div>
+            <div class="cat-right">
+              <div class="cat-amount">£180.50</div>
+              <div class="cat-count">2 transactions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Expenses page -->
+      <div class="page" id="expenses">
+        <div class="stats-bar">
+          <div class="stat-card">
+            <div class="st-label">Total</div>
+            <div class="st-value">£1,240.50</div>
+          </div>
+          <div class="stat-card">
+            <div class="st-label">This Month</div>
+            <div class="st-value">£380.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="st-label">Entries</div>
+            <div class="st-value">12</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Grocery shopping</td>
+                <td><span class="badge badge-food">Food</span></td>
+                <td class="amount-cell">£45.20</td>
+                <td>28 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Monthly bus pass</td>
+                <td><span class="badge badge-transport">Transport</span></td>
+                <td class="amount-cell">£80.00</td>
+                <td>27 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Electricity bill</td>
+                <td><span class="badge badge-utilities">Utilities</span></td>
+                <td class="amount-cell">£120.00</td>
+                <td>25 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Netflix subscription</td>
+                <td><span class="badge badge-entertainment">Entertainment</span></td>
+                <td class="amount-cell">£15.99</td>
+                <td>24 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Gym membership</td>
+                <td><span class="badge badge-health">Health</span></td>
+                <td class="amount-cell">£35.00</td>
+                <td>23 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Restaurant dinner</td>
+                <td><span class="badge badge-food">Food</span></td>
+                <td class="amount-cell">£68.50</td>
+                <td>22 Jun 2026</td>
+                <td><button class="view-btn">View →</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add Expense panel (desktop) -->
+      <aside class="add-panel">
+        <h2>Add Expense</h2>
+        <div class="form-group">
+          <label>Amount (£)</label>
+          <input type="number" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select>
+            <option value="">Select category</option>
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Utilities</option>
+            <option>Entertainment</option>
+            <option>Health</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" placeholder="What did you spend on?">
+        </div>
+        <button class="btn-submit">Add Expense</button>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<!-- Mobile add drawer -->
+<div class="mobile-drawer-overlay" id="mobileDrawer" onclick="closeDrawerOnOverlay(event)">
+  <div class="mobile-drawer">
+    <div class="drawer-handle"></div>
+    <h2>Add Expense</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Amount (£)</label>
+        <input type="number" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select>
+          <option value="">Category</option>
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Utilities</option>
+          <option>Entertainment</option>
+          <option>Health</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" placeholder="What did you spend on?">
+    </div>
+    <button class="btn-submit" style="margin-top: 8px;">Add Expense</button>
+  </div>
+</div>
+
+<script>
+  function showPage(pageId, navEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    navEl.classList.add('active');
+    document.getElementById('topbarTitle').textContent = navEl.textContent.trim();
+    closeSidebar();
+  }
+
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
+
+  function openDrawer() {
+    const drawer = document.getElementById('mobileDrawer');
+    drawer.style.display = 'flex';
+  }
+
+  function closeDrawerOnOverlay(e) {
+    if (e.target === document.getElementById('mobileDrawer')) {
+      document.getElementById('mobileDrawer').style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>

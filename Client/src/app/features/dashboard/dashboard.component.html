@@ -1,0 +1,18 @@
+@if (store.loading()) {
+  <p class="status-msg">Loading...</p>
+} @else if (store.error()) {
+  <p class="status-msg error">{{ store.error() }}</p>
+} @else {
+  <app-summary-cards
+    [totalSpent]="store.totalSpent()"
+    [thisMonthSpent]="store.thisMonthSpent()"
+    [transactionCount]="store.transactionCount()"
+    [topCategory]="store.topCategory()"
+  />
+
+  <div class="section-header">
+    <h2 class="section-title">Spending by Category</h2>
+  </div>
+
+  <app-category-breakdown [stats]="store.categoryBreakdown()" />
+}

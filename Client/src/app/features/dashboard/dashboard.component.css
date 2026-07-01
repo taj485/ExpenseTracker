@@ -1,0 +1,18 @@
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.status-msg {
+  font-size: 0.875rem;
+  color: var(--muted);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.status-msg.error { color: #c0392b; }

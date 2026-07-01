@@ -1,0 +1,34 @@
+<div class="app">
+  <div class="sidebar-overlay" [class.open]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
+  <app-sidebar [isOpen]="sidebarOpen()" (close)="sidebarOpen.set(false)" />
+
+  <div class="main-wrapper">
+    <app-topbar
+      [pageTitle]="pageTitle()"
+      (menuClicked)="sidebarOpen.set(true)"
+      (addClicked)="drawerOpen.set(true)"
+    />
+
+    <div class="content">
+      <div class="page-area">
+        <router-outlet (activate)="onRouteActivated($event)" />
+      </div>
+
+      <!-- Add Expense panel — desktop -->
+      <aside class="add-panel">
+        <app-add-expense-form (submitted)="drawerOpen.set(false)" />
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- Add Expense drawer — mobile -->
+@if (drawerOpen()) {
+  <div class="drawer-overlay" (click)="drawerOpen.set(false)">
+    <div class="drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-handle"></div>
+      <app-add-expense-form (submitted)="drawerOpen.set(false)" />
+    </div>
+  </div>
+}

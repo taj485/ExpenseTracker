@@ -1,0 +1,14 @@
+<aside class="sidebar" [class.open]="isOpen">
+  <div class="sidebar-logo">Expense<span>Tracker</span></div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="close.emit()">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" routerLink="/expenses" routerLinkActive="active" (click)="close.emit()">
+      <span class="nav-icon">📋</span> All Expenses
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">ExpenseTracker v1.0</div>
+</aside>

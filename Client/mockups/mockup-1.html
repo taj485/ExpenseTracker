@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ExpenseTracker — Mockup 1: Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 220px; background: #1a1a2e; color: #fff; display: flex; flex-direction: column; padding: 24px 0; flex-shrink: 0; }
+    .sidebar-logo { padding: 0 24px 32px; font-size: 1.2rem; font-weight: 700; }
+    .sidebar-logo span { color: #6c63ff; }
+    .nav-item { padding: 12px 24px; color: #a0a0c0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(108,99,255,0.1); color: #fff; }
+    .nav-item.active { color: #fff; background: rgba(108,99,255,0.15); border-left-color: #6c63ff; }
+
+    /* Main */
+    .main { flex: 1; overflow-y: auto; padding: 32px; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin-bottom: 24px; }
+
+    /* Summary cards */
+    .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .summary-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .summary-card .label { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+    .summary-card .value { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; }
+    .summary-card .value.purple { color: #6c63ff; }
+    .summary-card .sub { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
+
+    /* Expense grid */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 1rem; font-weight: 600; color: #1a1a2e; }
+    .btn-add { background: #6c63ff; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .expense-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .expense-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .category-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 12px; }
+    .badge-food         { background: #fff3e0; color: #e65100; }
+    .badge-transport    { background: #e3f2fd; color: #1565c0; }
+    .badge-utilities    { background: #e8f5e9; color: #2e7d32; }
+    .badge-entertainment{ background: #f3e5f5; color: #6a1b9a; }
+    .badge-health       { background: #fce4ec; color: #880e4f; }
+    .expense-card .description { font-size: 0.95rem; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+    .expense-card .amount { font-size: 1.2rem; font-weight: 700; color: #6c63ff; margin-bottom: 4px; }
+    .expense-card .date { font-size: 0.75rem; color: #aaa; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
+    .modal { background: #fff; border-radius: 16px; padding: 32px; width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal h2 { font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; color: #333; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #6c63ff; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-cancel { flex: 1; padding: 10px; border: 1.5px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #555; }
+    .btn-submit { flex: 1; padding: 10px; background: #6c63ff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #fff; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">Expense<span>Tracker</span></div>
+    <div class="nav-item active">📊 Dashboard</div>
+    <div class="nav-item">➕ Add Expense</div>
+    <div class="nav-item">📋 All Expenses</div>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Dashboard</div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="label">Total Expenses</div>
+        <div class="value purple">£1,240.50</div>
+        <div class="sub">All time</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">This Month</div>
+        <div class="value">£380.00</div>
+        <div class="sub">June 2026</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Transactions</div>
+        <div class="value">12</div>
+        <div class="sub">All time</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Top Category</div>
+        <div class="value" style="font-size:1.1rem">🍔 Food</div>
+        <div class="sub">£420.00 total</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Recent Expenses</div>
+      <button class="btn-add">+ Add Expense</button>
+    </div>
+
+    <div class="expense-grid">
+      <div class="expense-card">
+        <span class="category-badge badge-food">Food</span>
+        <div class="description">Grocery shopping</div>
+        <div class="amount">£45.20</div>
+        <div class="date">28 Jun 2026</div>
+      </div>
+      <div class="expense-card">
+        <span class="category-badge badge-transport">Transport</span>
+        <div class="description">Monthly bus pass</div>
+        <div class="amount">£80.00</div>
+        <div class="date">27 Jun 2026</div>
+      </div>
+      <div class="expense-card">
+        <span class="category-badge badge-utilities">Utilities</span>
+        <div class="description">Electricity bill</div>
+        <div class="amount">£120.00</div>
+        <div class="date">25 Jun 2026</div>
+      </div>
+      <div class="expense-card">
+        <span class="category-badge badge-entertainment">Entertainment</span>
+        <div class="description">Netflix subscription</div>
+        <div class="amount">£15.99</div>
+        <div class="date">24 Jun 2026</div>
+      </div>
+      <div class="expense-card">
+        <span class="category-badge badge-health">Health</span>
+        <div class="description">Gym membership</div>
+        <div class="amount">£35.00</div>
+        <div class="date">23 Jun 2026</div>
+      </div>
+      <div class="expense-card">
+        <span class="category-badge badge-food">Food</span>
+        <div class="description">Restaurant dinner</div>
+        <div class="amount">£68.50</div>
+        <div class="date">22 Jun 2026</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Expense modal -->
+  <div class="modal-overlay">
+    <div class="modal">
+      <h2>Add New Expense</h2>
+      <div class="form-group">
+        <label>Amount (£)</label>
+        <input type="number" placeholder="0.00" value="45.00">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select>
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Utilities</option>
+          <option>Entertainment</option>
+          <option>Health</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" value="Grocery shopping">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel">Cancel</button>
+        <button class="btn-submit">Add Expense</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

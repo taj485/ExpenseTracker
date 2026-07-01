@@ -1,0 +1,103 @@
+.detail-page { max-width: 560px; }
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  display: block;
+}
+
+.back-btn:hover { text-decoration: underline; }
+
+.detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.detail-description {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.badge-food          { background: #fff3e0; color: #e65100; }
+.badge-transport     { background: #e3f2fd; color: #1565c0; }
+.badge-utilities     { background: #e8f5e9; color: #2e7d32; }
+.badge-entertainment { background: #f3e5f5; color: #6a1b9a; }
+.badge-health        { background: #fce4ec; color: #880e4f; }
+
+.detail-fields { padding: 8px 0; }
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--bg);
+}
+
+.field:last-child { border-bottom: none; }
+
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.field-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.field-value.amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.status-msg {
+  font-size: 0.875rem;
+  color: var(--muted);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.status-msg.error { color: #c0392b; }

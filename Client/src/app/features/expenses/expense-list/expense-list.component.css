@@ -1,0 +1,110 @@
+.stats-bar {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 20px;
+  min-width: 120px;
+}
+
+.st-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.st-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.table-wrapper {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+thead { background: var(--bg); }
+
+th {
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+td {
+  padding: 14px 18px;
+  font-size: 0.875rem;
+  color: var(--text);
+  border-top: 1px solid var(--bg);
+}
+
+tr:hover td { background: var(--bg); }
+
+.amount-cell { font-weight: 600; color: var(--teal); }
+
+.view-btn {
+  color: var(--teal);
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.view-btn:hover { text-decoration: underline; }
+
+/* Category badges */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-food          { background: #fff3e0; color: #e65100; }
+.badge-transport     { background: #e3f2fd; color: #1565c0; }
+.badge-utilities     { background: #e8f5e9; color: #2e7d32; }
+.badge-entertainment { background: #f3e5f5; color: #6a1b9a; }
+.badge-health        { background: #fce4ec; color: #880e4f; }
+
+.status-msg {
+  font-size: 0.875rem;
+  color: var(--muted);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.status-msg.error { color: #c0392b; }
+
+.empty-cell {
+  text-align: center;
+  color: var(--faint);
+  padding: 40px;
+}

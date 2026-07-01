@@ -2,10 +2,11 @@
 using ExpenseTracker.Application.Queries.GetExpenseById;
 using ExpenseTracker.Domain.Interfaces;
 using FluentValidation;
+using MediatR;
 
 namespace ExpenseTracker.Application.Queries.GetAllExpenses
 {
-    public class GetAllExpensesQueryHandler
+    public class GetAllExpensesQueryHandler : IRequestHandler<GetAllExpensesQuery, IReadOnlyList<ExpenseDto>>
     {
         private readonly IExpenseReader _expenseReader;
 

@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -18,17 +19,25 @@ namespace ExpenseTrackerAPI.Controllers
 
         // GET api/<ExpenseTracker>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get(int id, CancellationToken cancellationToken)
         {
-           var expense = await _mediator.Send(new GetExpenseByIdQuery { Id = id });
+           var expense = await _mediator.Send(new GetExpenseByIdQuery { Id = id }, cancellationToken);
            return Ok(expense);
+        }
+
+        // GET api/<ExpenseTracker>/
+        [HttpGet]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        {
+            var expenses = await _mediator.Send(new GetAllExpensesQuery(), cancellationToken);
+            return Ok(expenses);
         }
 
         // POST api/<ExpenseTracker>
         [HttpPost]
-        public async Task<IActionResult> AddExpense([FromBody] AddExpenseCommand command)
+        public async Task<IActionResult> AddExpense([FromBody] AddExpenseCommand command, CancellationToken cancellationToken)
         {
-            int id = await _mediator.Send(command);
+            int id = await _mediator.Send(command, cancellationToken);
             return CreatedAtAction(nameof(Get), new { id }, new { id });
         }
 

@@ -1,0 +1,41 @@
+<div class="detail-page">
+  <button class="back-btn" (click)="goBack()">← Back to All Expenses</button>
+
+  @if (loading()) {
+    <p class="status-msg">Loading...</p>
+  } @else if (error()) {
+    <p class="status-msg error">{{ error() }}</p>
+  } @else if (expense(); as e) {
+    <div class="detail-card">
+      <div class="detail-header">
+        <div
+          class="cat-icon"
+          [style.background]="getCategoryMeta(e.category).bgColor"
+        >
+          {{ getCategoryMeta(e.category).icon }}
+        </div>
+        <div>
+          <div class="detail-description">{{ e.description }}</div>
+          <span class="badge" [class]="getCategoryMeta(e.category).badgeClass">
+            {{ e.category }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-fields">
+        <div class="field">
+          <div class="field-label">Amount</div>
+          <div class="field-value amount">£{{ e.amount | number:'1.2-2' }} {{ e.currency }}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Date</div>
+          <div class="field-value">{{ e.date | date:'dd MMMM yyyy' }}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">ID</div>
+          <div class="field-value">#{{ e.id }}</div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

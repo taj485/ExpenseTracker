@@ -1,0 +1,30 @@
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="s-label">Total Spent</div>
+    <div class="s-value teal">£{{ totalSpent | number:'1.2-2' }}</div>
+    <div class="s-sub">All time</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="s-label">This Month</div>
+    <div class="s-value">£{{ thisMonthSpent | number:'1.2-2' }}</div>
+    <div class="s-sub">{{ today | date:'MMMM yyyy' }}</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="s-label">Transactions</div>
+    <div class="s-value">{{ transactionCount }}</div>
+    <div class="s-sub">All time</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="s-label">Top Category</div>
+    @if (topCategory) {
+      <div class="s-value top-cat">{{ topCategory.name }}</div>
+      <div class="s-sub">£{{ topCategory.total | number:'1.2-2' }} total</div>
+    } @else {
+      <div class="s-value top-cat">—</div>
+      <div class="s-sub">No data yet</div>
+    }
+  </div>
+</div>

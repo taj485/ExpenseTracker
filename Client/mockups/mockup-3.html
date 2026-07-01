@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ExpenseTracker — Mockup 3: App-like</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #fafafa; }
+
+    /* Top bar */
+    .topbar { background: #ff6b35; padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(255,107,53,0.3); }
+    .topbar-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .topbar-total { font-size: 0.85rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+
+    /* Content */
+    .content { max-width: 680px; margin: 0 auto; padding: 20px 16px 100px; }
+
+    .month-label { font-size: 0.75rem; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; }
+
+    /* Expense items */
+    .expense-item { background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+    .expense-item:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .category-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .icon-food         { background: #fff3e0; }
+    .icon-transport    { background: #e3f2fd; }
+    .icon-utilities    { background: #e8f5e9; }
+    .icon-entertainment{ background: #f3e5f5; }
+    .icon-health       { background: #fce4ec; }
+    .expense-info { flex: 1; }
+    .expense-info .desc { font-size: 0.9rem; font-weight: 600; color: #1a1a1a; }
+    .expense-info .meta { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+    .chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-top: 4px; }
+    .chip-food         { background: #fff3e0; color: #e65100; }
+    .chip-transport    { background: #e3f2fd; color: #1565c0; }
+    .chip-utilities    { background: #e8f5e9; color: #2e7d32; }
+    .chip-entertainment{ background: #f3e5f5; color: #6a1b9a; }
+    .chip-health       { background: #fce4ec; color: #880e4f; }
+    .expense-right { text-align: right; }
+    .expense-amount { font-size: 1rem; font-weight: 700; color: #1a1a1a; }
+    .expense-currency { font-size: 0.72rem; color: #bbb; }
+
+    /* Floating action button */
+    .fab { position: fixed; bottom: 28px; right: 28px; width: 56px; height: 56px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.6rem; box-shadow: 0 4px 16px rgba(255,107,53,0.45); cursor: pointer; border: none; line-height: 1; }
+
+    /* Bottom drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: flex-end; justify-content: center; }
+    .drawer { background: #fff; border-radius: 20px 20px 0 0; padding: 16px 24px 36px; width: 100%; max-width: 680px; }
+    .drawer-handle { width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 20px; }
+    .drawer h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-group { margin-bottom: 14px; flex: 1; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: #666; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid #e8e8e8; border-radius: 10px; font-size: 0.9rem; color: #1a1a1a; outline: none; background: #fafafa; }
+    .form-group input:focus, .form-group select:focus { border-color: #ff6b35; background: #fff; }
+    .btn-submit { width: 100%; padding: 13px; background: #ff6b35; border: none; border-radius: 12px; color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-title">ExpenseTracker</div>
+    <div class="topbar-total">Total: £1,240.50</div>
+  </div>
+
+  <div class="content">
+    <div class="month-label">June 2026</div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-food">🍔</div>
+      <div class="expense-info">
+        <div class="desc">Grocery shopping</div>
+        <div class="meta">28 Jun 2026</div>
+        <span class="chip chip-food">Food</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£45.20</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-transport">🚌</div>
+      <div class="expense-info">
+        <div class="desc">Monthly bus pass</div>
+        <div class="meta">27 Jun 2026</div>
+        <span class="chip chip-transport">Transport</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£80.00</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-utilities">⚡</div>
+      <div class="expense-info">
+        <div class="desc">Electricity bill</div>
+        <div class="meta">25 Jun 2026</div>
+        <span class="chip chip-utilities">Utilities</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£120.00</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-entertainment">🎬</div>
+      <div class="expense-info">
+        <div class="desc">Netflix subscription</div>
+        <div class="meta">24 Jun 2026</div>
+        <span class="chip chip-entertainment">Entertainment</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£15.99</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+
+    <div class="month-label">May 2026</div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-health">💊</div>
+      <div class="expense-info">
+        <div class="desc">Gym membership</div>
+        <div class="meta">23 May 2026</div>
+        <span class="chip chip-health">Health</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£35.00</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+
+    <div class="expense-item">
+      <div class="category-icon icon-food">🍽️</div>
+      <div class="expense-info">
+        <div class="desc">Restaurant dinner</div>
+        <div class="meta">22 May 2026</div>
+        <span class="chip chip-food">Food</span>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount">£68.50</div>
+        <div class="expense-currency">GBP</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab">+</button>
+
+  <!-- Bottom drawer shown for demo -->
+  <div class="drawer-overlay">
+    <div class="drawer">
+      <div class="drawer-handle"></div>
+      <h2>Add Expense</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Amount (£)</label>
+          <input type="number" placeholder="0.00" value="45.00">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select>
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Utilities</option>
+            <option>Entertainment</option>
+            <option>Health</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" value="Grocery shopping">
+      </div>
+      <button class="btn-submit">Add Expense</button>
+    </div>
+  </div>
+</body>
+</html>

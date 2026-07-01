@@ -1,0 +1,59 @@
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="st-label">Total</div>
+    <div class="st-value">£{{ store.totalSpent() | number:'1.2-2' }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="st-label">This Month</div>
+    <div class="st-value">£{{ store.thisMonthSpent() | number:'1.2-2' }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="st-label">Entries</div>
+    <div class="st-value">{{ store.transactionCount() }}</div>
+  </div>
+</div>
+
+@if (store.loading()) {
+  <p class="status-msg">Loading...</p>
+} @else if (store.error()) {
+  <p class="status-msg error">{{ store.error() }}</p>
+} @else {
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (expense of store.expenses(); track expense.id) {
+          <tr>
+            <td>{{ expense.id }}</td>
+            <td>{{ expense.description }}</td>
+            <td>
+              <span class="badge" [class]="getCategoryMeta(expense.category).badgeClass">
+                {{ expense.category }}
+              </span>
+            </td>
+            <td class="amount-cell">£{{ expense.amount | number:'1.2-2' }}</td>
+            <td>{{ expense.date | date:'dd MMM yyyy' }}</td>
+            <td>
+              <button class="view-btn" (click)="viewExpense(expense.id)">View →</button>
+            </td>
+          </tr>
+        }
+
+        @empty {
+          <tr>
+            <td colspan="6" class="empty-cell">No expenses found.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

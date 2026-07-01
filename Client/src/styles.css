@@ -1,0 +1,26 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --teal:      #00897b;
+  --teal-dark: #00796b;
+  --teal-bg:   #e8f5f3;
+  --border:    #e9ecef;
+  --surface:   #fff;
+  --bg:        #f8f9fa;
+  --text:      #212529;
+  --muted:     #6c757d;
+  --faint:     #aaa;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}

@@ -1,0 +1,8 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="hamburger" (click)="menuClicked.emit()" aria-label="Open menu">☰</button>
+    <span class="mobile-logo">Expense<span>Tracker</span></span>
+    <span class="page-title">{{ pageTitle }}</span>
+  </div>
+  <button class="btn-add" (click)="addClicked.emit()">+ Add Expense</button>
+</header>
