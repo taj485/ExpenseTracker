@@ -46,6 +46,11 @@ namespace ExpenseTracker.Domain.Entities
             Description = description;
         }
 
+        public void UpdateCategory(ExpenseCategory category)
+        {
+            Category = category;
+        }
+
         public void Delete()
         {
             if (IsDeleted)

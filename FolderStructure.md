@@ -38,6 +38,11 @@ ExpenseTracker/
 │   │       │       ├── topbar.component.ts
 │   │       │       ├── topbar.component.html
 │   │       │       └── topbar.component.css
+│   │       ├── shared/
+│   │       │   └── confirm-dialog/
+│   │       │       ├── confirm-dialog.component.ts
+│   │       │       ├── confirm-dialog.component.html
+│   │       │       └── confirm-dialog.component.css
 │   │       └── features/
 │   │           ├── dashboard/
 │   │           │   ├── dashboard.component.ts
@@ -57,10 +62,14 @@ ExpenseTracker/
 │   │           │   │   ├── expense-list.component.ts
 │   │           │   │   ├── expense-list.component.html
 │   │           │   │   └── expense-list.component.css
-│   │           │   └── expense-detail/
-│   │           │       ├── expense-detail.component.ts
-│   │           │       ├── expense-detail.component.html
-│   │           │       └── expense-detail.component.css
+│   │           │   ├── expense-detail/
+│   │           │   │   ├── expense-detail.component.ts
+│   │           │   │   ├── expense-detail.component.html
+│   │           │   │   └── expense-detail.component.css
+│   │           │   └── expense-edit/
+│   │           │       ├── expense-edit.component.ts
+│   │           │       ├── expense-edit.component.html
+│   │           │       └── expense-edit.component.css
 │   │           └── add-expense/
 │   │               ├── add-expense-form.component.ts
 │   │               ├── add-expense-form.component.html
@@ -93,7 +102,9 @@ ExpenseTracker/
 │   │   └── ExpenseTests.cs
 │   ├── Application/
 │   │   └── Commands/
-│   │       └── AddExpenseCommandHandlerTests.cs
+│   │       ├── AddExpenseCommandHandlerTests.cs
+│   │       ├── UpdateExpenseCommandHandlerTests.cs
+│   │       └── DeleteExpenseCommandHandlerTests.cs
 │   └── Infrastructure/
 │       └── Repositories/
 │           └── ExpenseRepositoryTests.cs
@@ -120,7 +131,8 @@ ExpenseTracker/
 │   │   │   └── UpdateExpenseValidator.cs
 │   │   └── DeleteExpense/
 │   │       ├── DeleteExpenseCommand.cs
-│   │       └── DeleteExpenseCommandHandler.cs
+│   │       ├── DeleteExpenseCommandHandler.cs
+│   │       └── DeleteExpenseValidator.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs

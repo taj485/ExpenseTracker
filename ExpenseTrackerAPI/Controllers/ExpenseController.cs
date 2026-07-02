@@ -1,4 +1,6 @@
 ﻿using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Commands.DeleteExpense;
+using ExpenseTracker.Application.Commands.UpdateExpense;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
 using MediatR;
@@ -43,14 +45,21 @@ namespace ExpenseTrackerAPI.Controllers
 
         // PUT api/<ExpenseTracker>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> UpdateExpense(int id, [FromBody] UpdateExpenseCommand command, CancellationToken cancellationToken)
         {
+            if (id != command.Id)
+                return BadRequest("Route id and body id must match.");
+
+            await _mediator.Send(command, cancellationToken);
+            return NoContent();
         }
 
         // DELETE api/<ExpenseTracker>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteExpense(int id, CancellationToken cancellationToken)
         {
+            await _mediator.Send(new DeleteExpenseCommand(id), cancellationToken);
+            return NoContent();
         }
     }
 }
