@@ -96,5 +96,16 @@ namespace ExpenseTracker.Tests.Domain
             act.Should().Throw<DomainException>()
                 .WithMessage("Description cannot be empty");
         }
+
+        [Fact]
+        public void UpdateCategory_WithValidCategory_UpdatesCategory()
+        {
+            // Arrange
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit");
+            // Act
+            expense.UpdateCategory(ExpenseCategory.Transport);
+            // Assert
+            expense.Category.Should().Be(ExpenseCategory.Transport);
+        }
     }
 }

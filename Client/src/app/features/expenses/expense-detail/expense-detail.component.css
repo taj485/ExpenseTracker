@@ -1,18 +1,6 @@
 .detail-page { max-width: 560px; }
 
-.back-btn {
-  background: none;
-  border: none;
-  color: var(--teal);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 24px;
-  display: block;
-}
-
-.back-btn:hover { text-decoration: underline; }
+.detail-page > .btn { margin-bottom: 24px; }
 
 .detail-card {
   background: var(--surface);
@@ -101,3 +89,9 @@
 }
 
 .status-msg.error { color: #c0392b; }
+
+.detail-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}

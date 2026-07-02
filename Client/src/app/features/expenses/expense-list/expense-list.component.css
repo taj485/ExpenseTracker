@@ -66,17 +66,14 @@ tr:hover td { background: var(--bg); }
 
 .amount-cell { font-weight: 600; color: var(--teal); }
 
-.view-btn {
-  color: var(--teal);
-  background: none;
-  border: none;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-}
+.clickable-row { cursor: pointer; }
 
-.view-btn:hover { text-decoration: underline; }
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+}
 
 /* Category badges */
 .badge {

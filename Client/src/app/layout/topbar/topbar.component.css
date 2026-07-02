@@ -56,6 +56,10 @@
 
 .btn-add:hover { background: var(--teal-dark); }
 
+@media (min-width: 901px) {
+  .btn-add { display: none; }
+}
+
 @media (max-width: 768px) {
   .topbar { padding: 0 16px; }
   .hamburger { display: block; }
