@@ -1,6 +1,9 @@
 ExpenseTracker/
 ├── ExpenseTracker.sln
 ├── CLAUDE.md
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── .claude/
 │   └── memory.md
 ├── Client/
