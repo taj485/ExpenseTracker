@@ -4,11 +4,12 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
+import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-expense-detail',
   standalone: true,
-  imports: [DecimalPipe, DatePipe],
+  imports: [DecimalPipe, DatePipe, ConfirmDialogComponent],
   templateUrl: './expense-detail.component.html',
   styleUrl: './expense-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +25,9 @@ export class ExpenseDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error   = signal<string | null>(null);
 
+  readonly confirmingDelete = signal(false);
+  readonly actionError = signal<string | null>(null);
+
   getCategoryMeta = getCategoryMeta;
 
   ngOnInit(): void {
@@ -37,5 +41,25 @@ export class ExpenseDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/expenses']);
+  }
+
+  editExpense(): void {
+    const e = this.expense();
+    if (e) this.router.navigate(['/expenses', e.id, 'edit']);
+  }
+
+  confirmDelete(): void {
+    const e = this.expense();
+    if (!e) return;
+
+    this.actionError.set(null);
+    this.expenseService.deleteExpense(
+      e.id,
+      () => this.router.navigate(['/expenses']),
+      (msg) => {
+        this.confirmingDelete.set(false);
+        this.actionError.set(msg);
+      }
+    );
   }
 }

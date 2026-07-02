@@ -1,11 +1,15 @@
 <div class="detail-page">
-  <button class="back-btn" (click)="goBack()">← Back to All Expenses</button>
+  <button class="btn btn-secondary" (click)="goBack()">← Back to All Expenses</button>
 
   @if (loading()) {
     <p class="status-msg">Loading...</p>
   } @else if (error()) {
     <p class="status-msg error">{{ error() }}</p>
   } @else if (expense(); as e) {
+    @if (actionError()) {
+      <p class="status-msg error">{{ actionError() }}</p>
+    }
+
     <div class="detail-card">
       <div class="detail-header">
         <div
@@ -37,5 +41,20 @@
         </div>
       </div>
     </div>
+
+    <div class="detail-toolbar">
+      <button class="btn btn-primary" (click)="editExpense()">Edit</button>
+      <button class="btn btn-danger" (click)="confirmingDelete.set(true)">Delete</button>
+    </div>
+
+    @if (confirmingDelete()) {
+      <app-confirm-dialog
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense? This cannot be undone."
+        confirmLabel="Delete"
+        (confirmed)="confirmDelete()"
+        (cancelled)="confirmingDelete.set(false)"
+      />
+    }
   }
 </div>

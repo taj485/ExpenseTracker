@@ -1,0 +1,62 @@
+<div class="edit-page">
+  <button class="btn btn-secondary" (click)="cancel()">← Cancel</button>
+
+  @if (loading()) {
+    <p class="status-msg">Loading...</p>
+  } @else if (notFound()) {
+    <p class="status-msg error">Expense not found.</p>
+  } @else {
+    <div class="form-panel">
+      <h2 class="form-title">Edit Expense</h2>
+
+      <form (ngSubmit)="onSubmit()" #f="ngForm">
+        <div class="form-group">
+          <label for="amount">Amount (£)</label>
+          <input
+            id="amount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
+            [value]="amount()"
+            (input)="amount.set($any($event.target).value)"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select
+            id="category"
+            [value]="category()"
+            (change)="category.set($any($event.target).value)"
+          >
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <input
+            id="description"
+            type="text"
+            placeholder="What did you spend on?"
+            [value]="description()"
+            (input)="description.set($any($event.target).value)"
+            required
+          />
+        </div>
+
+        @if (formError()) {
+          <p class="form-error">{{ formError() }}</p>
+        }
+
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          {{ submitting() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </form>
+    </div>
+  }
+</div>

@@ -115,4 +115,26 @@ export class ExpenseService {
       error: () => onError('Failed to add expense. Please try again.'),
     });
   }
+
+  // API CALL: PUT /api/expense/{id} — update an expense, patches the signal on success
+  updateExpense(id: number, command: AddExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.put<void>(`${this.apiUrl}/${id}`, { id, ...command }).subscribe({
+      next: () => {
+        this.expenses.update(list => list.map(e => e.id === id ? { ...e, ...command } : e));
+        onSuccess();
+      },
+      error: () => onError('Failed to update expense. Please try again.'),
+    });
+  }
+
+  // API CALL: DELETE /api/expense/{id} — delete an expense, removes it from the signal on success
+  deleteExpense(id: number, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        this.expenses.update(list => list.filter(e => e.id !== id));
+        onSuccess();
+      },
+      error: () => onError('Failed to delete expense. Please try again.'),
+    });
+  }
 }
