@@ -15,6 +15,12 @@
   gap: 14px;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .hamburger {
   display: none;
   background: none;
