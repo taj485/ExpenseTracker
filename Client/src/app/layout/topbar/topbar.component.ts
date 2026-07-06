@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-topbar',
@@ -7,7 +8,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   styleUrl: './topbar.component.css',
 })
 export class TopbarComponent {
+  private readonly auth = inject(AuthService);
+
   @Input() pageTitle = '';
   @Output() menuClicked  = new EventEmitter<void>();
   @Output() addClicked   = new EventEmitter<void>();
+
+  logout(): void {
+    this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
+  }
 }

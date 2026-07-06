@@ -4,12 +4,14 @@ using ExpenseTracker.Application.Commands.UpdateExpense;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTrackerAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ExpenseController : ControllerBase
     {
         public IMediator _mediator { get; }

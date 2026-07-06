@@ -14,6 +14,8 @@ ExpenseTracker/
 │   │   └── mockup-combined.html
 │   ├── src/
 │   │   ├── styles.css
+│   │   ├── environments/
+│   │   │   └── environment.ts
 │   │   └── app/
 │   │       ├── app.ts
 │   │       ├── app.routes.ts
@@ -23,8 +25,13 @@ ExpenseTracker/
 │   │       │   │   └── expense.model.ts
 │   │       │   ├── services/
 │   │       │   │   └── expense.service.ts
-│   │       │   └── utils/
-│   │       │       └── category.utils.ts
+│   │       │   ├── utils/
+│   │       │   │   └── category.utils.ts
+│   │       │   └── auth/
+│   │       │       ├── auth.guard.ts
+│   │       │       ├── auth.guard.spec.ts
+│   │       │       ├── auth.interceptor.ts
+│   │       │       └── auth.interceptor.spec.ts
 │   │       ├── layout/
 │   │       │   ├── shell/
 │   │       │   │   ├── shell.component.ts
@@ -44,6 +51,10 @@ ExpenseTracker/
 │   │       │       ├── confirm-dialog.component.html
 │   │       │       └── confirm-dialog.component.css
 │   │       └── features/
+│   │           ├── home/
+│   │           │   ├── home.component.ts
+│   │           │   ├── home.component.html
+│   │           │   └── home.component.css
 │   │           ├── dashboard/
 │   │           │   ├── dashboard.component.ts
 │   │           │   ├── dashboard.component.html
@@ -105,9 +116,11 @@ ExpenseTracker/
 │   │       ├── AddExpenseCommandHandlerTests.cs
 │   │       ├── UpdateExpenseCommandHandlerTests.cs
 │   │       └── DeleteExpenseCommandHandlerTests.cs
-│   └── Infrastructure/
-│       └── Repositories/
-│           └── ExpenseRepositoryTests.cs
+│   ├── Infrastructure/
+│   │   └── Repositories/
+│   │       └── ExpenseRepositoryTests.cs
+│   └── Api/
+│       └── ExpenseControllerAuthTests.cs
 │
 ├── ExpenseTrackerAPI/
 │   ├── Controllers/
@@ -157,4 +170,6 @@ ExpenseTracker/
     │   ├── Migrations/
     │   └── Repositories/
     │       └── ExpenseRepository.cs
+    ├── Auth/
+    │   └── AuthenticationServiceCollectionExtensions.cs
     └── DependencyInjection.cs

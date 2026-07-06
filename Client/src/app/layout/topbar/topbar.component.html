@@ -4,5 +4,8 @@
     <span class="mobile-logo">Expense<span>Tracker</span></span>
     <span class="page-title">{{ pageTitle }}</span>
   </div>
-  <button class="btn-add" (click)="addClicked.emit()">+ Add Expense</button>
+  <div class="topbar-right">
+    <button class="btn-add" (click)="addClicked.emit()">+ Add Expense</button>
+    <button class="btn btn-secondary" (click)="logout()">Log Out</button>
+  </div>
 </header>

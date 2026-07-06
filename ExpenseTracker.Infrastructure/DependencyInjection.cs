@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Domain.Interfaces;
+using ExpenseTracker.Infrastructure.Auth;
 using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTracker.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,8 @@ namespace ExpenseTracker.Infrastructure
             services.AddScoped<IExpenseWriter, ExpenseRepository>();
 
             services.AddScoped<IExpenseReader, ExpenseRepository>();
+
+            services.AddAuth0Authentication(configuration);
 
             return services;
         }
