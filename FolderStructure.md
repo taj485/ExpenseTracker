@@ -91,7 +91,8 @@ ExpenseTracker/
 │
 ├── ExpenseTracker.Domain/
 │   ├── Entities/
-│   │   └── Expense.cs
+│   │   ├── Expense.cs
+│   │   └── User.cs
 │   ├── ValueObjects/
 │   │   └── Money.cs
 │   ├── Enums/
@@ -99,26 +100,36 @@ ExpenseTracker/
 │   ├── Interfaces/
 │   │   ├── IExpenseReader.cs
 │   │   ├── IExpenseWriter.cs
-│   │   └── IExpenseRepository.cs
+│   │   ├── IExpenseRepository.cs
+│   │   ├── IUserReader.cs
+│   │   ├── IUserWriter.cs
+│   │   └── ICurrentUserService.cs
 │   ├── Services/
 │   │   ├── ISummaryCalculator.cs
 │   │   ├── MonthlySummaryCalculator.cs
 │   │   └── WeeklySummaryCalculator.cs
-│   └── Exceptions/
-│       └── DomainException.cs
+│   ├── Exceptions/
+│   │   └── DomainException.cs
+│   └── AssemblyInfo.cs
 │
 ├── ExpenseTracker.Tests/
 │   ├── Domain/
 │   │   ├── MoneyTests.cs
-│   │   └── ExpenseTests.cs
+│   │   ├── ExpenseTests.cs
+│   │   └── UserTests.cs
 │   ├── Application/
-│   │   └── Commands/
-│   │       ├── AddExpenseCommandHandlerTests.cs
-│   │       ├── UpdateExpenseCommandHandlerTests.cs
-│   │       └── DeleteExpenseCommandHandlerTests.cs
+│   │   ├── Commands/
+│   │   │   ├── AddExpenseCommandHandlerTests.cs
+│   │   │   ├── UpdateExpenseCommandHandlerTests.cs
+│   │   │   └── DeleteExpenseCommandHandlerTests.cs
+│   │   ├── Queries/
+│   │   │   ├── GetAllExpensesQueryHandlerTests.cs
+│   │   │   └── GetExpenseQueryHandlerTests.cs
+│   │   └── Services/
+│   │       └── CurrentUserProviderTests.cs
 │   ├── Infrastructure/
-│   │   └── Repositories/
-│   │       └── ExpenseRepositoryTests.cs
+│   │   ├── ExpenseRepositoryTests.cs
+│   │   └── UserRepositoryTests.cs
 │   └── Api/
 │       └── ExpenseControllerAuthTests.cs
 │
@@ -159,17 +170,23 @@ ExpenseTracker/
 │   ├── DTOs/
 │   │   ├── ExpenseDto.cs
 │   │   └── MonthlySummaryDto.cs
-│   └── Mappings/
-│       └── ExpenseMappingProfile.cs
+│   ├── Mappings/
+│   │   └── ExpenseMappingProfile.cs
+│   └── Services/
+│       ├── ICurrentUserProvider.cs
+│       └── CurrentUserProvider.cs
 │
 └── ExpenseTracker.Infrastructure/
     ├── Persistence/
     │   ├── ExpenseTrackerDbContext.cs
     │   ├── Configurations/
-    │   │   └── ExpenseConfiguration.cs
-    │   ├── Migrations/
+    │   │   ├── ExpenseConfiguration.cs
+    │   │   └── UserConfiguration.cs
     │   └── Repositories/
-    │       └── ExpenseRepository.cs
+    │       ├── ExpenseRepository.cs
+    │       └── UserRepository.cs
+    ├── Migrations/
     ├── Auth/
-    │   └── AuthenticationServiceCollectionExtensions.cs
+    │   ├── AuthenticationServiceCollectionExtensions.cs
+    │   └── CurrentUserService.cs
     └── DependencyInjection.cs

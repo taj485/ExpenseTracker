@@ -43,6 +43,13 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
 
             builder.HasQueryFilter(e => !e.IsDeleted);
 
+            builder.HasMany(e => e.Users)
+                   .WithMany(u => u.Expenses)
+                   .UsingEntity(j => j.ToTable("ExpenseUsers"));
+
+            builder.Navigation(e => e.Users)
+                   .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Domain.Interfaces;
@@ -11,14 +12,20 @@ namespace ExpenseTracker.Tests.Application.Commands
     public class AddExpenseCommandHandlerTests
     {
         private readonly Mock<IExpenseWriter> _mockExpenseWriter;
+        private readonly Mock<ICurrentUserProvider> _mockCurrentUserProvider;
+        private readonly User _currentUser;
         private readonly AddExpenseCommandHandler _handler;
 
         public AddExpenseCommandHandlerTests()
         {
             _mockExpenseWriter = new Mock<IExpenseWriter>();
+            _mockCurrentUserProvider = new Mock<ICurrentUserProvider>();
+            _currentUser = User.Create("auth0|test-user");
+            _mockCurrentUserProvider.Setup(x => x.GetOrProvisionAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_currentUser);
             var validator = new AddExpenseValidator();
 
-            _handler = new AddExpenseCommandHandler(_mockExpenseWriter.Object, validator);
+            _handler = new AddExpenseCommandHandler(_mockExpenseWriter.Object, validator, _mockCurrentUserProvider.Object);
         }
 
         [Fact]
@@ -37,7 +44,8 @@ namespace ExpenseTracker.Tests.Application.Commands
             _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e =>
                 e.Amount.Amount == command.Amount &&
                 e.Category == command.Category &&
-                e.Description == command.Description), It.IsAny<CancellationToken>()), Times.Once);
+                e.Description == command.Description &&
+                e.Users.Contains(_currentUser)), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Theory]

@@ -18,9 +18,17 @@ namespace ExpenseTracker.Infrastructure
             services.AddDbContext<ExpenseTrackerDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddHttpContextAccessor();
+
             services.AddScoped<IExpenseWriter, ExpenseRepository>();
 
             services.AddScoped<IExpenseReader, ExpenseRepository>();
+
+            services.AddScoped<IUserWriter, UserRepository>();
+
+            services.AddScoped<IUserReader, UserRepository>();
+
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddAuth0Authentication(configuration);
 
