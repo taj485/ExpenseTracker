@@ -3,6 +3,7 @@ using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ExpenseTracker.Domain.Entities
@@ -16,14 +17,17 @@ namespace ExpenseTracker.Domain.Entities
         public DateTime Date { get; private set; }
         public bool IsDeleted { get; private set; }
 
+        private readonly List<User> _users = new();
+        public IReadOnlyCollection<User> Users => _users.AsReadOnly();
+
         private Expense() { }
 
-        public static Expense Create(decimal amount, ExpenseCategory category, string description)
+        public static Expense Create(decimal amount, ExpenseCategory category, string description, User owner)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
 
-            return new Expense
+            var expense = new Expense
             {
                 Amount = Money.Create(amount),
                 Category = category,
@@ -31,6 +35,17 @@ namespace ExpenseTracker.Domain.Entities
                 Date = DateTime.UtcNow,
                 IsDeleted = false
             };
+
+            expense._users.Add(owner);
+            return expense;
+        }
+
+        public void AddUser(User user)
+        {
+            if (_users.Any(u => u.Id == user.Id))
+                throw new DomainException("User already has access to this expense");
+
+            _users.Add(user);
         }
 
         public void UpdateAmount(decimal newAmount)

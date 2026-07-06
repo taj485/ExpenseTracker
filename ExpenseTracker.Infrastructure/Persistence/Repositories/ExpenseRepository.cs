@@ -3,6 +3,7 @@ using ExpenseTracker.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ExpenseTracker.Infrastructure.Persistence.Repositories
@@ -19,6 +20,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
         public async Task<Expense?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Expenses
+                .Include(e => e.Users)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
@@ -29,9 +31,10 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             return expense.Id;
         }
 
-        public async Task<IEnumerable<Expense>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Expense>> GetAllForUserAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await _context.Expenses
+                .Where(e => e.Users.Any(u => u.Id == userId))
                 .ToListAsync(cancellationToken);
         }
 

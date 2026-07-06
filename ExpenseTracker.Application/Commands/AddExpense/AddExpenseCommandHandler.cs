@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Domain.Entities;
+﻿using ExpenseTracker.Application.Services;
+using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Interfaces;
 using FluentValidation;
 using MediatR;
@@ -12,12 +13,14 @@ namespace ExpenseTracker.Application.Commands.AddExpense
     {
         private readonly IExpenseWriter _expenseWriter;
         private readonly IValidator<AddExpenseCommand> _validator;
+        private readonly ICurrentUserProvider _currentUserProvider;
 
 
-        public AddExpenseCommandHandler(IExpenseWriter expenseWriter, IValidator<AddExpenseCommand> validator)
+        public AddExpenseCommandHandler(IExpenseWriter expenseWriter, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
         {
             _expenseWriter = expenseWriter;
             _validator = validator;
+            _currentUserProvider = currentUserProvider;
         }
 
         public async Task<int> Handle(AddExpenseCommand request, CancellationToken cancellationToken)
@@ -26,9 +29,10 @@ namespace ExpenseTracker.Application.Commands.AddExpense
 
             if (!validationResult.IsValid)
               throw new ValidationException(validationResult.Errors);
-            
 
-            var expense = Expense.Create(request.Amount, request.Category, request.Description);
+
+            var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
+            var expense = Expense.Create(request.Amount, request.Category, request.Description, currentUser);
             int id = await _expenseWriter.AddAsync(expense, cancellationToken);
             return id;
         }

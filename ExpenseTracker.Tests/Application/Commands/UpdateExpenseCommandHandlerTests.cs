@@ -1,4 +1,5 @@
 using ExpenseTracker.Application.Commands.UpdateExpense;
+using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Domain.Interfaces;
@@ -12,22 +13,29 @@ namespace ExpenseTracker.Tests.Application.Commands
     {
         private readonly Mock<IExpenseReader> _mockExpenseReader;
         private readonly Mock<IExpenseWriter> _mockExpenseWriter;
+        private readonly Mock<ICurrentUserProvider> _mockCurrentUserProvider;
+        private readonly User _currentUser;
         private readonly UpdateExpenseCommandHandler _handler;
 
         public UpdateExpenseCommandHandlerTests()
         {
             _mockExpenseReader = new Mock<IExpenseReader>();
             _mockExpenseWriter = new Mock<IExpenseWriter>();
+            _mockCurrentUserProvider = new Mock<ICurrentUserProvider>();
+            _currentUser = User.Create("auth0|test-user");
+            _currentUser.Id = 1;
+            _mockCurrentUserProvider.Setup(x => x.GetOrProvisionAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_currentUser);
             var validator = new UpdateExpenseValidator();
 
-            _handler = new UpdateExpenseCommandHandler(_mockExpenseReader.Object, _mockExpenseWriter.Object, validator);
+            _handler = new UpdateExpenseCommandHandler(_mockExpenseReader.Object, _mockExpenseWriter.Object, _mockCurrentUserProvider.Object, validator);
         }
 
         [Fact]
         public async Task Handle_WithValidCommand_UpdatesAndSavesExpense()
         {
             // Arrange
-            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner");
+            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", _currentUser);
             var command = new UpdateExpenseCommand(1, 150m, ExpenseCategory.Transport, "Taxi");
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
@@ -107,6 +115,29 @@ namespace ExpenseTracker.Tests.Application.Commands
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Expense?)null);
+
+            // Act
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<NotFoundException>();
+
+            _mockExpenseWriter.Verify(
+                x => x.UpdateAsync(It.IsAny<Expense>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WhenCurrentUserNotAssociated_ThrowsNotFoundException()
+        {
+            // Arrange
+            var otherUser = User.Create("auth0|other-user");
+            otherUser.Id = 2;
+            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", otherUser);
+            var command = new UpdateExpenseCommand(1, 150m, ExpenseCategory.Transport, "Taxi");
+
+            _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expense);
 
             // Act
             Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
