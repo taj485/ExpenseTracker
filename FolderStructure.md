@@ -3,9 +3,18 @@ ExpenseTracker/
 ├── CLAUDE.md
 ├── .github/
 │   └── workflows/
-│       └── ci.yml
+│       ├── ci.yml
+│       └── deploy.yml
 ├── .claude/
 │   └── memory.md
+├── infra/
+│   ├── terraform.tf
+│   ├── providers.tf
+│   ├── backend.tf
+│   ├── variables.tf
+│   ├── main.tf
+│   ├── outputs.tf
+│   └── terraform.tfvars.example
 ├── Client/
 │   ├── mockups/
 │   │   ├── mockup-1.html
