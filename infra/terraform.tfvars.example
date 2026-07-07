@@ -1,0 +1,5 @@
+api_app_name                = "app-expensetracker-prod"
+static_web_app_name         = "swa-expensetracker-prod"
+auth0_domain                = "dev-xxxxxxxx.us.auth0.com"
+auth0_audience               = "https://api.expensetracker"
+database_connection_string  = "Host=xxx;Port=5432;Database=xxx;Username=xxx;Password=xxx"
