@@ -8,11 +8,20 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string SpaCorsPolicy = "SpaCorsPolicy";
+
 // Add services to the container.
 
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
         opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(SpaCorsPolicy, policy =>
+        policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]!)
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddApplication();
@@ -34,6 +43,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseCors(SpaCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 

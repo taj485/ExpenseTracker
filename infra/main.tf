@@ -29,6 +29,7 @@ resource "azurerm_linux_web_app" "api" {
     "ConnectionStrings__DefaultConnection" = var.database_connection_string
     "Auth0__Domain"                        = var.auth0_domain
     "Auth0__Audience"                      = var.auth0_audience
+    "Cors__AllowedOrigin"                  = "https://${azurerm_static_web_app.spa.default_host_name}"
   }
 }
 
