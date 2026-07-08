@@ -6,10 +6,16 @@ How ExpenseTracker is hosted on Azure, how the infrastructure is provisioned, an
 
 ```mermaid
 flowchart TB
-    subgraph GH["GitHub"]
-        Push["Push to main"]
-        CI["ci.yml — build & test"]
-        CD["deploy.yml — build & deploy"]
+    subgraph GH["GitHub — ci-cd.yml"]
+        Push["Push / PR to main"]
+        Backend["backend job\nbuild, test, publish"]
+        Frontend["frontend job\nbuild, test"]
+        DeployAPI["deploy-api job\n(needs: backend, frontend)"]
+        DeploySPA["deploy-spa job\n(needs: backend, frontend)"]
+        Push --> Backend
+        Push --> Frontend
+        Backend -- "api-publish artifact" --> DeployAPI
+        Frontend -- "spa-dist artifact" --> DeploySPA
     end
 
     subgraph Azure["Azure (westeurope)"]
@@ -24,10 +30,8 @@ flowchart TB
     DB[("Postgres\n(external, e.g. Supabase)")]
     Auth0["Auth0\n(JWT issuer)"]
 
-    Push --> CI
-    Push --> CD
-    CD -- "OIDC login + zip deploy" --> API
-    CD -- "SWA deploy token" --> SWA
+    DeployAPI -- "OIDC login + zip deploy" --> API
+    DeploySPA -- "SWA deploy token" --> SWA
     API --> DB
     API -.JWT validation.-> Auth0
     SWA -.login redirect.-> Auth0
@@ -35,7 +39,7 @@ flowchart TB
 ```
 
 - **Terraform** provisions the Azure resources (resource group, plan, App Service, Static Web App) — it does not touch application code.
-- **`deploy.yml`** builds and deploys application code into that already-provisioned infrastructure. It does not create or modify Azure resources.
+- **`ci-cd.yml`** builds, tests, and deploys application code into that already-provisioned infrastructure. It does not create or modify Azure resources.
 - **Postgres** and **Auth0** are both external to Azure — provisioned/configured manually, referenced by the app via connection string / app settings.
 
 ## Terraform (`infra/`)
@@ -73,12 +77,16 @@ terraform apply
 
 Secrets (like the Postgres connection string) are supplied via `terraform.tfvars` (gitignored) or `TF_VAR_*` environment variables — never hardcoded into committed `.tf` files. `database_connection_string` is marked `sensitive = true` so it never prints in plan/apply output.
 
-## CI/CD (`.github/workflows/`)
+## CI/CD (`.github/workflows/ci-cd.yml`)
 
-Two separate workflows, deliberately decoupled:
+A single workflow with four jobs:
 
-- **`ci.yml`** — runs on every push/PR to `main`. Builds and tests both the .NET API and the Angular client. No deployment.
-- **`deploy.yml`** — runs on push to `main` (and can be triggered manually via `workflow_dispatch`). Builds and deploys both apps to the infrastructure Terraform already created.
+- **`backend`** / **`frontend`** — run on every push/PR to `main`. Build, test, and (on success) publish/build the deployable output, uploaded as a build artifact (`api-publish` / `spa-dist`).
+- **`deploy-api`** / **`deploy-spa`** — `needs: [backend, frontend]`, so they only start if both test jobs succeed, and download the artifacts already built rather than rebuilding. Skipped entirely on `pull_request` runs (`if: github.event_name != 'pull_request'`) — only a push to `main` deploys.
+
+This means a failing test blocks deployment outright (the deploy jobs never start), and the exact code that was tested is what gets deployed — no risk of the deploy step building something slightly different.
+
+One simplification worth knowing: both `deploy-api` and `deploy-spa` run together on every push to `main`, even if only one side actually changed (e.g. an API-only fix still redeploys the unchanged SPA). It's harmless — redeploying identical static content is a no-op in practice — just not the most efficient. Path-based filtering (e.g. `dorny/paths-filter`) would make each deploy job conditional on its own directory changing, if that becomes worth the added complexity later.
 
 ### Authentication: OIDC, not stored secrets
 

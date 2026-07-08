@@ -1,10 +1,10 @@
 ExpenseTracker/
 ├── ExpenseTracker.sln
 ├── CLAUDE.md
+├── README.md
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml
-│       └── deploy.yml
+│       └── ci-cd.yml
 ├── .claude/
 │   └── memory.md
 ├── Doc/
