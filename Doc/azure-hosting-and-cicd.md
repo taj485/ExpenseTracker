@@ -21,7 +21,7 @@ flowchart TB
     subgraph Azure["Azure (westeurope)"]
         RG["Resource Group\nrg-expensetracker-prod"]
         Plan["App Service Plan\nasp-expensetracker-prod (F1, Linux)"]
-        API["App Service\napp-expensetracker-taj\n(.NET 10 API)"]
+        API["App Service\napp-expensetracker-prod\n(.NET 10 API)"]
         SWA["Static Web App\nswa-expensetracker-prod\n(Angular SPA)"]
         RG --> Plan --> API
         RG --> SWA
@@ -117,7 +117,8 @@ GitHub Actions then exchanges a short-lived OIDC token for an Azure access token
 
 - **Plan**: F1 (Free) tier, Linux. Free tier has real constraints: no custom Docker containers (Basic/B1+ required for those), and `always_on` must be `false` (the app idles after inactivity and cold-starts on the next request).
 - **Deploy method**: native `.NET` zip-deploy (`dotnet publish` → `azure/webapps-deploy`), not a container — chosen specifically because F1 doesn't support containers.
-- **Config**: Auth0 domain/audience and the Postgres connection string are set as App Service **Application Settings** (`Auth0__Domain`, `Auth0__Audience`, `ConnectionStrings__DefaultConnection` — double underscore maps to `:` in .NET config), managed by Terraform, not hardcoded in `appsettings.json`.
+- **Config**: Auth0 domain/audience, the Postgres connection string, and the allowed CORS origin are set as App Service **Application Settings** (`Auth0__Domain`, `Auth0__Audience`, `ConnectionStrings__DefaultConnection`, `Cors__AllowedOrigin` — double underscore maps to `:` in .NET config), managed by Terraform, not hardcoded in `appsettings.json`. `Cors__AllowedOrigin` is computed directly from the Static Web App resource's hostname, so it can't drift out of sync.
+- **CORS**: the API and SPA are on different Azure domains, so the API explicitly allows the SPA's origin via `AddCors`/`UseCors` in `Program.cs` — without it the browser blocks the SPA's requests even though the URLs are otherwise correct.
 
 ## Azure Static Web Apps (the SPA)
 

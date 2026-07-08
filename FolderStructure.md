@@ -26,7 +26,8 @@ ExpenseTracker/
 │   ├── src/
 │   │   ├── styles.css
 │   │   ├── environments/
-│   │   │   └── environment.ts
+│   │   │   ├── environment.ts
+│   │   │   └── environment.prod.ts
 │   │   └── app/
 │   │       ├── app.ts
 │   │       ├── app.routes.ts

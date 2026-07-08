@@ -1,11 +1,12 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AddExpenseCommand, CategoryStat, Expense, ExpenseCategory } from '../models/expense.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/expense';
+  private readonly apiUrl = `${environment.apiUrl}/expense`;
 
   // ── State ────────────────────────────────────────────────────────────────
   readonly expenses = signal<Expense[]>([]);
