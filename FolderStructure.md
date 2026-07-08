@@ -7,6 +7,8 @@ ExpenseTracker/
 │       └── deploy.yml
 ├── .claude/
 │   └── memory.md
+├── Doc/
+│   └── azure-hosting-and-cicd.md
 ├── infra/
 │   ├── terraform.tf
 │   ├── providers.tf
