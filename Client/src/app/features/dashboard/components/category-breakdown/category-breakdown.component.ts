@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { CategoryStat } from '../../../../core/models/expense.model';
+import { Router } from '@angular/router';
+import { CategoryStat, ExpenseCategory } from '../../../../core/models/expense.model';
 import { getCategoryMeta } from '../../../../core/utils/category.utils';
 
 @Component({
@@ -14,5 +15,13 @@ import { getCategoryMeta } from '../../../../core/utils/category.utils';
 export class CategoryBreakdownComponent {
   @Input() stats: CategoryStat[] = [];
 
+  private readonly router = inject(Router);
+
   getCategoryMeta = getCategoryMeta;
+
+  viewCategory(category: ExpenseCategory): void {
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    this.router.navigate(['/expenses'], { queryParams: { category, month } });
+  }
 }

@@ -2,6 +2,9 @@
 @FolderStructure.md
 
 
+## CSS conventions
+- Never use `nth-child` selectors to target columns/elements — add a human-readable class name instead (e.g., `.col-date` rather than `td:nth-child(1)`), so styles stay readable and don't break silently if ordering changes.
+
 ## Git conventions
 - Branch naming: feat/short-description, fix/issue-number-description
 - Commit format: conventional commits (feat:, fix:, refactor:, chore:)

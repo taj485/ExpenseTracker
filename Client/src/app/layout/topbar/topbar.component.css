@@ -47,25 +47,6 @@
   color: var(--text);
 }
 
-.btn-add {
-  background: var(--teal);
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 7px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-
-.btn-add:hover { background: var(--teal-dark); }
-
-@media (min-width: 901px) {
-  .btn-add { display: none; }
-}
-
 @media (max-width: 768px) {
   .topbar { padding: 0 16px; }
   .hamburger { display: block; }

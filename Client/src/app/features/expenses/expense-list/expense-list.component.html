@@ -3,18 +3,38 @@
 } @else if (store.error()) {
   <p class="status-msg error">{{ store.error() }}</p>
 } @else {
+  <div class="filter-bar">
+    <select class="filter-select" [ngModel]="selectedMonth() ?? ''" (ngModelChange)="onMonthChange($event)">
+      <option value="">All Months</option>
+      @for (month of availableMonths(); track month.key) {
+        <option [value]="month.key">{{ month.label }}</option>
+      }
+    </select>
+
+    <select class="filter-select" [ngModel]="selectedCategory() ?? ''" (ngModelChange)="onCategoryChange($event)">
+      <option value="">All Categories</option>
+      @for (cat of categories; track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
+
+    <button class="btn btn-secondary" (click)="resetFilters()">Reset</button>
+  </div>
+
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="st-label">Total</div>
-      <div class="st-value">£{{ store.totalSpent() | number:'1.2-2' }}</div>
+      <div class="st-label">{{ selectedMonth() ? 'This Month' : 'Total' }}</div>
+      <div class="st-value">£{{ filteredTotal() | number:'1.2-2' }}</div>
     </div>
-    <div class="stat-card">
-      <div class="st-label">This Month</div>
-      <div class="st-value">£{{ store.thisMonthSpent() | number:'1.2-2' }}</div>
-    </div>
+    @if (!selectedMonth()) {
+      <div class="stat-card">
+        <div class="st-label">This Month</div>
+        <div class="st-value">£{{ store.thisMonthSpent() | number:'1.2-2' }}</div>
+      </div>
+    }
     <div class="stat-card">
       <div class="st-label">Entries</div>
-      <div class="st-value">{{ store.transactionCount() }}</div>
+      <div class="st-value">{{ filteredCount() }}</div>
     </div>
   </div>
 
@@ -26,26 +46,36 @@
     <table>
       <thead>
         <tr>
-          <th>#</th>
-          <th>Description</th>
-          <th>Category</th>
-          <th>Amount</th>
-          <th>Date</th>
-          <th></th>
+          <th class="sortable col-date" (click)="toggleSort('date')">
+            Date
+            <span class="sort-arrow" [class.active]="sortColumn() === 'date'">{{ sortIcon('date') }}</span>
+          </th>
+          <th class="sortable col-description" (click)="toggleSort('description')">
+            Description
+            <span class="sort-arrow" [class.active]="sortColumn() === 'description'">{{ sortIcon('description') }}</span>
+          </th>
+          <th class="sortable col-amount" (click)="toggleSort('amount')">
+            Amount
+            <span class="sort-arrow" [class.active]="sortColumn() === 'amount'">{{ sortIcon('amount') }}</span>
+          </th>
+          <th class="sortable col-category" (click)="toggleSort('category')">
+            Category
+            <span class="sort-arrow" [class.active]="sortColumn() === 'category'">{{ sortIcon('category') }}</span>
+          </th>
+          <th class="actions-header"></th>
         </tr>
       </thead>
       <tbody>
-        @for (expense of store.expenses(); track expense.id) {
+        @for (expense of sortedExpenses(); track expense.id) {
           <tr class="clickable-row" (click)="viewExpense(expense.id)">
-            <td>{{ expense.id }}</td>
-            <td>{{ expense.description }}</td>
-            <td>
+            <td class="col-date">{{ expense.date | date:'dd/MM/yy' }}</td>
+            <td class="col-description">{{ expense.description }}</td>
+            <td class="col-amount amount-cell">£{{ expense.amount | number:'1.2-2' }}</td>
+            <td class="col-category">
               <span class="badge" [class]="getCategoryMeta(expense.category).badgeClass">
                 {{ expense.category }}
               </span>
             </td>
-            <td class="amount-cell">£{{ expense.amount | number:'1.2-2' }}</td>
-            <td>{{ expense.date | date:'dd MMM yyyy' }}</td>
             <td class="actions-cell">
               <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); editExpense(expense.id)">Edit</button>
               <button class="btn btn-sm btn-danger" (click)="$event.stopPropagation(); deletingId.set(expense.id)">Delete</button>
@@ -55,7 +85,13 @@
 
         @empty {
           <tr>
-            <td colspan="6" class="empty-cell">No expenses found.</td>
+            <td colspan="5" class="empty-cell">
+              @if (selectedMonth() || selectedCategory()) {
+                No expenses match this filter.
+              } @else {
+                No expenses found.
+              }
+            </td>
           </tr>
         }
       </tbody>

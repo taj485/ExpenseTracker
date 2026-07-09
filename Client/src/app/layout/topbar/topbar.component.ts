@@ -11,8 +11,7 @@ export class TopbarComponent {
   private readonly auth = inject(AuthService);
 
   @Input() pageTitle = '';
-  @Output() menuClicked  = new EventEmitter<void>();
-  @Output() addClicked   = new EventEmitter<void>();
+  @Output() menuClicked = new EventEmitter<void>();
 
   logout(): void {
     this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
