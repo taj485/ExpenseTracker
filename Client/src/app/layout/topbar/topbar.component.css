@@ -26,9 +26,9 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   color: var(--muted);
-  padding: 4px;
+  padding: 8px;
   line-height: 1;
 }
 
@@ -37,6 +37,8 @@
   font-size: 1rem;
   font-weight: 800;
   color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .mobile-logo span { color: var(--teal); }

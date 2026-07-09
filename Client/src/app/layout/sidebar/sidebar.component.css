@@ -11,10 +11,13 @@
 }
 
 .sidebar-logo {
+  display: block;
   padding: 24px 20px 20px;
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
   border-bottom: 1px solid var(--border);
 }
 
