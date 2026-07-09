@@ -36,7 +36,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         {
             // Arrange
             var command = new DeleteExpenseCommand(1);
-            var expense = Expense.Create(10m, ExpenseCategory.Food, "Coffee", _currentUser);
+            var expense = Expense.Create(10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, _currentUser);
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expense);
@@ -95,7 +95,7 @@ namespace ExpenseTracker.Tests.Application.Commands
             var command = new DeleteExpenseCommand(1);
             var otherUser = User.Create("auth0|other-user");
             otherUser.Id = 2;
-            var expense = Expense.Create(10m, ExpenseCategory.Food, "Coffee", otherUser);
+            var expense = Expense.Create(10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, otherUser);
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expense);

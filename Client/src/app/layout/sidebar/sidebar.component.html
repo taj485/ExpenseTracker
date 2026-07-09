@@ -1,5 +1,5 @@
 <aside class="sidebar" [class.open]="isOpen">
-  <div class="sidebar-logo">Expense<span>Tracker</span></div>
+  <a class="sidebar-logo" routerLink="/dashboard">Expense<span>Tracker</span></a>
 
   <nav class="sidebar-nav">
     <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" (click)="close.emit()">

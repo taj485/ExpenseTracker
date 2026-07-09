@@ -1,7 +1,7 @@
 <header class="topbar">
   <div class="topbar-left">
     <button class="hamburger" (click)="menuClicked.emit()" aria-label="Open menu">☰</button>
-    <span class="mobile-logo">Expense<span>Tracker</span></span>
+    <a class="mobile-logo" routerLink="/dashboard">Expense<span>Tracker</span></a>
     <span class="page-title">{{ pageTitle }}</span>
   </div>
   <div class="topbar-right">

@@ -15,6 +15,8 @@ namespace ExpenseTracker.Application.Commands.AddExpense
                 .NotEmpty().WithMessage("Description is required");
             RuleFor(x => x.Category)
                 .IsInEnum().WithMessage("Invalid expense category");
+            RuleFor(x => x.Date.Date)
+                .LessThanOrEqualTo(DateTime.UtcNow.Date).WithMessage("Date cannot be in the future.");
         }
     }
 }

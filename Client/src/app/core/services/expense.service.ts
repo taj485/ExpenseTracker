@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AddExpenseCommand, CategoryStat, Expense, ExpenseCategory } from '../models/expense.model';
+import { AddExpenseCommand, CategoryStat, Expense, ExpenseCategory, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -14,24 +14,22 @@ export class ExpenseService {
   readonly error    = signal<string | null>(null);
 
   // ── Computed dashboard values ─────────────────────────────────────────────
-  readonly totalSpent = computed(() =>
-    this.expenses().reduce((sum, e) => sum + e.amount, 0)
-  );
-
-  readonly thisMonthSpent = computed(() => {
+  private readonly thisMonthExpenses = computed(() => {
     const now = new Date();
-    return this.expenses()
-      .filter(e => {
-        const d = new Date(e.date);
-        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-      })
-      .reduce((sum, e) => sum + e.amount, 0);
+    return this.expenses().filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
   });
 
-  readonly transactionCount = computed(() => this.expenses().length);
+  readonly thisMonthSpent = computed(() =>
+    this.thisMonthExpenses().reduce((sum, e) => sum + e.amount, 0)
+  );
+
+  readonly transactionCount = computed(() => this.thisMonthExpenses().length);
 
   readonly topCategory = computed((): { name: ExpenseCategory; total: number } | null => {
-    const expenses = this.expenses();
+    const expenses = this.thisMonthExpenses();
     if (expenses.length === 0) return null;
 
     const totals = new Map<ExpenseCategory, number>();
@@ -49,8 +47,8 @@ export class ExpenseService {
   });
 
   readonly categoryBreakdown = computed((): CategoryStat[] => {
-    const expenses = this.expenses();
-    const total = this.totalSpent();
+    const expenses = this.thisMonthExpenses();
+    const total = this.thisMonthSpent();
     if (expenses.length === 0) return [];
 
     const totals = new Map<ExpenseCategory, { total: number; count: number }>();
@@ -118,7 +116,7 @@ export class ExpenseService {
   }
 
   // API CALL: PUT /api/expense/{id} — update an expense, patches the signal on success
-  updateExpense(id: number, command: AddExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
+  updateExpense(id: number, command: UpdateExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
     this.http.put<void>(`${this.apiUrl}/${id}`, { id, ...command }).subscribe({
       next: () => {
         this.expenses.update(list => list.map(e => e.id === id ? { ...e, ...command } : e));

@@ -13,6 +13,13 @@ export interface AddExpenseCommand {
   amount: number;
   category: ExpenseCategory;
   description: string;
+  date: string;
+}
+
+export interface UpdateExpenseCommand {
+  amount: number;
+  category: ExpenseCategory;
+  description: string;
 }
 
 export interface CategoryStat {

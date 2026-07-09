@@ -11,7 +11,6 @@ import { ExpenseCategory } from '../../../../core/models/expense.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SummaryCardsComponent {
-  @Input() totalSpent       = 0;
   @Input() thisMonthSpent   = 0;
   @Input() transactionCount = 0;
   @Input() topCategory: { name: ExpenseCategory; total: number } | null = null;
