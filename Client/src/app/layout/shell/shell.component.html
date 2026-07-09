@@ -7,7 +7,6 @@
     <app-topbar
       [pageTitle]="pageTitle()"
       (menuClicked)="sidebarOpen.set(true)"
-      (addClicked)="drawerOpen.set(true)"
     />
 
     <div class="content">
@@ -17,18 +16,23 @@
 
       <!-- Add Expense panel — desktop -->
       <aside class="add-panel">
-        <app-add-expense-form (submitted)="drawerOpen.set(false)" />
+        <app-add-expense-form (submitted)="drawer.close()" />
       </aside>
+    </div>
+
+    <!-- Add Expense footer — mobile -->
+    <div class="mobile-footer">
+      <button class="btn-add-expense-mobile" (click)="drawer.open()">+ Add Expense</button>
     </div>
   </div>
 </div>
 
 <!-- Add Expense drawer — mobile -->
-@if (drawerOpen()) {
-  <div class="drawer-overlay" (click)="drawerOpen.set(false)">
+@if (drawer.isOpen()) {
+  <div class="drawer-overlay" (click)="drawer.close()">
     <div class="drawer" (click)="$event.stopPropagation()">
       <div class="drawer-handle"></div>
-      <app-add-expense-form (submitted)="drawerOpen.set(false)" />
+      <app-add-expense-form (submitted)="drawer.close()" />
     </div>
   </div>
 }

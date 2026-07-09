@@ -1,6 +1,6 @@
 <div class="breakdown-list">
   @for (stat of stats; track stat.category) {
-    <div class="breakdown-row">
+    <div class="breakdown-row clickable" (click)="viewCategory(stat.category)">
       <div class="cat-icon" [style.background]="getCategoryMeta(stat.category).bgColor">
         {{ getCategoryMeta(stat.category).icon }}
       </div>

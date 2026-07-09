@@ -1,3 +1,23 @@
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+}
+
 .stats-bar {
   display: flex;
   gap: 14px;
@@ -42,6 +62,10 @@ table {
   min-width: 560px;
 }
 
+.col-amount {
+  width: 100px;
+}
+
 thead { background: var(--bg); }
 
 th {
@@ -53,6 +77,23 @@ th {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.sortable:hover { color: var(--text); }
+
+.sort-arrow {
+  margin-left: 4px;
+  font-size: 0.65rem;
+  color: var(--faint);
+}
+
+.sort-arrow.active {
+  color: var(--teal);
 }
 
 td {
@@ -73,6 +114,62 @@ tr:hover td { background: var(--bg); }
   gap: 8px;
   align-items: center;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    justify-content: center;
+  }
+
+  .stats-bar {
+    justify-content: center;
+  }
+
+  .stat-card {
+    flex: 1 1 calc(50% - 7px);
+    min-width: 0;
+    text-align: center;
+  }
+
+  .filter-select,
+  .filter-bar .btn {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .actions-header,
+  .actions-cell {
+    display: none;
+  }
+
+  .table-wrapper { overflow-x: hidden; }
+
+  table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  th, td {
+    padding: 10px 6px;
+    font-size: 0.78rem;
+  }
+
+  .col-date { width: 16%; }
+  .col-description { width: 28%; }
+  .col-amount { width: 20%; }
+  .col-category { width: 25%; }
+
+  td.col-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .badge {
+    padding: 2px 6px;
+    font-size: 0.64rem;
+  }
 }
 
 /* Category badges */
