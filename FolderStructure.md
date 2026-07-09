@@ -97,6 +97,9 @@ ExpenseTracker/
 │   │               ├── add-expense-form.component.ts
 │   │               ├── add-expense-form.component.html
 │   │               └── add-expense-form.component.css
+│   ├── public/
+│   │   ├── favicon.ico
+│   │   └── staticwebapp.config.json
 │   ├── proxy.conf.json
 │   ├── angular.json
 │   └── package.json
