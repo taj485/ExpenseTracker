@@ -35,7 +35,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         public async Task Handle_WithValidCommand_UpdatesAndSavesExpense()
         {
             // Arrange
-            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", _currentUser);
+            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, _currentUser);
             var command = new UpdateExpenseCommand(1, 150m, ExpenseCategory.Transport, "Taxi");
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
@@ -133,7 +133,7 @@ namespace ExpenseTracker.Tests.Application.Commands
             // Arrange
             var otherUser = User.Create("auth0|other-user");
             otherUser.Id = 2;
-            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", otherUser);
+            var expense = Expense.Create(100m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, otherUser);
             var command = new UpdateExpenseCommand(1, 150m, ExpenseCategory.Transport, "Taxi");
 
             _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))

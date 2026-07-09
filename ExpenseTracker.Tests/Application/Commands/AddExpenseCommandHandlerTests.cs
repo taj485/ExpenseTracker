@@ -32,7 +32,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         public async void Handle_should_createAndSaveExpense()
         {
             // Arrange
-            var command = new AddExpenseCommand(100m, ExpenseCategory.Food, "Dinner");
+            var command = new AddExpenseCommand(100m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow);
 
             _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
@@ -54,7 +54,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         public async Task Handle_WithInvalidAmount_ThrowsValidationException(decimal amount)
         {
             // Arrange
-            var command = new AddExpenseCommand(amount, ExpenseCategory.Food, "Dinner");
+            var command = new AddExpenseCommand(amount, ExpenseCategory.Food, "Dinner", DateTime.UtcNow);
 
             // Act
             Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -72,7 +72,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         public async Task Handle_WithEmptyDescription_ThrowsValidationException()
         {
             // Arrange
-            var command = new AddExpenseCommand(50m, ExpenseCategory.Food, "");
+            var command = new AddExpenseCommand(50m, ExpenseCategory.Food, "", DateTime.UtcNow);
 
             // Act
             Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
@@ -90,7 +90,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         public async Task Handle_WithInvalidCategory_ThrowsValidationException()
         {
             // Arrange
-            var command = new AddExpenseCommand(50m, (ExpenseCategory)999, "Dinner");
+            var command = new AddExpenseCommand(50m, (ExpenseCategory)999, "Dinner", DateTime.UtcNow);
 
             // Act
             Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

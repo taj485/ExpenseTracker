@@ -32,7 +32,7 @@ namespace ExpenseTracker.Application.Commands.AddExpense
 
 
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
-            var expense = Expense.Create(request.Amount, request.Category, request.Description, currentUser);
+            var expense = Expense.Create(request.Amount, request.Category, request.Description, request.Date, currentUser);
             int id = await _expenseWriter.AddAsync(expense, cancellationToken);
             return id;
         }

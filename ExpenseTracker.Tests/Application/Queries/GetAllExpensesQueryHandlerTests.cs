@@ -32,9 +32,9 @@ namespace ExpenseTracker.Tests.Application.Queries
             //Arrange
             var expenses = new List<Expense>
             {
-                Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", _currentUser),
-                Expense.Create(2, ExpenseCategory.Food, "Lunch", _currentUser),
-                Expense.Create(3, ExpenseCategory.Entertainment, "Movie Ticket", _currentUser)
+                Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", DateTime.UtcNow, _currentUser),
+                Expense.Create(2, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, _currentUser),
+                Expense.Create(3, ExpenseCategory.Entertainment, "Movie Ticket", DateTime.UtcNow, _currentUser)
             };
 
             _mockReader.Setup(x => x.GetAllForUserAsync(0, It.IsAny<CancellationToken>())).ReturnsAsync(expenses);

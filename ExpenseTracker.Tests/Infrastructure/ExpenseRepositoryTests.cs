@@ -46,7 +46,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task AddAsync_PersistsExpense_AndReturnsGeneratedId()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var expense = Expense.Create(50.00m, ExpenseCategory.Food, "Groceries", user);
+            var expense = Expense.Create(50.00m, ExpenseCategory.Food, "Groceries", DateTime.UtcNow, user);
 
             var id = await _repository.AddAsync(expense, CancellationToken.None);
 
@@ -63,7 +63,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task GetByIdAsync_ReturnsExpense_WhenItExists()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Bus fare", user), CancellationToken.None);
+            var id = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Bus fare", DateTime.UtcNow, user), CancellationToken.None);
 
             var result = await _repository.GetByIdAsync(id, CancellationToken.None);
 
@@ -83,7 +83,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task GetByIdAsync_IncludesAssociatedUsers()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", user), CancellationToken.None);
+            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, user), CancellationToken.None);
 
             using var verifyContext = CreateContext();
             var verifyRepository = new ExpenseRepository(verifyContext);
@@ -98,7 +98,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task GetByIdAsync_ReturnsNull_WhenExpenseIsSoftDeleted()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", user), CancellationToken.None);
+            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, user), CancellationToken.None);
             await _repository.DeleteAsync(id);
 
             var result = await _repository.GetByIdAsync(id, CancellationToken.None);
@@ -112,9 +112,9 @@ namespace ExpenseTracker.Tests.Infrastructure
             var user1 = await SeedUserAsync("auth0|user-1");
             var user2 = await SeedUserAsync("auth0|user-2");
 
-            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", user1), CancellationToken.None);
-            await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", user1), CancellationToken.None);
-            await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", user2), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user1), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, user1), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, user2), CancellationToken.None);
 
             var results = await _repository.GetAllForUserAsync(user1.Id, CancellationToken.None);
 
@@ -125,8 +125,8 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task GetAllForUserAsync_ExcludesSoftDeletedExpenses()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var keepId = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", user), CancellationToken.None);
-            var deleteId = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", user), CancellationToken.None);
+            var keepId = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user), CancellationToken.None);
+            var deleteId = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, user), CancellationToken.None);
 
             await _repository.DeleteAsync(deleteId);
 
@@ -142,7 +142,7 @@ namespace ExpenseTracker.Tests.Infrastructure
             var user1 = await SeedUserAsync("auth0|user-1");
             var user2 = await SeedUserAsync("auth0|user-2");
 
-            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", user2), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user2), CancellationToken.None);
 
             var results = await _repository.GetAllForUserAsync(user1.Id, CancellationToken.None);
 
@@ -153,7 +153,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task DeleteAsync_SoftDeletesExpense()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(15m, ExpenseCategory.Food, "Coffee", user), CancellationToken.None);
+            var id = await _repository.AddAsync(Expense.Create(15m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, user), CancellationToken.None);
 
             await _repository.DeleteAsync(id);
 
@@ -176,7 +176,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         public async Task UpdateAsync_PersistsChanges()
         {
             var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", user), CancellationToken.None);
+            var id = await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, user), CancellationToken.None);
             var expense = await _repository.GetByIdAsync(id, CancellationToken.None);
 
             expense!.UpdateDescription("Dinner with friends");

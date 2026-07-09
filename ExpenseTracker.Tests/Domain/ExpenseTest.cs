@@ -23,7 +23,7 @@ namespace ExpenseTracker.Tests.Domain
             var owner = TestUser();
 
             // Act
-            var expense = Expense.Create(amount, category, description, owner);
+            var expense = Expense.Create(amount, category, description, DateTime.UtcNow, owner);
 
             // Assert
             expense.Amount.Amount.Should().Be(50m);
@@ -43,7 +43,7 @@ namespace ExpenseTracker.Tests.Domain
             var category = ExpenseCategory.Entertainment;
             var description = "Movie";
             // Act
-            Action act = () => Expense.Create(amount, category, description, TestUser());
+            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestUser());
             // Assert
             act.Should().Throw<DomainException>()
                 .WithMessage("Amount must be greater than zero.");
@@ -57,7 +57,7 @@ namespace ExpenseTracker.Tests.Domain
             var category = ExpenseCategory.Transport;
             var description = "";
             // Act
-            Action act = () => Expense.Create(amount, category, description, TestUser());
+            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestUser());
             // Assert
             act.Should().Throw<DomainException>()
                 .WithMessage("Description is required");
@@ -67,7 +67,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateAmount_WithValidAmount_UpdatesAmount()
         {
             // Arrange
-            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", TestUser());
+            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestUser());
             var newAmount = 35m;
             // Act
             expense.UpdateAmount(newAmount);
@@ -79,7 +79,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateDescription_WithValidDescription_UpdatesDescription()
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
             var newDescription = "Dentist visit";
             // Act
             expense.UpdateDescription(newDescription);
@@ -93,7 +93,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateDescription_WithEmptyDescription_ThrowsDomainException(string newDescription)
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
             // Act
             Action act = () => expense.UpdateDescription(newDescription);
             // Assert
@@ -105,7 +105,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateCategory_WithValidCategory_UpdatesCategory()
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
             // Act
             expense.UpdateCategory(ExpenseCategory.Transport);
             // Assert
@@ -118,7 +118,7 @@ namespace ExpenseTracker.Tests.Domain
             // Arrange
             var owner = TestUser();
             owner.Id = 1;
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", owner);
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, owner);
             var secondUser = User.Create("auth0|second-user");
             secondUser.Id = 2;
 
@@ -135,7 +135,7 @@ namespace ExpenseTracker.Tests.Domain
         {
             // Arrange
             var owner = TestUser();
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", owner);
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, owner);
 
             // Act
             Action act = () => expense.AddUser(owner);

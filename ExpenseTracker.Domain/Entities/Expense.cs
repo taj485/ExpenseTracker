@@ -22,7 +22,7 @@ namespace ExpenseTracker.Domain.Entities
 
         private Expense() { }
 
-        public static Expense Create(decimal amount, ExpenseCategory category, string description, User owner)
+        public static Expense Create(decimal amount, ExpenseCategory category, string description, DateTime date, User owner)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
@@ -32,7 +32,7 @@ namespace ExpenseTracker.Domain.Entities
                 Amount = Money.Create(amount),
                 Category = category,
                 Description = description,
-                Date = DateTime.UtcNow,
+                Date = date,
                 IsDeleted = false
             };
 

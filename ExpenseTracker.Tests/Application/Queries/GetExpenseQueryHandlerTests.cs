@@ -34,7 +34,7 @@ namespace ExpenseTracker.Tests.Application.Queries
         public async Task Handle_ReturnsDto_WhenExpenseExist()
         {
             //Arrange
-            var expense = Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", _currentUser);
+            var expense = Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", DateTime.UtcNow, _currentUser);
             _mockReader.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expense);
 
@@ -65,7 +65,7 @@ namespace ExpenseTracker.Tests.Application.Queries
             //Arrange
             var otherUser = User.Create("auth0|other-user");
             otherUser.Id = 2;
-            var expense = Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", otherUser);
+            var expense = Expense.Create(1, ExpenseCategory.Transport, "Bus Fare", DateTime.UtcNow, otherUser);
             _mockReader.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expense);
 
