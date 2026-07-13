@@ -2,6 +2,7 @@
 using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ExpenseTracker.Domain.ValueObjects;
+using System;
 
 namespace ExpenseTracker.Infrastructure.Persistence.Configurations
 {
@@ -31,6 +32,9 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             });
 
             builder.Property(e => e.Date)
+                .HasConversion(
+                    v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
                 .IsRequired();
 
             builder.Property(e => e.Category)
