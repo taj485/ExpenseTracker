@@ -25,6 +25,8 @@ ExpenseTracker/
 │   │   └── mockup-combined.html
 │   ├── src/
 │   │   ├── styles.css
+│   │   ├── types/
+│   │   │   └── heic2any.d.ts
 │   │   ├── environments/
 │   │   │   ├── environment.ts
 │   │   │   └── environment.prod.ts
@@ -38,9 +40,17 @@ ExpenseTracker/
 │   │       │   ├── services/
 │   │       │   │   ├── expense.service.ts
 │   │       │   │   ├── add-expense-drawer.service.ts
-│   │       │   │   └── upload-receipt-drawer.service.ts
+│   │       │   │   ├── upload-receipt-drawer.service.ts
+│   │       │   │   ├── image-resize.service.ts
+│   │       │   │   └── image-resize.service.spec.ts
 │   │       │   ├── utils/
-│   │       │   │   └── category.utils.ts
+│   │       │   │   ├── category.utils.ts
+│   │       │   │   ├── date.utils.ts
+│   │       │   │   ├── date.utils.spec.ts
+│   │       │   │   ├── fake-expense-generator.ts
+│   │       │   │   ├── fake-expense-generator.spec.ts
+│   │       │   │   ├── heic-converter.ts
+│   │       │   │   └── heic-converter.spec.ts
 │   │       │   └── auth/
 │   │       │       ├── auth.guard.ts
 │   │       │       ├── auth.guard.spec.ts
@@ -60,6 +70,7 @@ ExpenseTracker/
 │   │       │       ├── topbar.component.html
 │   │       │       └── topbar.component.css
 │   │       ├── shared/
+│   │       │   ├── drag-to-dismiss.directive.ts
 │   │       │   └── confirm-dialog/
 │   │       │       ├── confirm-dialog.component.ts
 │   │       │       ├── confirm-dialog.component.html
@@ -141,6 +152,7 @@ ExpenseTracker/
 │   ├── Application/
 │   │   ├── Commands/
 │   │   │   ├── AddExpenseCommandHandlerTests.cs
+│   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
 │   │   │   └── DeleteExpenseCommandHandlerTests.cs
 │   │   ├── Queries/
@@ -170,6 +182,9 @@ ExpenseTracker/
 │   │   │   ├── AddExpenseCommand.cs
 │   │   │   ├── AddExpenseCommandHandler.cs
 │   │   │   └── AddExpenseValidator.cs
+│   │   ├── AddExpensesBatch/
+│   │   │   ├── AddExpensesBatchCommand.cs
+│   │   │   └── AddExpensesBatchCommandHandler.cs
 │   │   ├── UpdateExpense/
 │   │   │   ├── UpdateExpenseCommand.cs
 │   │   │   ├── UpdateExpenseCommandHandler.cs

@@ -36,6 +36,25 @@
   background: var(--surface);
 }
 
+.form-group input:not([type="file"]),
+.form-group select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input:not([type="file"]):focus,
+.form-group select:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.1);
+}
+
 .form-group input[type="file"]::file-selector-button {
   background: var(--teal);
   color: #fff;
@@ -52,6 +71,124 @@
 .form-group input[type="file"]::file-selector-button:hover {
   background: var(--teal-dark);
 }
+
+.upload-status {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.upload-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  margin-bottom: 16px;
+}
+
+.extraction-receipt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.extraction-receipt-thumb {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.extraction-receipt-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+}
+
+.extraction-receipt .preview-meta {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.extraction-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.extraction-list {
+  max-height: 42vh;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 4px;
+}
+
+.extraction-item {
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--surface);
+}
+
+.extraction-item:last-child { margin-bottom: 0; }
+
+.extraction-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.extraction-item-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.btn-item-remove {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.btn-item-remove:hover { opacity: 0.7; }
+
+.extraction-item-row { display: flex; gap: 10px; }
+.extraction-field-amount { flex: 2; }
+.extraction-field-quantity { flex: 1; }
+
+.extraction-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 10px;
+  background: var(--teal);
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-submit:hover:not(:disabled) { background: var(--teal-dark); }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .preview-block {
   border: 1.5px solid var(--border);
@@ -89,4 +226,40 @@
   transition: background 0.15s;
 }
 
-.btn-remove:hover { background: var(--bg); }
+.btn-remove:hover:not(:disabled) { background: var(--bg); }
+.btn-remove:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.btn-lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn-lightbox-close:hover { background: rgba(255, 255, 255, 0.25); }

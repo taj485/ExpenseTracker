@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AddExpenseCommand, CategoryStat, Expense, ExpenseCategory, UpdateExpenseCommand } from '../models/expense.model';
+import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -112,6 +112,21 @@ export class ExpenseService {
         });
       },
       error: () => onError('Failed to add expense. Please try again.'),
+    });
+  }
+
+  // API CALL: POST /api/expense/batch — adds multiple expenses; valid ones are stored even if others fail
+  addExpensesBatch(
+    commands: AddExpenseCommand[],
+    onSuccess: (result: AddExpensesBatchResult) => void,
+    onError: (msg: string) => void,
+  ): void {
+    this.http.post<AddExpensesBatchResult>(`${this.apiUrl}/batch`, commands).subscribe({
+      next: (result) => {
+        if (result.addedIds.length > 0) this.loadAll();
+        onSuccess(result);
+      },
+      error: () => onError('Failed to add expenses. Please try again.'),
     });
   }
 
