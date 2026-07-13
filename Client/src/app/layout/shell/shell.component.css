@@ -63,6 +63,7 @@
   width: 100%;
   max-width: 600px;
   animation: drawer-slide-up 0.2s ease-out;
+  touch-action: none;
 }
 
 @keyframes drawer-fade-in {
