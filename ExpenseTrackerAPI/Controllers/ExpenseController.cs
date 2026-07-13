@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Commands.AddExpensesBatch;
 using ExpenseTracker.Application.Commands.DeleteExpense;
 using ExpenseTracker.Application.Commands.UpdateExpense;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
@@ -43,6 +44,14 @@ namespace ExpenseTrackerAPI.Controllers
         {
             int id = await _mediator.Send(command, cancellationToken);
             return CreatedAtAction(nameof(Get), new { id }, new { id });
+        }
+
+        // POST api/<ExpenseTracker>/batch
+        [HttpPost("batch")]
+        public async Task<IActionResult> AddExpensesBatch([FromBody] List<AddExpenseCommand> items, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new AddExpensesBatchCommand(items), cancellationToken);
+            return Ok(result);
         }
 
         // PUT api/<ExpenseTracker>/5

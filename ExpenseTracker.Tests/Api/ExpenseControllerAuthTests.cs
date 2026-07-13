@@ -34,5 +34,16 @@ namespace ExpenseTracker.Tests.Api
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
+
+        [Fact]
+        public async Task AddExpensesBatch_WithoutToken_Returns401()
+        {
+            var response = await _client.PostAsJsonAsync("/api/expense/batch", new[]
+            {
+                new { amount = 10m, category = "Food", description = "Test" }
+            });
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
     }
 }
