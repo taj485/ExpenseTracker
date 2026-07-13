@@ -1,0 +1,24 @@
+<div class="upload-panel">
+  <h2 class="upload-title">Upload Receipt</h2>
+
+  <div class="form-group">
+    <label for="receipt-file">Receipt Photo</label>
+    <input
+      id="receipt-file"
+      type="file"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  @if (previewUrl()) {
+    <div class="preview-block">
+      <img class="preview-image" [src]="previewUrl()" alt="Receipt preview" />
+      <div class="preview-meta">
+        <span class="preview-name">{{ selectedFile()?.name }}</span>
+        <span class="preview-size">{{ formattedSize() }}</span>
+      </div>
+      <button type="button" class="btn-remove" (click)="removeFile()">Remove</button>
+    </div>
+  }
+</div>

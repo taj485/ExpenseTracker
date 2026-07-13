@@ -20,9 +20,24 @@
       </aside>
     </div>
 
-    <!-- Add Expense footer — mobile -->
+    <!-- Bottom tab bar — mobile -->
     <div class="mobile-footer">
-      <button class="btn-add-expense-mobile" (click)="drawer.open()">+ Add Expense</button>
+      <a class="tab-item" routerLink="/dashboard" routerLinkActive="active">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Dashboard</span>
+      </a>
+      <a class="tab-item" routerLink="/expenses" routerLinkActive="active">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Expenses</span>
+      </a>
+      <button type="button" class="tab-item" [class.active]="drawer.isOpen()" (click)="drawer.open()">
+        <span class="tab-icon">➕</span>
+        <span class="tab-label">Add</span>
+      </button>
+      <button type="button" class="tab-item" [class.active]="uploadDrawer.isOpen()" (click)="uploadDrawer.open()">
+        <span class="tab-icon">📷</span>
+        <span class="tab-label">Receipt</span>
+      </button>
     </div>
   </div>
 </div>
@@ -30,9 +45,19 @@
 <!-- Add Expense drawer — mobile -->
 @if (drawer.isOpen()) {
   <div class="drawer-overlay" (click)="drawer.close()">
-    <div class="drawer" (click)="$event.stopPropagation()">
+    <div class="drawer" appDragToDismiss (dismissed)="drawer.close()" (click)="$event.stopPropagation()">
       <div class="drawer-handle"></div>
       <app-add-expense-form (submitted)="drawer.close()" />
+    </div>
+  </div>
+}
+
+<!-- Upload Receipt drawer — mobile -->
+@if (uploadDrawer.isOpen()) {
+  <div class="drawer-overlay" (click)="uploadDrawer.close()">
+    <div class="drawer" appDragToDismiss (dismissed)="uploadDrawer.close()" (click)="$event.stopPropagation()">
+      <div class="drawer-handle"></div>
+      <app-upload-receipt />
     </div>
   </div>
 }
