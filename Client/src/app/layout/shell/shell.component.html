@@ -16,6 +16,7 @@
 
       <!-- Add Expense panel — desktop -->
       <aside class="add-panel">
+        <button type="button" class="btn-upload-receipt" (click)="uploadDrawer.open()">📷 Upload Receipt</button>
         <app-add-expense-form (submitted)="drawer.close()" />
       </aside>
     </div>
