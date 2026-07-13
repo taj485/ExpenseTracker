@@ -1,6 +1,6 @@
 import { Directive, ElementRef, EventEmitter, HostListener, Output, inject } from '@angular/core';
 
-const DISMISS_THRESHOLD_PX = 100;
+const DISMISS_THRESHOLD_RATIO = 0.1;
 
 @Directive({
   selector: '[appDragToDismiss]',
@@ -14,15 +14,14 @@ export class DragToDismissDirective {
   private dragging = false;
   private startY = 0;
   private currentY = 0;
+  private drawerHeight = 0;
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.drawer-handle')) return;
-
     this.dragging = true;
     this.startY = event.clientY;
     this.currentY = 0;
+    this.drawerHeight = this.el.nativeElement.getBoundingClientRect().height;
     this.el.nativeElement.style.transition = 'none';
   }
 
@@ -42,7 +41,7 @@ export class DragToDismissDirective {
 
     this.el.nativeElement.style.transition = '';
 
-    if (this.currentY > DISMISS_THRESHOLD_PX) {
+    if (this.currentY > this.drawerHeight * DISMISS_THRESHOLD_RATIO) {
       this.dismissed.emit();
     } else {
       this.el.nativeElement.style.transform = '';
