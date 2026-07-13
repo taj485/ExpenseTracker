@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, Output, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, computed, inject, signal } from '@angular/core';
 import { ImageResizeService } from '../../core/services/image-resize.service';
 import { ExpenseService } from '../../core/services/expense.service';
 import { convertIfHeic } from '../../core/utils/heic-converter';
@@ -19,8 +19,9 @@ type DraftExpense = ExtractedExpense & { id: number };
   styleUrl: './upload-receipt.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UploadReceiptComponent implements OnDestroy {
+export class UploadReceiptComponent implements OnInit, OnDestroy {
   @Output() submitted = new EventEmitter<void>();
+  @ViewChild('videoEl') videoRef?: ElementRef<HTMLVideoElement>;
 
   private readonly imageResizeService = inject(ImageResizeService);
   private readonly expenseService = inject(ExpenseService);
@@ -33,6 +34,9 @@ export class UploadReceiptComponent implements OnDestroy {
   previewUrl   = signal<string | null>(null);
   processing   = signal(false);
   error        = signal<string | null>(null);
+
+  cameraStream = signal<MediaStream | null>(null);
+  cameraError  = signal<string | null>(null);
 
   extractedExpenses = signal<DraftExpense[]>([]);
   submitting        = signal(false);
@@ -48,12 +52,69 @@ export class UploadReceiptComponent implements OnDestroy {
     return kb < 1024 ? `${kb.toFixed(0)} KB` : `${(kb / 1024).toFixed(1)} MB`;
   });
 
+  ngOnInit(): void {
+    void this.startCamera();
+  }
+
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
 
+    this.stopCamera();
+    await this.processFile(file);
+  }
+
+  capturePhoto(): void {
+    const video = this.videoRef?.nativeElement;
+    if (!video || !this.cameraStream()) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    this.stopCamera();
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          this.error.set("Couldn't capture photo. Please try again.");
+          return;
+        }
+        const file = new File([blob], `receipt-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        void this.processFile(file);
+      },
+      'image/jpeg',
+      0.9
+    );
+  }
+
+  private async startCamera(): Promise<void> {
+    if (this.cameraStream()) return;
+
+    this.cameraError.set(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      });
+      this.cameraStream.set(stream);
+    } catch {
+      this.cameraError.set("Couldn't access the camera. You can still upload a photo instead.");
+    }
+  }
+
+  private stopCamera(): void {
+    this.cameraStream()?.getTracks().forEach(t => t.stop());
+    this.cameraStream.set(null);
+  }
+
+  private async processFile(file: File): Promise<void> {
     this.error.set(null);
     this.processing.set(true);
 
@@ -92,6 +153,7 @@ export class UploadReceiptComponent implements OnDestroy {
     this.formError.set(null);
     this.extractedExpenses.set([]);
     this.setFile(null);
+    void this.startCamera();
   }
 
   onAddExpenses(): void {
@@ -156,5 +218,6 @@ export class UploadReceiptComponent implements OnDestroy {
   ngOnDestroy(): void {
     const current = this.previewUrl();
     if (current) URL.revokeObjectURL(current);
+    this.stopCamera();
   }
 }

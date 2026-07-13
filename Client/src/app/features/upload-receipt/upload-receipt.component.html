@@ -2,16 +2,18 @@
   <h2 class="upload-title">Upload Receipt</h2>
 
   @if (!hasExtraction()) {
-    <div class="form-group">
-      <label for="receipt-file">Receipt Photo</label>
-      <input
-        id="receipt-file"
-        type="file"
-        accept="image/*,.heic,.heif"
-        capture="environment"
-        [disabled]="processing()"
-        (change)="onFileSelected($event)"
-      />
+    <div class="camera-view">
+      @if (cameraError()) {
+        <div class="camera-fallback">
+          <p class="upload-error">{{ cameraError() }}</p>
+          <button type="button" class="btn-submit" [disabled]="processing()" (click)="fileInput.click()">Choose Photo</button>
+        </div>
+      } @else {
+        <video #videoEl class="camera-video" [srcObject]="cameraStream()" autoplay playsinline muted></video>
+        <button type="button" class="btn-shutter" [disabled]="processing()" (click)="capturePhoto()" aria-label="Take photo"></button>
+        <button type="button" class="btn-upload-fallback" [disabled]="processing()" (click)="fileInput.click()" aria-label="Upload from file">🖼️</button>
+      }
+      <input #fileInput type="file" accept="image/*,.heic,.heif" hidden [disabled]="processing()" (change)="onFileSelected($event)" />
     </div>
 
     @if (processing()) {
@@ -20,17 +22,6 @@
 
     @if (error()) {
       <p class="upload-error">{{ error() }}</p>
-    }
-
-    @if (previewUrl()) {
-      <div class="preview-block">
-        <img class="preview-image" [src]="previewUrl()" alt="Receipt preview" />
-        <div class="preview-meta">
-          <span class="preview-name">{{ selectedFile()?.name }}</span>
-          <span class="preview-size">{{ formattedSize() }}</span>
-        </div>
-        <button type="button" class="btn-remove" (click)="removeFile()">Remove</button>
-      </div>
     }
   } @else {
     @if (previewUrl()) {
