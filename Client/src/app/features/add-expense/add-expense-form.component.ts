@@ -2,15 +2,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject, signa
 import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../core/services/expense.service';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
+import { todayLocalISODate } from '../../core/utils/date.utils';
 import { ExpenseCategory } from '../../core/models/expense.model';
-
-function todayLocalISODate(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 @Component({
   selector: 'app-add-expense-form',

@@ -28,3 +28,21 @@ export interface CategoryStat {
   count: number;
   percentage: number;
 }
+
+export interface ExtractedExpense {
+  amount: number;
+  category: ExpenseCategory;
+  description: string;
+  date: string;
+  quantity: number;
+}
+
+export interface BatchItemError {
+  index: number;
+  errors: string[];
+}
+
+export interface AddExpensesBatchResult {
+  addedIds: number[];
+  errors: BatchItemError[];
+}

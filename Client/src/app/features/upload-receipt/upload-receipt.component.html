@@ -1,24 +1,133 @@
 <div class="upload-panel">
   <h2 class="upload-title">Upload Receipt</h2>
 
-  <div class="form-group">
-    <label for="receipt-file">Receipt Photo</label>
-    <input
-      id="receipt-file"
-      type="file"
-      accept="image/*"
-      (change)="onFileSelected($event)"
-    />
-  </div>
+  @if (!hasExtraction()) {
+    <div class="form-group">
+      <label for="receipt-file">Receipt Photo</label>
+      <input
+        id="receipt-file"
+        type="file"
+        accept="image/*,.heic,.heif"
+        capture="environment"
+        [disabled]="processing()"
+        (change)="onFileSelected($event)"
+      />
+    </div>
 
-  @if (previewUrl()) {
-    <div class="preview-block">
-      <img class="preview-image" [src]="previewUrl()" alt="Receipt preview" />
-      <div class="preview-meta">
-        <span class="preview-name">{{ selectedFile()?.name }}</span>
-        <span class="preview-size">{{ formattedSize() }}</span>
+    @if (processing()) {
+      <p class="upload-status">Processing photo…</p>
+    }
+
+    @if (error()) {
+      <p class="upload-error">{{ error() }}</p>
+    }
+
+    @if (previewUrl()) {
+      <div class="preview-block">
+        <img class="preview-image" [src]="previewUrl()" alt="Receipt preview" />
+        <div class="preview-meta">
+          <span class="preview-name">{{ selectedFile()?.name }}</span>
+          <span class="preview-size">{{ formattedSize() }}</span>
+        </div>
+        <button type="button" class="btn-remove" (click)="removeFile()">Remove</button>
       </div>
-      <button type="button" class="btn-remove" (click)="removeFile()">Remove</button>
+    }
+  } @else {
+    @if (previewUrl()) {
+      <div class="extraction-receipt">
+        <button type="button" class="extraction-receipt-thumb" (click)="openEnlargedImage()" aria-label="Enlarge receipt photo">
+          <img class="extraction-receipt-image" [src]="previewUrl()" alt="Receipt preview" />
+        </button>
+        <div class="preview-meta">
+          <span class="preview-name">{{ selectedFile()?.name }}</span>
+          <span class="preview-size">{{ formattedSize() }}</span>
+        </div>
+      </div>
+    }
+
+    <p class="extraction-hint">
+      We found {{ extractedExpenses().length }} possible
+      expense{{ extractedExpenses().length === 1 ? '' : 's' }} on this receipt. Review and edit before adding.
+    </p>
+
+    @if (formError()) {
+      <p class="upload-error">{{ formError() }}</p>
+    }
+
+    <div class="extraction-list">
+      @for (item of extractedExpenses(); track item.id) {
+        <div class="extraction-item">
+          <div class="extraction-item-header">
+            <span class="extraction-item-label">Item</span>
+            <button type="button" class="btn-item-remove" (click)="removeItem(item.id)" aria-label="Remove this item">✕</button>
+          </div>
+
+          <div class="extraction-item-row">
+            <div class="form-group extraction-field-amount">
+              <label>Amount (£)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                [value]="item.amount"
+                (input)="updateItem(item.id, { amount: +$any($event.target).value })"
+              />
+            </div>
+            <div class="form-group extraction-field-quantity">
+              <label>Qty</label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                [value]="item.quantity"
+                (input)="updateItem(item.id, { quantity: +$any($event.target).value })"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Category</label>
+            <select [value]="item.category" (change)="updateItem(item.id, { category: $any($event.target).value })">
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <input
+              type="text"
+              [value]="item.description"
+              (input)="updateItem(item.id, { description: $any($event.target).value })"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Date</label>
+            <input
+              type="date"
+              [max]="maxDate"
+              [value]="item.date"
+              (input)="updateItem(item.id, { date: $any($event.target).value })"
+            />
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="extraction-actions">
+      <button type="button" class="btn-submit" [disabled]="submitting()" (click)="onAddExpenses()">
+        {{ submitting() ? 'Adding…' : 'Add Expenses' }}
+      </button>
+      <button type="button" class="btn-remove" [disabled]="submitting()" (click)="removeFile()">Remove</button>
+    </div>
+  }
+
+  @if (imageEnlarged() && previewUrl()) {
+    <div class="image-lightbox" (click)="closeEnlargedImage()">
+      <button type="button" class="btn-lightbox-close" (click)="closeEnlargedImage()" aria-label="Close enlarged photo">✕</button>
+      <img class="lightbox-image" [src]="previewUrl()" alt="Receipt preview enlarged" (click)="$event.stopPropagation()" />
     </div>
   }
 </div>

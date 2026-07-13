@@ -16,6 +16,7 @@
 
       <!-- Add Expense panel — desktop -->
       <aside class="add-panel">
+        <button type="button" class="btn-upload-receipt" (click)="uploadDrawer.open()">📷 Upload Receipt</button>
         <app-add-expense-form (submitted)="drawer.close()" />
       </aside>
     </div>
@@ -57,7 +58,7 @@
   <div class="drawer-overlay" (click)="uploadDrawer.close()">
     <div class="drawer" appDragToDismiss (dismissed)="uploadDrawer.close()" (click)="$event.stopPropagation()">
       <div class="drawer-handle"></div>
-      <app-upload-receipt />
+      <app-upload-receipt (submitted)="uploadDrawer.close()" />
     </div>
   </div>
 }
