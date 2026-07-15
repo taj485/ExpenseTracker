@@ -85,6 +85,20 @@ export class ExpenseListComponent implements OnInit {
     });
   });
 
+  private readonly PAGE_SIZE = 10;
+  readonly currentPage = signal(1);
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.sortedExpenses().length / this.PAGE_SIZE))
+  );
+
+  readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
+
+  readonly pagedExpenses = computed(() => {
+    const start = (this.safeCurrentPage() - 1) * this.PAGE_SIZE;
+    return this.sortedExpenses().slice(start, start + this.PAGE_SIZE);
+  });
+
   ngOnInit(): void {
     this.store.loadAll();
   }
@@ -95,14 +109,17 @@ export class ExpenseListComponent implements OnInit {
   }
 
   onMonthChange(value: string): void {
+    this.currentPage.set(1);
     this.updateQueryParams({ month: value || null });
   }
 
   onCategoryChange(value: string): void {
+    this.currentPage.set(1);
     this.updateQueryParams({ category: value || null });
   }
 
   resetFilters(): void {
+    this.currentPage.set(1);
     this.updateQueryParams({ month: null, category: null });
   }
 
@@ -115,6 +132,7 @@ export class ExpenseListComponent implements OnInit {
   }
 
   toggleSort(column: SortColumn): void {
+    this.currentPage.set(1);
     if (this.sortColumn() === column) {
       this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
     } else {
@@ -126,6 +144,18 @@ export class ExpenseListComponent implements OnInit {
   sortIcon(column: SortColumn): string {
     if (this.sortColumn() !== column) return '▲';
     return this.sortDirection() === 'asc' ? '▲' : '▼';
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(Math.min(Math.max(1, page), this.totalPages()));
+  }
+
+  prevPage(): void {
+    this.goToPage(this.safeCurrentPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.safeCurrentPage() + 1);
   }
 
   viewExpense(id: number): void {

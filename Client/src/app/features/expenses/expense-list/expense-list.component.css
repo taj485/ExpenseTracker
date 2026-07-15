@@ -116,6 +116,20 @@ tr:hover td { background: var(--bg); }
   white-space: nowrap;
 }
 
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.pagination-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 @media (max-width: 768px) {
   .filter-bar {
     justify-content: center;

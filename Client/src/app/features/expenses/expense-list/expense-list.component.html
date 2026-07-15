@@ -66,7 +66,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (expense of sortedExpenses(); track expense.id) {
+        @for (expense of pagedExpenses(); track expense.id) {
           <tr class="clickable-row" (click)="viewExpense(expense.id)">
             <td class="col-date">{{ expense.date | date:'dd/MM/yy' }}</td>
             <td class="col-description">{{ expense.description }}</td>
@@ -97,6 +97,14 @@
       </tbody>
     </table>
   </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination-bar">
+      <button class="btn btn-secondary btn-sm" [disabled]="safeCurrentPage() === 1" (click)="prevPage()">‹ Prev</button>
+      <span class="pagination-status">Page {{ safeCurrentPage() }} of {{ totalPages() }}</span>
+      <button class="btn btn-secondary btn-sm" [disabled]="safeCurrentPage() === totalPages()" (click)="nextPage()">Next ›</button>
+    </div>
+  }
 
   @if (deletingId(); as id) {
     <app-confirm-dialog
