@@ -23,7 +23,7 @@
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .form-group label {
@@ -37,6 +37,7 @@
 .form-group input:not([type="file"]),
 .form-group select {
   width: 100%;
+  min-width: 0;
   padding: 9px 12px;
   border: 1.5px solid var(--border);
   border-radius: 9px;
@@ -51,6 +52,15 @@
 .form-group select:focus {
   border-color: var(--teal);
   box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.1);
+}
+
+.form-group input[type="date"] {
+  padding-right: 8px;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  padding: 0;
 }
 
 .camera-view {
@@ -193,8 +203,8 @@
 .extraction-item {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
   background: var(--surface);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -228,9 +238,9 @@
 
 .btn-item-remove:hover { opacity: 0.7; }
 
-.extraction-item-row { display: flex; gap: 10px; }
-.extraction-field-amount { flex: 2; }
-.extraction-field-quantity { flex: 1; }
+.extraction-item-row { display: flex; gap: 12px; }
+.extraction-field-amount { flex: 2; min-width: 0; }
+.extraction-field-quantity { flex: 1; min-width: 0; }
 
 .extraction-actions {
   display: flex;
@@ -314,3 +324,11 @@
 }
 
 .btn-lightbox-close:hover { background: rgba(255, 255, 255, 0.25); }
+
+@media (max-width: 480px) {
+  .upload-panel { padding: 16px; }
+
+  .extraction-item { padding: 14px; }
+
+  .extraction-item-row { gap: 8px; }
+}
