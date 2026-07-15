@@ -5,13 +5,21 @@
   height: 100%;
 }
 
+.upload-header {
+  margin-bottom: 20px;
+}
+
 .upload-title {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.upload-subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .form-group {
@@ -31,7 +39,7 @@
   width: 100%;
   padding: 9px 12px;
   border: 1.5px solid var(--border);
-  border-radius: 7px;
+  border-radius: 9px;
   font-size: 1rem;
   color: var(--text);
   background: var(--surface);
@@ -48,11 +56,13 @@
 .camera-view {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 3 / 4.4;
   background: #000;
-  border-radius: 10px;
+  border: 2px solid var(--teal);
+  border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .camera-video {
@@ -69,18 +79,19 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #fff;
-  border: 4px solid rgba(255, 255, 255, 0.5);
+  background: var(--teal);
+  border: 4px solid #fff;
   cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
-.btn-shutter:hover:not(:disabled) { background: #eee; }
+.btn-shutter:hover:not(:disabled) { background: var(--teal-dark); }
 .btn-shutter:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-upload-fallback {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 26px;
+  right: 20px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -95,19 +106,36 @@
 .btn-upload-fallback:hover:not(:disabled) { background: rgba(0, 0, 0, 0.65); }
 .btn-upload-fallback:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.camera-fallback {
+.camera-empty {
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 20px;
+  gap: 4px;
+  padding: 24px;
   text-align: center;
   background: var(--surface);
 }
 
-.camera-fallback .btn-submit {
+.camera-empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+}
+
+.camera-empty-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.camera-empty-description {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.camera-empty .btn-submit {
   width: auto;
   padding: 10px 20px;
 }
@@ -144,7 +172,7 @@
   width: 56px;
   height: 56px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1.5px solid var(--border);
 }
 
@@ -154,25 +182,21 @@
   margin-bottom: 0;
 }
 
-.extraction-hint {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 14px;
-}
-
 .extraction-list {
-  max-height: 42vh;
+  height: 300px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   margin-bottom: 16px;
   padding-right: 4px;
 }
 
 .extraction-item {
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 14px;
   margin-bottom: 12px;
   background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .extraction-item:last-child { margin-bottom: 0; }
@@ -212,6 +236,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .btn-submit {
@@ -219,7 +245,7 @@
   padding: 10px;
   background: var(--teal);
   border: none;
-  border-radius: 7px;
+  border-radius: 9px;
   color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
@@ -243,7 +269,7 @@
   padding: 8px;
   background: var(--surface);
   border: 1.5px solid var(--border);
-  border-radius: 7px;
+  border-radius: 9px;
   color: #c0392b;
   font-size: 0.85rem;
   font-weight: 600;

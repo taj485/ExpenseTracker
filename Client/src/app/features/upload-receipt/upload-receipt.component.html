@@ -1,17 +1,22 @@
 <div class="upload-panel">
-  <h2 class="upload-title">Upload Receipt</h2>
-
   @if (!hasExtraction()) {
+    <div class="upload-header">
+      <h2 class="upload-title">Upload Receipt</h2>
+      <p class="upload-subtitle">Snap a photo or choose a file — we'll find the expenses for you.</p>
+    </div>
+
     <div class="camera-view">
       @if (cameraError()) {
-        <div class="camera-fallback">
-          <p class="upload-error">{{ cameraError() }}</p>
+        <div class="camera-empty">
+          <div class="camera-empty-icon">📷</div>
+          <p class="camera-empty-title">Camera unavailable</p>
+          <p class="camera-empty-description">{{ cameraError() }}</p>
           <button type="button" class="btn-submit" [disabled]="processing()" (click)="fileInput.click()">Choose Photo</button>
         </div>
       } @else {
         <video #videoEl class="camera-video" [srcObject]="cameraStream()" autoplay playsinline muted></video>
         <button type="button" class="btn-shutter" [disabled]="processing()" (click)="capturePhoto()" aria-label="Take photo"></button>
-        <button type="button" class="btn-upload-fallback" [disabled]="processing()" (click)="fileInput.click()" aria-label="Upload from file">🖼️</button>
+        <button type="button" class="btn-upload-fallback" [disabled]="processing()" (click)="fileInput.click()" aria-label="Upload from file">📁</button>
       }
       <input #fileInput type="file" accept="image/*,.heic,.heif" hidden [disabled]="processing()" (change)="onFileSelected($event)" />
     </div>
@@ -24,6 +29,14 @@
       <p class="upload-error">{{ error() }}</p>
     }
   } @else {
+    <div class="upload-header">
+      <h2 class="upload-title">Review Your Receipt</h2>
+      <p class="upload-subtitle">
+        We found {{ extractedExpenses().length }} possible
+        expense{{ extractedExpenses().length === 1 ? '' : 's' }}. Edit anything that's not quite right.
+      </p>
+    </div>
+
     @if (previewUrl()) {
       <div class="extraction-receipt">
         <button type="button" class="extraction-receipt-thumb" (click)="openEnlargedImage()" aria-label="Enlarge receipt photo">
@@ -35,11 +48,6 @@
         </div>
       </div>
     }
-
-    <p class="extraction-hint">
-      We found {{ extractedExpenses().length }} possible
-      expense{{ extractedExpenses().length === 1 ? '' : 's' }} on this receipt. Review and edit before adding.
-    </p>
 
     @if (formError()) {
       <p class="upload-error">{{ formError() }}</p>
