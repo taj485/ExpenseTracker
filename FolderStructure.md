@@ -47,8 +47,6 @@ ExpenseTracker/
 │   │       │   │   ├── category.utils.ts
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
-│   │       │   │   ├── fake-expense-generator.ts
-│   │       │   │   ├── fake-expense-generator.spec.ts
 │   │       │   │   ├── heic-converter.ts
 │   │       │   │   └── heic-converter.spec.ts
 │   │       │   └── auth/
@@ -126,7 +124,8 @@ ExpenseTracker/
 │   │   ├── Expense.cs
 │   │   └── User.cs
 │   ├── ValueObjects/
-│   │   └── Money.cs
+│   │   ├── Money.cs
+│   │   └── ExtractedReceiptItem.cs
 │   ├── Enums/
 │   │   └── ExpenseCategory.cs
 │   ├── Interfaces/
@@ -135,7 +134,8 @@ ExpenseTracker/
 │   │   ├── IExpenseRepository.cs
 │   │   ├── IUserReader.cs
 │   │   ├── IUserWriter.cs
-│   │   └── ICurrentUserService.cs
+│   │   ├── ICurrentUserService.cs
+│   │   └── IReceiptExtractionService.cs
 │   ├── Services/
 │   │   ├── ISummaryCalculator.cs
 │   │   ├── MonthlySummaryCalculator.cs
@@ -154,7 +154,8 @@ ExpenseTracker/
 │   │   │   ├── AddExpenseCommandHandlerTests.cs
 │   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
-│   │   │   └── DeleteExpenseCommandHandlerTests.cs
+│   │   │   ├── DeleteExpenseCommandHandlerTests.cs
+│   │   │   └── ExtractReceiptExpensesCommandHandlerTests.cs
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   └── GetExpenseQueryHandlerTests.cs
@@ -189,10 +190,13 @@ ExpenseTracker/
 │   │   │   ├── UpdateExpenseCommand.cs
 │   │   │   ├── UpdateExpenseCommandHandler.cs
 │   │   │   └── UpdateExpenseValidator.cs
-│   │   └── DeleteExpense/
-│   │       ├── DeleteExpenseCommand.cs
-│   │       ├── DeleteExpenseCommandHandler.cs
-│   │       └── DeleteExpenseValidator.cs
+│   │   ├── DeleteExpense/
+│   │   │   ├── DeleteExpenseCommand.cs
+│   │   │   ├── DeleteExpenseCommandHandler.cs
+│   │   │   └── DeleteExpenseValidator.cs
+│   │   └── ExtractReceiptExpenses/
+│   │       ├── ExtractReceiptExpensesCommand.cs
+│   │       └── ExtractReceiptExpensesCommandHandler.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs
@@ -205,7 +209,8 @@ ExpenseTracker/
 │   │       └── GetMonthlySummaryQueryHandler.cs
 │   ├── DTOs/
 │   │   ├── ExpenseDto.cs
-│   │   └── MonthlySummaryDto.cs
+│   │   ├── MonthlySummaryDto.cs
+│   │   └── ExtractedExpenseDto.cs
 │   ├── Mappings/
 │   │   └── ExpenseMappingProfile.cs
 │   └── Services/
@@ -225,4 +230,7 @@ ExpenseTracker/
     ├── Auth/
     │   ├── AuthenticationServiceCollectionExtensions.cs
     │   └── CurrentUserService.cs
+    ├── AI/
+    │   ├── GeminiOptions.cs
+    │   └── GeminiReceiptExtractionService.cs
     └── DependencyInjection.cs

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, OnDestroy
 import { ImageResizeService } from '../../core/services/image-resize.service';
 import { ExpenseService } from '../../core/services/expense.service';
 import { convertIfHeic } from '../../core/utils/heic-converter';
-import { generateFakeExpenses } from '../../core/utils/fake-expense-generator';
 import { todayLocalISODate } from '../../core/utils/date.utils';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
@@ -128,11 +127,14 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       const resizedFile = new File([resizedBlob], jpegFile.name, { type: 'image/jpeg' });
 
       this.setFile(resizedFile);
-      this.extractedExpenses.set(
-        generateFakeExpenses().map(e => ({ ...e, id: this.nextDraftId++ }))
-      );
+
+      const items = await new Promise<ExtractedExpense[]>((resolve, reject) => {
+        this.expenseService.extractReceipt(resizedFile, resolve, (msg) => reject(new Error(msg)));
+      });
+      this.extractedExpenses.set(items.map(e => ({ ...e, id: this.nextDraftId++ })));
     } catch {
       this.error.set("Couldn't process this image. Try a different photo or format.");
+      void this.startCamera();
     } finally {
       this.processing.set(false);
     }
