@@ -42,3 +42,9 @@ variable "database_connection_string" {
   type        = string
   sensitive   = true
 }
+
+variable "gemini_api_key" {
+  description = "API key for the Google Gemini Flash API used for receipt extraction"
+  type        = string
+  sensitive   = true
+}
