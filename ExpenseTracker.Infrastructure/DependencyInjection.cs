@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Domain.Interfaces;
+using ExpenseTracker.Infrastructure.AI;
 using ExpenseTracker.Infrastructure.Auth;
 using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTracker.Infrastructure.Persistence.Repositories;
@@ -29,6 +30,10 @@ namespace ExpenseTracker.Infrastructure
             services.AddScoped<IUserReader, UserRepository>();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+            services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
+
+            services.AddScoped<IReceiptExtractionService, GeminiReceiptExtractionService>();
 
             services.AddAuth0Authentication(configuration);
 

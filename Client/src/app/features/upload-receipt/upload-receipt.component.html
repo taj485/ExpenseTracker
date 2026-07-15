@@ -6,7 +6,12 @@
     </div>
 
     <div class="camera-view">
-      @if (cameraError()) {
+      @if (processing()) {
+        <div class="camera-loading">
+          <div class="camera-loading-spinner"></div>
+          <p class="camera-loading-text">Processing photo…</p>
+        </div>
+      } @else if (cameraError()) {
         <div class="camera-empty">
           <div class="camera-empty-icon">📷</div>
           <p class="camera-empty-title">Camera unavailable</p>
@@ -20,10 +25,6 @@
       }
       <input #fileInput type="file" accept="image/*,.heic,.heif" hidden [disabled]="processing()" (change)="onFileSelected($event)" />
     </div>
-
-    @if (processing()) {
-      <p class="upload-status">Processing photo…</p>
-    }
 
     @if (error()) {
       <p class="upload-error">{{ error() }}</p>

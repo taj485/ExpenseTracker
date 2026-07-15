@@ -1,6 +1,7 @@
 ﻿using ExpenseTracker.Application.Commands.AddExpense;
 using ExpenseTracker.Application.Commands.AddExpensesBatch;
 using ExpenseTracker.Application.Commands.DeleteExpense;
+using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
 using ExpenseTracker.Application.Commands.UpdateExpense;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
@@ -51,6 +52,30 @@ namespace ExpenseTrackerAPI.Controllers
         public async Task<IActionResult> AddExpensesBatch([FromBody] List<AddExpenseCommand> items, CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(new AddExpensesBatchCommand(items), cancellationToken);
+            return Ok(result);
+        }
+
+        private static readonly string[] AllowedReceiptContentTypes = { "image/jpeg", "image/png", "image/webp" };
+        private const long MaxReceiptFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+
+        // POST api/<ExpenseTracker>/extract-receipt
+        [HttpPost("extract-receipt")]
+        [RequestSizeLimit(MaxReceiptFileSizeBytes)]
+        public async Task<IActionResult> ExtractReceipt(IFormFile file, CancellationToken cancellationToken)
+        {
+            if (file is null || file.Length == 0)
+                return BadRequest("A receipt image file is required.");
+
+            if (file.Length > MaxReceiptFileSizeBytes)
+                return BadRequest("Image is too large. Maximum size is 10 MB.");
+
+            if (!AllowedReceiptContentTypes.Contains(file.ContentType))
+                return BadRequest("Unsupported image type. Please upload a JPEG, PNG, or WEBP image.");
+
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream, cancellationToken);
+
+            var result = await _mediator.Send(new ExtractReceiptExpensesCommand(stream.ToArray(), file.ContentType), cancellationToken);
             return Ok(result);
         }
 

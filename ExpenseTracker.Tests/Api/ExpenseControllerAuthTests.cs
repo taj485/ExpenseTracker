@@ -45,5 +45,18 @@ namespace ExpenseTracker.Tests.Api
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
+
+        [Fact]
+        public async Task ExtractReceipt_WithoutToken_Returns401()
+        {
+            using var content = new MultipartFormDataContent();
+            using var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3 });
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            content.Add(fileContent, "file", "receipt.jpg");
+
+            var response = await _client.PostAsync("/api/expense/extract-receipt", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, UpdateExpenseCommand } from '../models/expense.model';
+import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -127,6 +127,21 @@ export class ExpenseService {
         onSuccess(result);
       },
       error: () => onError('Failed to add expenses. Please try again.'),
+    });
+  }
+
+  // API CALL: POST /api/expense/extract-receipt — extracts structured line items from a receipt photo (multipart upload)
+  extractReceipt(
+    file: File,
+    onSuccess: (items: ExtractedExpense[]) => void,
+    onError: (msg: string) => void,
+  ): void {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.http.post<ExtractedExpense[]>(`${this.apiUrl}/extract-receipt`, formData).subscribe({
+      next: onSuccess,
+      error: () => onError("Couldn't read this receipt. Try a different photo or enter it manually."),
     });
   }
 
