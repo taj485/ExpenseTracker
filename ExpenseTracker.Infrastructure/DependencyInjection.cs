@@ -29,6 +29,8 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddScoped<IUserReader, UserRepository>();
 
+            services.AddScoped<IReceiptWriter, ReceiptRepository>();
+
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));

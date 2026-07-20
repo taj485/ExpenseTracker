@@ -26,6 +26,7 @@ export class AddExpenseFormComponent {
   category    = signal<ExpenseCategory>('Food');
   description = signal('');
   date        = signal(todayLocalISODate());
+  merchant    = signal('');
   submitting  = signal(false);
   formError   = signal<string | null>(null);
 
@@ -50,13 +51,14 @@ export class AddExpenseFormComponent {
     this.submitting.set(true);
 
     this.expenseService.addExpense(
-      { amount, category: this.category(), description, date: this.date() },
+      { amount, category: this.category(), description, date: this.date(), merchant: this.merchant().trim() || null },
       () => {
         this.submitting.set(false);
         this.amount.set('');
         this.description.set('');
         this.category.set('Food');
         this.date.set(todayLocalISODate());
+        this.merchant.set('');
         this.submitted.emit();
       },
       (msg) => {

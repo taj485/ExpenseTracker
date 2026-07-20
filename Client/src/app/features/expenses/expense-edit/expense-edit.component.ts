@@ -30,6 +30,7 @@ export class ExpenseEditComponent implements OnInit {
   amount = signal('');
   category = signal<ExpenseCategory>('Food');
   description = signal('');
+  merchant = signal('');
   submitting = signal(false);
   formError = signal<string | null>(null);
 
@@ -41,6 +42,7 @@ export class ExpenseEditComponent implements OnInit {
         this.amount.set(String(e.amount));
         this.category.set(e.category);
         this.description.set(e.description);
+        this.merchant.set(e.merchant ?? '');
         this.loading.set(false);
       },
       () => {
@@ -68,7 +70,7 @@ export class ExpenseEditComponent implements OnInit {
 
     this.expenseService.updateExpense(
       this.id,
-      { amount, category: this.category(), description },
+      { amount, category: this.category(), description, merchant: this.merchant().trim() || null },
       () => {
         this.submitting.set(false);
         this.router.navigate(['/expenses', this.id]);

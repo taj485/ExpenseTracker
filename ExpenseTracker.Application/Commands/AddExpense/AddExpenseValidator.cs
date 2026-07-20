@@ -17,6 +17,8 @@ namespace ExpenseTracker.Application.Commands.AddExpense
                 .IsInEnum().WithMessage("Invalid expense category");
             RuleFor(x => x.Date.Date)
                 .LessThanOrEqualTo(DateTime.UtcNow.Date).WithMessage("Date cannot be in the future.");
+            RuleFor(x => x.Merchant)
+                .MaximumLength(200).WithMessage("Merchant name is too long.");
         }
     }
 }

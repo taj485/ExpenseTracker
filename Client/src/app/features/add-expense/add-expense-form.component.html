@@ -53,6 +53,17 @@
       />
     </div>
 
+    <div class="form-group">
+      <label for="merchant">Merchant (optional)</label>
+      <input
+        id="merchant"
+        type="text"
+        placeholder="Where did you spend?"
+        [value]="merchant()"
+        (input)="merchant.set($any($event.target).value)"
+      />
+    </div>
+
     @if (formError()) {
       <p class="form-error">{{ formError() }}</p>
     }

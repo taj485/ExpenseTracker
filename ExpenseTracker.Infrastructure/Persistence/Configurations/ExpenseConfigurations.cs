@@ -45,7 +45,16 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             builder.Property(e => e.IsDeleted)
                 .IsRequired();
 
+            builder.Property(e => e.Merchant)
+                .HasMaxLength(200);
+
             builder.HasQueryFilter(e => !e.IsDeleted);
+
+            builder.HasOne(e => e.Receipt)
+                   .WithMany(r => r.Expenses)
+                   .HasForeignKey(e => e.ReceiptId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(e => e.Users)
                    .WithMany(u => u.Expenses)

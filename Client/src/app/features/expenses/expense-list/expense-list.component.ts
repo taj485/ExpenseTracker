@@ -6,10 +6,22 @@ import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta, ALL_CATEGORIES } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
-import { ExpenseCategory } from '../../../core/models/expense.model';
+import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 
-type SortColumn = 'date' | 'description' | 'amount' | 'category';
+type SortColumn = 'date' | 'description' | 'amount' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
+
+interface ExpenseGroup {
+  key: string;
+  expenses: Expense[];
+}
+
+interface ExpenseRow {
+  expense: Expense;
+  isGroupStart: boolean;
+  groupSize: number;
+  groupKey: string;
+}
 
 @Component({
   selector: 'app-expense-list',
@@ -31,6 +43,7 @@ export class ExpenseListComponent implements OnInit {
 
   readonly deletingId  = signal<number | null>(null);
   readonly actionError = signal<string | null>(null);
+  readonly hoveredGroupKey = signal<string | null>(null);
 
   readonly sortColumn    = signal<SortColumn>('date');
   readonly sortDirection = signal<SortDirection>('desc');
@@ -71,33 +84,64 @@ export class ExpenseListComponent implements OnInit {
 
   readonly filteredCount = computed(() => this.filteredExpenses().length);
 
-  readonly sortedExpenses = computed(() => {
+  private compareExpenses(a: Expense, b: Expense): number {
     const column = this.sortColumn();
-    const expenses = this.filteredExpenses();
     const direction = this.sortDirection() === 'asc' ? 1 : -1;
-    return [...expenses].sort((a, b) => {
-      switch (column) {
-        case 'date':        return (new Date(a.date).getTime() - new Date(b.date).getTime()) * direction;
-        case 'amount':      return (a.amount - b.amount) * direction;
-        case 'description': return a.description.localeCompare(b.description) * direction;
-        case 'category':    return a.category.localeCompare(b.category) * direction;
-      }
-    });
+    switch (column) {
+      case 'date':        return (new Date(a.date).getTime() - new Date(b.date).getTime()) * direction;
+      case 'amount':      return (a.amount - b.amount) * direction;
+      case 'description': return a.description.localeCompare(b.description) * direction;
+      case 'category':    return a.category.localeCompare(b.category) * direction;
+      case 'merchant':    return (a.merchant ?? '').localeCompare(b.merchant ?? '') * direction;
+    }
+  }
+
+  readonly groupedExpenses = computed<ExpenseGroup[]>(() => {
+    const expenses = this.filteredExpenses();
+    const buckets = new Map<string, Expense[]>();
+
+    for (const e of expenses) {
+      const key = e.receiptId != null ? `r${e.receiptId}` : `e${e.id}`;
+      const bucket = buckets.get(key);
+      if (bucket) bucket.push(e); else buckets.set(key, [e]);
+    }
+
+    const groups: ExpenseGroup[] = Array.from(buckets.entries()).map(([key, groupExpenses]) => ({
+      key,
+      expenses: [...groupExpenses].sort((a, b) => this.compareExpenses(a, b)),
+    }));
+
+    groups.sort((a, b) => this.compareExpenses(a.expenses[0], b.expenses[0]));
+
+    return groups;
   });
 
   private readonly PAGE_SIZE = 10;
   readonly currentPage = signal(1);
 
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.sortedExpenses().length / this.PAGE_SIZE))
-  );
+  readonly pages = computed<ExpenseRow[][]>(() => {
+    const groups = this.groupedExpenses();
+    const pages: ExpenseRow[][] = [];
+    let current: ExpenseRow[] = [];
 
-  readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
+    for (const group of groups) {
+      const rows: ExpenseRow[] = group.expenses.map((expense, idx) => ({
+        expense, isGroupStart: idx === 0, groupSize: group.expenses.length, groupKey: group.key,
+      }));
 
-  readonly pagedExpenses = computed(() => {
-    const start = (this.safeCurrentPage() - 1) * this.PAGE_SIZE;
-    return this.sortedExpenses().slice(start, start + this.PAGE_SIZE);
+      if (current.length > 0 && current.length + rows.length > this.PAGE_SIZE) {
+        pages.push(current);
+        current = [];
+      }
+      current.push(...rows);
+    }
+    if (current.length > 0) pages.push(current);
+    return pages.length > 0 ? pages : [[]];
   });
+
+  readonly totalPages = computed(() => this.pages().length);
+  readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
+  readonly pagedRows = computed<ExpenseRow[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
 
   ngOnInit(): void {
     this.store.loadAll();
@@ -160,6 +204,13 @@ export class ExpenseListComponent implements OnInit {
 
   viewExpense(id: number): void {
     this.router.navigate(['/expenses', id]);
+  }
+
+  onMerchantCellClick(event: MouseEvent, expense: Expense): void {
+    if (expense.receiptId != null) {
+      event.stopPropagation();
+      this.router.navigate(['/expenses/receipt', expense.receiptId]);
+    }
   }
 
   editExpense(id: number): void {

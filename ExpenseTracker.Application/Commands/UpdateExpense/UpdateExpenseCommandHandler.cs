@@ -40,6 +40,7 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
             expense.UpdateAmount(request.Amount);
             expense.UpdateCategory(request.Category);
             expense.UpdateDescription(request.Description);
+            expense.UpdateMerchant(request.Merchant);
 
             await _expenseWriter.UpdateAsync(expense);
 

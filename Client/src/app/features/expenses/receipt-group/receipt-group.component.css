@@ -1,0 +1,113 @@
+.detail-page { max-width: 560px; }
+.detail-page > .btn { margin-bottom: 24px; }
+
+.detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detail-header { padding: 24px; border-bottom: 1px solid var(--border); }
+
+.detail-description {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.group-subtitle { font-size: 0.85rem; color: var(--muted); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.badge-food          { background: #fff3e0; color: #e65100; }
+.badge-transport     { background: #e3f2fd; color: #1565c0; }
+.badge-utilities     { background: #e8f5e9; color: #2e7d32; }
+.badge-entertainment { background: #f3e5f5; color: #6a1b9a; }
+.badge-health        { background: #fce4ec; color: #880e4f; }
+
+.detail-fields { padding: 8px 0; }
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+}
+
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.field-value.amount { font-size: 1.1rem; font-weight: 700; color: var(--teal); }
+
+.status-msg { font-size: 0.875rem; color: var(--muted); padding: 40px 0; text-align: center; }
+.status-msg.error { color: #c0392b; }
+
+.group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 18px;
+  overflow: hidden;
+}
+
+.group-header {
+  padding: 16px 24px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--bg);
+}
+
+.group-item:last-child { border-bottom: none; }
+
+.group-item-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.group-item-description {
+  font-size: 0.9rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-item-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+.group-item-amount { font-size: 0.9rem; font-weight: 700; color: var(--teal); }
+
+.group-item-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.group-item-link:hover { color: var(--text); }
+
+.group-toolbar { padding: 16px 24px; border-top: 1px solid var(--border); }

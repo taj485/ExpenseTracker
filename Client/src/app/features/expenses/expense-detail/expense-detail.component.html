@@ -31,6 +31,12 @@
           <div class="field-label">Amount</div>
           <div class="field-value amount">£{{ e.amount | number:'1.2-2' }} {{ e.currency }}</div>
         </div>
+        @if (e.merchant) {
+          <div class="field">
+            <div class="field-label">Merchant</div>
+            <div class="field-value">{{ e.merchant }}</div>
+          </div>
+        }
         <div class="field">
           <div class="field-label">Date</div>
           <div class="field-value">{{ e.date | date:'dd MMMM yyyy' }}</div>

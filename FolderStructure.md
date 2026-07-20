@@ -22,7 +22,10 @@ ExpenseTracker/
 │   │   ├── mockup-1.html
 │   │   ├── mockup-2.html
 │   │   ├── mockup-3.html
-│   │   └── mockup-combined.html
+│   │   ├── mockup-combined.html
+│   │   ├── mockup-quirky.html
+│   │   ├── mockup-professional.html
+│   │   └── mockup-genz.html
 │   ├── src/
 │   │   ├── styles.css
 │   │   ├── types/
@@ -100,10 +103,14 @@ ExpenseTracker/
 │   │           │   │   ├── expense-detail.component.ts
 │   │           │   │   ├── expense-detail.component.html
 │   │           │   │   └── expense-detail.component.css
-│   │           │   └── expense-edit/
-│   │           │       ├── expense-edit.component.ts
-│   │           │       ├── expense-edit.component.html
-│   │           │       └── expense-edit.component.css
+│   │           │   ├── expense-edit/
+│   │           │   │   ├── expense-edit.component.ts
+│   │           │   │   ├── expense-edit.component.html
+│   │           │   │   └── expense-edit.component.css
+│   │           │   └── receipt-group/
+│   │           │       ├── receipt-group.component.ts
+│   │           │       ├── receipt-group.component.html
+│   │           │       └── receipt-group.component.css
 │   │           ├── add-expense/
 │   │           │   ├── add-expense-form.component.ts
 │   │           │   ├── add-expense-form.component.html
@@ -122,6 +129,7 @@ ExpenseTracker/
 ├── ExpenseTracker.Domain/
 │   ├── Entities/
 │   │   ├── Expense.cs
+│   │   ├── Receipt.cs
 │   │   └── User.cs
 │   ├── ValueObjects/
 │   │   ├── Money.cs
@@ -135,7 +143,8 @@ ExpenseTracker/
 │   │   ├── IUserReader.cs
 │   │   ├── IUserWriter.cs
 │   │   ├── ICurrentUserService.cs
-│   │   └── IReceiptExtractionService.cs
+│   │   ├── IReceiptExtractionService.cs
+│   │   └── IReceiptWriter.cs
 │   ├── Services/
 │   │   ├── ISummaryCalculator.cs
 │   │   ├── MonthlySummaryCalculator.cs
@@ -204,6 +213,9 @@ ExpenseTracker/
 │   │   ├── GetAllExpenses/
 │   │   │   ├── GetAllExpensesQuery.cs
 │   │   │   └── GetAllExpensesQueryHandler.cs
+│   │   ├── GetExpensesByReceiptId/
+│   │   │   ├── GetExpensesByReceiptIdQuery.cs
+│   │   │   └── GetExpensesByReceiptIdQueryHandler.cs
 │   │   └── GetMonthlySummary/
 │   │       ├── GetMonthlySummaryQuery.cs
 │   │       └── GetMonthlySummaryQueryHandler.cs
@@ -222,9 +234,11 @@ ExpenseTracker/
     │   ├── ExpenseTrackerDbContext.cs
     │   ├── Configurations/
     │   │   ├── ExpenseConfiguration.cs
+    │   │   ├── ReceiptConfigurations.cs
     │   │   └── UserConfiguration.cs
     │   └── Repositories/
     │       ├── ExpenseRepository.cs
+    │       ├── ReceiptRepository.cs
     │       └── UserRepository.cs
     ├── Migrations/
     ├── Auth/

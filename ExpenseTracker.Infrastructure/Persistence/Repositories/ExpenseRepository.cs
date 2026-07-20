@@ -38,6 +38,13 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<Expense>> GetByReceiptIdAsync(int receiptId, int userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Expenses
+                .Where(e => e.ReceiptId == receiptId && e.Users.Any(u => u.Id == userId))
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task DeleteAsync(int id)
         {
             var expense = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == id);

@@ -24,6 +24,7 @@ namespace ExpenseTracker.Application.Commands.ExtractReceiptExpenses
                 Description = i.Description,
                 Date = i.Date,
                 Quantity = i.Quantity,
+                Merchant = i.Merchant,
             }).ToList();
         }
     }
