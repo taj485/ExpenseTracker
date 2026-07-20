@@ -3,5 +3,5 @@ using MediatR;
 
 namespace ExpenseTracker.Application.Commands.UpdateExpense
 {
-    public record UpdateExpenseCommand(int Id, decimal Amount, ExpenseCategory Category, string Description) : IRequest<Unit>;
+    public record UpdateExpenseCommand(int Id, decimal Amount, ExpenseCategory Category, string Description, string? Merchant = null) : IRequest<Unit>;
 }

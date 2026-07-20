@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 
@@ -164,6 +165,32 @@ export class ExpenseService {
         onSuccess();
       },
       error: () => onError('Failed to delete expense. Please try again.'),
+    });
+  }
+
+  // API CALL: GET /api/expense/by-receipt/{receiptId} — fetch all expenses sharing a receipt group
+  loadByReceiptId(receiptId: number, onSuccess: (items: Expense[]) => void, onError: (msg: string) => void): void {
+    this.http.get<Expense[]>(`${this.apiUrl}/by-receipt/${receiptId}`).subscribe({
+      next: (items) => {
+        const ids = new Set(items.map(i => i.id));
+        this.expenses.update(list => [...list.filter(e => !ids.has(e.id)), ...items]);
+        onSuccess(items);
+      },
+      error: () => onError('Failed to load receipt group. Please try again.'),
+    });
+  }
+
+  // API CALL: DELETE /api/expense/{id} for every id — deletes all expenses in a receipt group
+  deleteExpenses(ids: number[], onSuccess: () => void, onError: (msg: string) => void): void {
+    if (ids.length === 0) { onSuccess(); return; }
+
+    forkJoin(ids.map(id => this.http.delete<void>(`${this.apiUrl}/${id}`))).subscribe({
+      next: () => {
+        const idSet = new Set(ids);
+        this.expenses.update(list => list.filter(e => !idSet.has(e.id)));
+        onSuccess();
+      },
+      error: () => onError('Failed to delete all expenses in this group. Some items may have been removed — please refresh.'),
     });
   }
 }

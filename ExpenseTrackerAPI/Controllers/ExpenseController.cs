@@ -5,6 +5,7 @@ using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
 using ExpenseTracker.Application.Commands.UpdateExpense;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
+using ExpenseTracker.Application.Queries.GetExpensesByReceiptId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,14 @@ namespace ExpenseTrackerAPI.Controllers
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var expenses = await _mediator.Send(new GetAllExpensesQuery(), cancellationToken);
+            return Ok(expenses);
+        }
+
+        // GET api/<ExpenseTracker>/by-receipt/5
+        [HttpGet("by-receipt/{receiptId}")]
+        public async Task<IActionResult> GetByReceipt(int receiptId, CancellationToken cancellationToken)
+        {
+            var expenses = await _mediator.Send(new GetExpensesByReceiptIdQuery { ReceiptId = receiptId }, cancellationToken);
             return Ok(expenses);
         }
 

@@ -46,6 +46,10 @@
     <table>
       <thead>
         <tr>
+          <th class="sortable col-merchant" (click)="toggleSort('merchant')">
+            Merchant
+            <span class="sort-arrow" [class.active]="sortColumn() === 'merchant'">{{ sortIcon('merchant') }}</span>
+          </th>
           <th class="sortable col-date" (click)="toggleSort('date')">
             Date
             <span class="sort-arrow" [class.active]="sortColumn() === 'date'">{{ sortIcon('date') }}</span>
@@ -66,26 +70,34 @@
         </tr>
       </thead>
       <tbody>
-        @for (expense of pagedExpenses(); track expense.id) {
-          <tr class="clickable-row" (click)="viewExpense(expense.id)">
-            <td class="col-date">{{ expense.date | date:'dd/MM/yy' }}</td>
-            <td class="col-description">{{ expense.description }}</td>
-            <td class="col-amount amount-cell">£{{ expense.amount | number:'1.2-2' }}</td>
+        @for (row of pagedRows(); track row.expense.id) {
+          <tr class="clickable-row"
+              [class.group-start]="row.isGroupStart"
+              [class.group-hover]="hoveredGroupKey() === row.groupKey"
+              (mouseenter)="hoveredGroupKey.set(row.groupKey)"
+              (mouseleave)="hoveredGroupKey.set(null)"
+              (click)="viewExpense(row.expense.id)">
+            @if (row.isGroupStart) {
+              <td class="col-merchant" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.merchant || '—' }}</td>
+              <td class="col-date" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.date | date:'dd/MM/yy' }}</td>
+            }
+            <td class="col-description">{{ row.expense.description }}</td>
+            <td class="col-amount amount-cell">£{{ row.expense.amount | number:'1.2-2' }}</td>
             <td class="col-category">
-              <span class="badge" [class]="getCategoryMeta(expense.category).badgeClass">
-                {{ expense.category }}
+              <span class="badge" [class]="getCategoryMeta(row.expense.category).badgeClass">
+                {{ row.expense.category }}
               </span>
             </td>
             <td class="actions-cell">
-              <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); editExpense(expense.id)">Edit</button>
-              <button class="btn btn-sm btn-danger" (click)="$event.stopPropagation(); deletingId.set(expense.id)">Delete</button>
+              <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); editExpense(row.expense.id)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="$event.stopPropagation(); deletingId.set(row.expense.id)">Delete</button>
             </td>
           </tr>
         }
 
         @empty {
           <tr>
-            <td colspan="5" class="empty-cell">
+            <td colspan="6" class="empty-cell">
               @if (selectedMonth() || selectedCategory()) {
                 No expenses match this filter.
               } @else {

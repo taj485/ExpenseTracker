@@ -6,6 +6,7 @@ namespace ExpenseTracker.Domain.Interfaces
     {
         Task<Expense?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<IEnumerable<Expense>> GetAllForUserAsync(int userId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Expense>> GetByReceiptIdAsync(int receiptId, int userId, CancellationToken cancellationToken = default);
         Task SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

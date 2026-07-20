@@ -170,6 +170,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       category: i.category,
       description: i.description.trim(),
       date: i.date,
+      merchant: i.merchant,
     }));
 
     this.expenseService.addExpensesBatch(

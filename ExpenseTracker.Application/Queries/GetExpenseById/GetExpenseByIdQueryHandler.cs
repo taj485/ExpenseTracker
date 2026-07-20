@@ -47,7 +47,9 @@ namespace ExpenseTracker.Application.Queries.GetExpenseById
                 Currency = expense.Amount.Currency,
                 Category = expense.Category.ToString(),
                 Description = expense.Description,
-                Date = expense.Date
+                Date = expense.Date,
+                Merchant = expense.Merchant,
+                ReceiptId = expense.ReceiptId
             };
         }
     }

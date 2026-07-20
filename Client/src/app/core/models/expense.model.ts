@@ -7,6 +7,8 @@ export interface Expense {
   description: string;
   category: ExpenseCategory;
   date: string;
+  merchant: string | null;
+  receiptId: number | null;
 }
 
 export interface AddExpenseCommand {
@@ -14,12 +16,14 @@ export interface AddExpenseCommand {
   category: ExpenseCategory;
   description: string;
   date: string;
+  merchant: string | null;
 }
 
 export interface UpdateExpenseCommand {
   amount: number;
   category: ExpenseCategory;
   description: string;
+  merchant: string | null;
 }
 
 export interface CategoryStat {
@@ -35,6 +39,7 @@ export interface ExtractedExpense {
   description: string;
   date: string;
   quantity: number;
+  merchant: string | null;
 }
 
 export interface BatchItemError {

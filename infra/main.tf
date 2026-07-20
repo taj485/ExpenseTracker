@@ -30,6 +30,7 @@ resource "azurerm_linux_web_app" "api" {
     "Auth0__Domain"                        = var.auth0_domain
     "Auth0__Audience"                      = var.auth0_audience
     "Cors__AllowedOrigin"                  = "https://${azurerm_static_web_app.spa.default_host_name}"
+    "Gemini__ApiKey"                       = var.gemini_api_key
   }
 }
 
@@ -39,4 +40,12 @@ resource "azurerm_static_web_app" "spa" {
   location            = azurerm_resource_group.main.location
   sku_tier            = "Free"
   sku_size            = "Free"
+
+  # Deployment is handled by .github/workflows/ci-cd.yml via a deployment
+  # token, not Azure's native repo-linked auto-deploy (which would also
+  # require a repository_token here). Ignore the pre-existing repo link
+  # so Terraform doesn't try to unlink it.
+  lifecycle {
+    ignore_changes = [repository_branch, repository_url]
+  }
 }

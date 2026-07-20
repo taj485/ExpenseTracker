@@ -14,6 +14,8 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
                 .NotEmpty().WithMessage("Description is required");
             RuleFor(x => x.Category)
                 .IsInEnum().WithMessage("Invalid expense category");
+            RuleFor(x => x.Merchant)
+                .MaximumLength(200).WithMessage("Merchant name is too long.");
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ExpenseTracker.Infrastructure.Persistence
 
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Receipt> Receipts { get; set; }
 
         public ExpenseTrackerDbContext(DbContextOptions options) : base(options)
         {

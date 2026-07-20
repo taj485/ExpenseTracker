@@ -23,7 +23,9 @@ namespace ExpenseTracker.Infrastructure.AI
         private const string PromptText =
             "You are analyzing a photo of a purchase receipt. Extract every purchased line item. " +
             "For each item, report its unit price (not the line total for that item), its category, " +
-            "a short description, the purchase date if visible on the receipt, and the quantity purchased.";
+            "a short description, the purchase date if visible on the receipt, and the quantity purchased. " +
+            "Also identify the shop or merchant name printed on the receipt (e.g. the store name at the top), " +
+            "and repeat that exact same merchant name on every single extracted item — all items come from the same receipt.";
 
         private readonly GeminiOptions _options;
 
@@ -102,8 +104,9 @@ namespace ExpenseTracker.Infrastructure.AI
                     : today;
 
                 var quantity = raw.Quantity < 1 ? 1 : raw.Quantity;
+                var merchant = string.IsNullOrWhiteSpace(raw.Merchant) ? null : ToTitleCase(raw.Merchant);
 
-                results.Add(new ExtractedReceiptItem(raw.Amount, category, ToTitleCase(raw.Description), date, quantity));
+                results.Add(new ExtractedReceiptItem(raw.Amount, category, ToTitleCase(raw.Description), date, quantity, merchant));
             }
 
             return results;
@@ -148,8 +151,9 @@ namespace ExpenseTracker.Infrastructure.AI
                         ["description"] = new Schema { Type = GenAIType.String },
                         ["date"] = new Schema { Type = GenAIType.String, Format = "date", Description = "Purchase date in YYYY-MM-DD format, if visible on the receipt." },
                         ["quantity"] = new Schema { Type = GenAIType.Integer },
+                        ["merchant"] = new Schema { Type = GenAIType.String, Description = "The shop or merchant name printed on the receipt. Use the exact same value for every item on this receipt." },
                     },
-                    Required = new List<string> { "amount", "category", "description", "date", "quantity" },
+                    Required = new List<string> { "amount", "category", "description", "date", "quantity", "merchant" },
                 },
             };
         }
@@ -161,6 +165,7 @@ namespace ExpenseTracker.Infrastructure.AI
             public string? Description { get; set; }
             public string? Date { get; set; }
             public int Quantity { get; set; }
+            public string? Merchant { get; set; }
         }
     }
 }

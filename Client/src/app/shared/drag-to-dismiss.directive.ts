@@ -1,6 +1,6 @@
 import { Directive, ElementRef, EventEmitter, HostListener, Output, inject } from '@angular/core';
 
-const DISMISS_THRESHOLD_RATIO = 0.7;
+const DISMISS_THRESHOLD_RATIO = 0.4;
 
 @Directive({
   selector: '[appDragToDismiss]',

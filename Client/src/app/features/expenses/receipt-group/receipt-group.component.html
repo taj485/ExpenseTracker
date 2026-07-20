@@ -1,0 +1,62 @@
+<div class="detail-page">
+  <button class="btn btn-secondary" (click)="goBack()">← Back to All Expenses</button>
+
+  @if (loading()) {
+    <p class="status-msg">Loading...</p>
+  } @else if (error()) {
+    <p class="status-msg error">{{ error() }}</p>
+  } @else {
+    @if (actionError()) {
+      <p class="status-msg error">{{ actionError() }}</p>
+    }
+
+    <div class="detail-card">
+      <div class="detail-header">
+        <div>
+          <div class="detail-description">{{ items()[0].merchant || 'Receipt' }}</div>
+          <div class="group-subtitle">{{ items()[0].date | date:'dd MMMM yyyy' }} · {{ items().length }} items</div>
+        </div>
+      </div>
+      <div class="detail-fields">
+        <div class="field">
+          <div class="field-label">Total</div>
+          <div class="field-value amount">£{{ totalAmount() | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-card">
+      <div class="group-header">Items ({{ items().length }})</div>
+      <div class="group-list">
+        @for (item of items(); track item.id) {
+          <div class="group-item">
+            <div class="group-item-main">
+              <span class="badge" [class]="getCategoryMeta(item.category).badgeClass">{{ item.category }}</span>
+              <span class="group-item-description">{{ item.description }}</span>
+            </div>
+            <div class="group-item-actions">
+              <span class="group-item-amount">£{{ item.amount | number:'1.2-2' }}</span>
+              <button type="button" class="group-item-link" (click)="viewItem(item.id)">View</button>
+              <button type="button" class="group-item-link" (click)="editItem(item.id)">Edit</button>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="group-toolbar">
+        <button class="btn btn-danger" (click)="confirmingGroupDelete.set(true)">
+          Delete Entire Group ({{ items().length }} items)
+        </button>
+      </div>
+    </div>
+
+    @if (confirmingGroupDelete()) {
+      <app-confirm-dialog
+        title="Delete Entire Group"
+        message="Are you sure you want to delete all {{ items().length }} expenses from this receipt? This cannot be undone."
+        confirmLabel="Delete All"
+        (confirmed)="confirmGroupDelete()"
+        (cancelled)="confirmingGroupDelete.set(false)"
+      />
+    }
+  }
+</div>

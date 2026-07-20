@@ -5,6 +5,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ExpenseListComponent } from './features/expenses/expense-list/expense-list.component';
 import { ExpenseDetailComponent } from './features/expenses/expense-detail/expense-detail.component';
 import { ExpenseEditComponent } from './features/expenses/expense-edit/expense-edit.component';
+import { ReceiptGroupComponent } from './features/expenses/receipt-group/receipt-group.component';
 import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -17,6 +18,7 @@ export const routes: Routes = [
       { path: 'dashboard',         component: DashboardComponent },
       { path: 'expenses',          component: ExpenseListComponent },
       { path: 'expenses/:id/edit', component: ExpenseEditComponent },
+      { path: 'expenses/receipt/:receiptId', component: ReceiptGroupComponent },
       { path: 'expenses/:id',      component: ExpenseDetailComponent },
     ],
   },

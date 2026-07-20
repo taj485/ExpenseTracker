@@ -95,6 +95,15 @@
           </div>
 
           <div class="form-group">
+            <label>Merchant</label>
+            <input
+              type="text"
+              [value]="item.merchant ?? ''"
+              (input)="updateItem(item.id, { merchant: $any($event.target).value.trim() || null })"
+            />
+          </div>
+
+          <div class="form-group">
             <label>Description</label>
             <input
               type="text"

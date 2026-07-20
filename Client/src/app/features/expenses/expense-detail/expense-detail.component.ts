@@ -31,11 +31,25 @@ export class ExpenseDetailComponent implements OnInit {
   getCategoryMeta = getCategoryMeta;
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.route.paramMap.subscribe(params => {
+      this.loadExpense(Number(params.get('id')));
+    });
+  }
+
+  private loadExpense(id: number): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.expense.set(null);
+    this.confirmingDelete.set(false);
+    this.actionError.set(null);
+
     this.expenseService.loadById(
       id,
-      (e) => { this.expense.set(e); this.loading.set(false); },
-      ()  => { this.error.set('Expense not found.'); this.loading.set(false); }
+      (e) => {
+        this.expense.set(e);
+        this.loading.set(false);
+      },
+      () => { this.error.set('Expense not found.'); this.loading.set(false); }
     );
   }
 
