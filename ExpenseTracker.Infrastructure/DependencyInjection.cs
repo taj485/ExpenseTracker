@@ -29,6 +29,10 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddScoped<IUserReader, UserRepository>();
 
+            services.AddScoped<IExpenseTableWriter, ExpenseTableRepository>();
+
+            services.AddScoped<IExpenseTableReader, ExpenseTableRepository>();
+
             services.AddScoped<IReceiptWriter, ReceiptRepository>();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();

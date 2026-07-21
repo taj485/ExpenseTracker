@@ -129,8 +129,10 @@ ExpenseTracker/
 ├── ExpenseTracker.Domain/
 │   ├── Entities/
 │   │   ├── Expense.cs
+│   │   ├── ExpenseTable.cs
 │   │   ├── Receipt.cs
-│   │   └── User.cs
+│   │   ├── User.cs
+│   │   └── UserExpenseTable.cs
 │   ├── ValueObjects/
 │   │   ├── Money.cs
 │   │   └── ExtractedReceiptItem.cs
@@ -139,6 +141,8 @@ ExpenseTracker/
 │   ├── Interfaces/
 │   │   ├── IExpenseReader.cs
 │   │   ├── IExpenseWriter.cs
+│   │   ├── IExpenseTableReader.cs
+│   │   ├── IExpenseTableWriter.cs
 │   │   ├── IExpenseRepository.cs
 │   │   ├── IUserReader.cs
 │   │   ├── IUserWriter.cs
@@ -150,13 +154,16 @@ ExpenseTracker/
 │   │   ├── MonthlySummaryCalculator.cs
 │   │   └── WeeklySummaryCalculator.cs
 │   ├── Exceptions/
-│   │   └── DomainException.cs
+│   │   ├── DomainException.cs
+│   │   ├── ForbiddenException.cs
+│   │   └── NotFoundException.cs
 │   └── AssemblyInfo.cs
 │
 ├── ExpenseTracker.Tests/
 │   ├── Domain/
 │   │   ├── MoneyTests.cs
 │   │   ├── ExpenseTests.cs
+│   │   ├── ExpenseTableTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
 │   │   ├── Commands/
@@ -164,21 +171,28 @@ ExpenseTracker/
 │   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseCommandHandlerTests.cs
-│   │   │   └── ExtractReceiptExpensesCommandHandlerTests.cs
+│   │   │   ├── ExtractReceiptExpensesCommandHandlerTests.cs
+│   │   │   ├── CreateExpenseTableCommandHandlerTests.cs
+│   │   │   ├── InviteUserToTableCommandHandlerTests.cs
+│   │   │   ├── RemoveUserFromTableCommandHandlerTests.cs
+│   │   │   └── DeleteExpenseTableCommandHandlerTests.cs
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
-│   │   │   └── GetExpenseQueryHandlerTests.cs
+│   │   │   ├── GetExpenseQueryHandlerTests.cs
+│   │   │   └── GetExpenseTablesForUserQueryHandlerTests.cs
 │   │   └── Services/
 │   │       └── CurrentUserProviderTests.cs
 │   ├── Infrastructure/
 │   │   ├── ExpenseRepositoryTests.cs
+│   │   ├── ExpenseTableRepositoryTests.cs
 │   │   └── UserRepositoryTests.cs
 │   └── Api/
 │       └── ExpenseControllerAuthTests.cs
 │
 ├── ExpenseTrackerAPI/
 │   ├── Controllers/
-│   │   └── ExpenseController.cs
+│   │   ├── ExpenseController.cs
+│   │   └── ExpenseTableController.cs
 │   ├── Middleware/
 │   │   └── ExceptionHandlingMiddleware.cs
 │   ├── Program.cs
@@ -203,9 +217,25 @@ ExpenseTracker/
 │   │   │   ├── DeleteExpenseCommand.cs
 │   │   │   ├── DeleteExpenseCommandHandler.cs
 │   │   │   └── DeleteExpenseValidator.cs
-│   │   └── ExtractReceiptExpenses/
-│   │       ├── ExtractReceiptExpensesCommand.cs
-│   │       └── ExtractReceiptExpensesCommandHandler.cs
+│   │   ├── ExtractReceiptExpenses/
+│   │   │   ├── ExtractReceiptExpensesCommand.cs
+│   │   │   └── ExtractReceiptExpensesCommandHandler.cs
+│   │   ├── CreateExpenseTable/
+│   │   │   ├── CreateExpenseTableCommand.cs
+│   │   │   ├── CreateExpenseTableCommandHandler.cs
+│   │   │   └── CreateExpenseTableValidator.cs
+│   │   ├── InviteUserToTable/
+│   │   │   ├── InviteUserToTableCommand.cs
+│   │   │   ├── InviteUserToTableCommandHandler.cs
+│   │   │   └── InviteUserToTableValidator.cs
+│   │   ├── RemoveUserFromTable/
+│   │   │   ├── RemoveUserFromTableCommand.cs
+│   │   │   ├── RemoveUserFromTableCommandHandler.cs
+│   │   │   └── RemoveUserFromTableValidator.cs
+│   │   └── DeleteExpenseTable/
+│   │       ├── DeleteExpenseTableCommand.cs
+│   │       ├── DeleteExpenseTableCommandHandler.cs
+│   │       └── DeleteExpenseTableValidator.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs
@@ -216,11 +246,15 @@ ExpenseTracker/
 │   │   ├── GetExpensesByReceiptId/
 │   │   │   ├── GetExpensesByReceiptIdQuery.cs
 │   │   │   └── GetExpensesByReceiptIdQueryHandler.cs
-│   │   └── GetMonthlySummary/
-│   │       ├── GetMonthlySummaryQuery.cs
-│   │       └── GetMonthlySummaryQueryHandler.cs
-│   ├── DTOs/
+│   │   ├── GetMonthlySummary/
+│   │   │   ├── GetMonthlySummaryQuery.cs
+│   │   │   └── GetMonthlySummaryQueryHandler.cs
+│   │   └── GetExpenseTablesForUser/
+│   │       ├── GetExpenseTablesForUserQuery.cs
+│   │       └── GetExpenseTablesForUserQueryHandler.cs
+│   ├── DTO/
 │   │   ├── ExpenseDto.cs
+│   │   ├── ExpenseTableDto.cs
 │   │   ├── MonthlySummaryDto.cs
 │   │   └── ExtractedExpenseDto.cs
 │   ├── Mappings/
@@ -234,10 +268,13 @@ ExpenseTracker/
     │   ├── ExpenseTrackerDbContext.cs
     │   ├── Configurations/
     │   │   ├── ExpenseConfiguration.cs
+    │   │   ├── ExpenseTableConfiguration.cs
     │   │   ├── ReceiptConfigurations.cs
-    │   │   └── UserConfiguration.cs
+    │   │   ├── UserConfiguration.cs
+    │   │   └── UserExpenseTableConfiguration.cs
     │   └── Repositories/
     │       ├── ExpenseRepository.cs
+    │       ├── ExpenseTableRepository.cs
     │       ├── ReceiptRepository.cs
     │       └── UserRepository.cs
     ├── Migrations/

@@ -44,6 +44,9 @@ namespace ExpenseTracker.Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
+                    b.Property<int>("ExpenseTableId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -71,9 +74,46 @@ namespace ExpenseTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExpenseTableId");
+
                     b.HasIndex("ReceiptId");
 
                     b.ToTable("Expenses", (string)null);
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.ExpenseTable", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.ToTable("ExpenseTables", (string)null);
                 });
 
             modelBuilder.Entity("ExpenseTracker.Domain.Entities.Receipt", b =>
@@ -121,44 +161,73 @@ namespace ExpenseTracker.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("ExpenseUser", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.UserExpenseTable", b =>
                 {
-                    b.Property<int>("ExpensesId")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UsersId")
+                    b.Property<int>("ExpenseTableId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ExpensesId", "UsersId");
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
 
-                    b.HasIndex("UsersId");
+                    b.HasKey("UserId", "ExpenseTableId");
 
-                    b.ToTable("ExpenseUsers", (string)null);
+                    b.HasIndex("ExpenseTableId");
+
+                    b.ToTable("UserExpenseTables", (string)null);
                 });
 
             modelBuilder.Entity("ExpenseTracker.Domain.Entities.Expense", b =>
                 {
+                    b.HasOne("ExpenseTracker.Domain.Entities.ExpenseTable", "ExpenseTable")
+                        .WithMany()
+                        .HasForeignKey("ExpenseTableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ExpenseTracker.Domain.Entities.Receipt", "Receipt")
                         .WithMany("Expenses")
                         .HasForeignKey("ReceiptId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("ExpenseTable");
+
                     b.Navigation("Receipt");
                 });
 
-            modelBuilder.Entity("ExpenseUser", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.ExpenseTable", b =>
                 {
-                    b.HasOne("ExpenseTracker.Domain.Entities.Expense", null)
+                    b.HasOne("ExpenseTracker.Domain.Entities.User", null)
                         .WithMany()
-                        .HasForeignKey("ExpensesId")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.UserExpenseTable", b =>
+                {
+                    b.HasOne("ExpenseTracker.Domain.Entities.ExpenseTable", "ExpenseTable")
+                        .WithMany("Members")
+                        .HasForeignKey("ExpenseTableId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Domain.Entities.User", null)
+                    b.HasOne("ExpenseTracker.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UsersId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ExpenseTable");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.ExpenseTable", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("ExpenseTracker.Domain.Entities.Receipt", b =>

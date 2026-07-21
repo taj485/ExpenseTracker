@@ -21,9 +21,6 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
 
             builder.Property(u => u.Email)
                 .HasMaxLength(320);
-
-            builder.Navigation(u => u.Expenses)
-                .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

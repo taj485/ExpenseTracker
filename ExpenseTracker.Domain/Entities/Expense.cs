@@ -2,9 +2,6 @@
 using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Domain.ValueObjects;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ExpenseTracker.Domain.Entities
 {
@@ -19,19 +16,18 @@ namespace ExpenseTracker.Domain.Entities
         public string? Merchant { get; private set; }
         public int? ReceiptId { get; private set; }
         public Receipt? Receipt { get; private set; }
-
-        private readonly List<User> _users = new();
-        public IReadOnlyCollection<User> Users => _users.AsReadOnly();
+        public int ExpenseTableId { get; private set; }
+        public ExpenseTable? ExpenseTable { get; private set; }
 
         private Expense() { }
 
-        public static Expense Create(decimal amount, ExpenseCategory category, string description, DateTime date, User owner,
+        public static Expense Create(decimal amount, ExpenseCategory category, string description, DateTime date, int expenseTableId,
             string? merchant = null, int? receiptId = null)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
 
-            var expense = new Expense
+            return new Expense
             {
                 Amount = Money.Create(amount),
                 Category = category,
@@ -39,19 +35,9 @@ namespace ExpenseTracker.Domain.Entities
                 Date = date,
                 IsDeleted = false,
                 Merchant = merchant,
-                ReceiptId = receiptId
+                ReceiptId = receiptId,
+                ExpenseTableId = expenseTableId
             };
-
-            expense._users.Add(owner);
-            return expense;
-        }
-
-        public void AddUser(User user)
-        {
-            if (_users.Any(u => u.Id == user.Id))
-                throw new DomainException("User already has access to this expense");
-
-            _users.Add(user);
         }
 
         public void UpdateAmount(decimal newAmount)

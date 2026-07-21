@@ -17,7 +17,7 @@ namespace ExpenseTracker.Tests.Api
         [Fact]
         public async Task GetAll_WithoutToken_Returns401()
         {
-            var response = await _client.GetAsync("/api/expense");
+            var response = await _client.GetAsync("/api/expensetable/1/expenses");
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
@@ -25,8 +25,9 @@ namespace ExpenseTracker.Tests.Api
         [Fact]
         public async Task AddExpense_WithoutToken_Returns401()
         {
-            var response = await _client.PostAsJsonAsync("/api/expense", new
+            var response = await _client.PostAsJsonAsync("/api/expensetable/1/expenses", new
             {
+                expenseTableId = 1,
                 amount = 10m,
                 category = "Food",
                 description = "Test"
@@ -38,9 +39,9 @@ namespace ExpenseTracker.Tests.Api
         [Fact]
         public async Task AddExpensesBatch_WithoutToken_Returns401()
         {
-            var response = await _client.PostAsJsonAsync("/api/expense/batch", new[]
+            var response = await _client.PostAsJsonAsync("/api/expensetable/1/expenses/batch", new[]
             {
-                new { amount = 10m, category = "Food", description = "Test" }
+                new { expenseTableId = 1, amount = 10m, category = "Food", description = "Test" }
             });
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -54,7 +55,7 @@ namespace ExpenseTracker.Tests.Api
             fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
             content.Add(fileContent, "file", "receipt.jpg");
 
-            var response = await _client.PostAsync("/api/expense/extract-receipt", content);
+            var response = await _client.PostAsync("/api/expensetable/1/expenses/extract-receipt", content);
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }

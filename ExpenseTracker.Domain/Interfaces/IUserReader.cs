@@ -5,6 +5,7 @@ namespace ExpenseTracker.Domain.Interfaces
     public interface IUserReader
     {
         Task<User?> GetByUserIdpAsync(string subject, CancellationToken ct = default);
+        Task<IReadOnlyList<User>> GetAllByEmailAsync(string email, CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct);
     }
 }

@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.Application.Commands.AddExpense;
+using ExpenseTracker.Application.Commands.AddExpense;
 using ExpenseTracker.Application.Commands.AddExpensesBatch;
 using ExpenseTracker.Application.Commands.DeleteExpense;
 using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTrackerAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/expensetable/{tableId}/expenses")]
     [ApiController]
     [Authorize]
     public class ExpenseController : ControllerBase
@@ -24,53 +24,56 @@ namespace ExpenseTrackerAPI.Controllers
             _mediator = mediator;
         }
 
-        // GET api/<ExpenseTracker>/5
+        // GET api/expensetable/{tableId}/expenses/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get(int tableId, int id, CancellationToken cancellationToken)
         {
            var expense = await _mediator.Send(new GetExpenseByIdQuery { Id = id }, cancellationToken);
            return Ok(expense);
         }
 
-        // GET api/<ExpenseTracker>/
+        // GET api/expensetable/{tableId}/expenses
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(int tableId, CancellationToken cancellationToken)
         {
-            var expenses = await _mediator.Send(new GetAllExpensesQuery(), cancellationToken);
+            var expenses = await _mediator.Send(new GetAllExpensesQuery { ExpenseTableId = tableId }, cancellationToken);
             return Ok(expenses);
         }
 
-        // GET api/<ExpenseTracker>/by-receipt/5
+        // GET api/expensetable/{tableId}/expenses/by-receipt/5
         [HttpGet("by-receipt/{receiptId}")]
-        public async Task<IActionResult> GetByReceipt(int receiptId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetByReceipt(int tableId, int receiptId, CancellationToken cancellationToken)
         {
-            var expenses = await _mediator.Send(new GetExpensesByReceiptIdQuery { ReceiptId = receiptId }, cancellationToken);
+            var expenses = await _mediator.Send(new GetExpensesByReceiptIdQuery { ReceiptId = receiptId, ExpenseTableId = tableId }, cancellationToken);
             return Ok(expenses);
         }
 
-        // POST api/<ExpenseTracker>
+        // POST api/expensetable/{tableId}/expenses
         [HttpPost]
-        public async Task<IActionResult> AddExpense([FromBody] AddExpenseCommand command, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddExpense(int tableId, [FromBody] AddExpenseCommand command, CancellationToken cancellationToken)
         {
+            if (tableId != command.ExpenseTableId)
+                return BadRequest("Route tableId and body ExpenseTableId must match.");
+
             int id = await _mediator.Send(command, cancellationToken);
-            return CreatedAtAction(nameof(Get), new { id }, new { id });
+            return CreatedAtAction(nameof(Get), new { tableId, id }, new { id });
         }
 
-        // POST api/<ExpenseTracker>/batch
+        // POST api/expensetable/{tableId}/expenses/batch
         [HttpPost("batch")]
-        public async Task<IActionResult> AddExpensesBatch([FromBody] List<AddExpenseCommand> items, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddExpensesBatch(int tableId, [FromBody] List<AddExpenseCommand> items, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new AddExpensesBatchCommand(items), cancellationToken);
+            var result = await _mediator.Send(new AddExpensesBatchCommand(tableId, items), cancellationToken);
             return Ok(result);
         }
 
         private static readonly string[] AllowedReceiptContentTypes = { "image/jpeg", "image/png", "image/webp" };
         private const long MaxReceiptFileSizeBytes = 10 * 1024 * 1024; // 10 MB
 
-        // POST api/<ExpenseTracker>/extract-receipt
+        // POST api/expensetable/{tableId}/expenses/extract-receipt
         [HttpPost("extract-receipt")]
         [RequestSizeLimit(MaxReceiptFileSizeBytes)]
-        public async Task<IActionResult> ExtractReceipt(IFormFile file, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExtractReceipt(int tableId, IFormFile file, CancellationToken cancellationToken)
         {
             if (file is null || file.Length == 0)
                 return BadRequest("A receipt image file is required.");
@@ -88,9 +91,9 @@ namespace ExpenseTrackerAPI.Controllers
             return Ok(result);
         }
 
-        // PUT api/<ExpenseTracker>/5
+        // PUT api/expensetable/{tableId}/expenses/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateExpense(int id, [FromBody] UpdateExpenseCommand command, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateExpense(int tableId, int id, [FromBody] UpdateExpenseCommand command, CancellationToken cancellationToken)
         {
             if (id != command.Id)
                 return BadRequest("Route id and body id must match.");
@@ -99,9 +102,9 @@ namespace ExpenseTrackerAPI.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ExpenseTracker>/5
+        // DELETE api/expensetable/{tableId}/expenses/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteExpense(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteExpense(int tableId, int id, CancellationToken cancellationToken)
         {
             await _mediator.Send(new DeleteExpenseCommand(id), cancellationToken);
             return NoContent();

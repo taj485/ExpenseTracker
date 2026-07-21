@@ -34,19 +34,24 @@ namespace ExpenseTracker.Tests.Infrastructure
             return new ExpenseTrackerDbContext(options);
         }
 
-        private async Task<User> SeedUserAsync(string subject)
+        private async Task<ExpenseTable> SeedExpenseTableAsync(string subject)
         {
             var user = User.Create(subject);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return user;
+
+            var table = ExpenseTable.Create("Test Table", user.Id);
+            _context.ExpenseTables.Add(table);
+            await _context.SaveChangesAsync();
+
+            return table;
         }
 
         [Fact]
         public async Task AddAsync_PersistsExpense_AndReturnsGeneratedId()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var expense = Expense.Create(50.00m, ExpenseCategory.Food, "Groceries", DateTime.UtcNow, user);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var expense = Expense.Create(50.00m, ExpenseCategory.Food, "Groceries", DateTime.UtcNow, table.Id);
 
             var id = await _repository.AddAsync(expense, CancellationToken.None);
 
@@ -62,8 +67,8 @@ namespace ExpenseTracker.Tests.Infrastructure
         [Fact]
         public async Task GetByIdAsync_ReturnsExpense_WhenItExists()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Bus fare", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var id = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Bus fare", DateTime.UtcNow, table.Id), CancellationToken.None);
 
             var result = await _repository.GetByIdAsync(id, CancellationToken.None);
 
@@ -80,25 +85,24 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
-        public async Task GetByIdAsync_IncludesAssociatedUsers()
+        public async Task GetByIdAsync_ReturnsExpenseWithCorrectExpenseTableId()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, table.Id), CancellationToken.None);
 
             using var verifyContext = CreateContext();
             var verifyRepository = new ExpenseRepository(verifyContext);
             var result = await verifyRepository.GetByIdAsync(id, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Single(result!.Users);
-            Assert.Equal(user.Id, result.Users.Single().Id);
+            Assert.Equal(table.Id, result!.ExpenseTableId);
         }
 
         [Fact]
         public async Task GetByIdAsync_ReturnsNull_WhenExpenseIsSoftDeleted()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var id = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Snacks", DateTime.UtcNow, table.Id), CancellationToken.None);
             await _repository.DeleteAsync(id);
 
             var result = await _repository.GetByIdAsync(id, CancellationToken.None);
@@ -107,44 +111,44 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
-        public async Task GetAllForUserAsync_ReturnsOnlyThatUsersNonDeletedExpenses()
+        public async Task GetAllForTableAsync_ReturnsOnlyThatTablesNonDeletedExpenses()
         {
-            var user1 = await SeedUserAsync("auth0|user-1");
-            var user2 = await SeedUserAsync("auth0|user-2");
+            var table1 = await SeedExpenseTableAsync("auth0|user-1");
+            var table2 = await SeedExpenseTableAsync("auth0|user-2");
 
-            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user1), CancellationToken.None);
-            await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, user1), CancellationToken.None);
-            await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, user2), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, table1.Id), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, table1.Id), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, table2.Id), CancellationToken.None);
 
-            var results = await _repository.GetAllForUserAsync(user1.Id, CancellationToken.None);
+            var results = await _repository.GetAllForTableAsync(table1.Id, CancellationToken.None);
 
             Assert.Equal(2, results.Count());
         }
 
         [Fact]
-        public async Task GetAllForUserAsync_ExcludesSoftDeletedExpenses()
+        public async Task GetAllForTableAsync_ExcludesSoftDeletedExpenses()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var keepId = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user), CancellationToken.None);
-            var deleteId = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var keepId = await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, table.Id), CancellationToken.None);
+            var deleteId = await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, table.Id), CancellationToken.None);
 
             await _repository.DeleteAsync(deleteId);
 
-            var results = await _repository.GetAllForUserAsync(user.Id, CancellationToken.None);
+            var results = await _repository.GetAllForTableAsync(table.Id, CancellationToken.None);
 
             Assert.Single(results);
             Assert.Equal(keepId, results.Single().Id);
         }
 
         [Fact]
-        public async Task GetAllForUserAsync_DoesNotReturnOtherUsersExpenses()
+        public async Task GetAllForTableAsync_DoesNotReturnOtherTablesExpenses()
         {
-            var user1 = await SeedUserAsync("auth0|user-1");
-            var user2 = await SeedUserAsync("auth0|user-2");
+            var table1 = await SeedExpenseTableAsync("auth0|user-1");
+            var table2 = await SeedExpenseTableAsync("auth0|user-2");
 
-            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, user2), CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, table2.Id), CancellationToken.None);
 
-            var results = await _repository.GetAllForUserAsync(user1.Id, CancellationToken.None);
+            var results = await _repository.GetAllForTableAsync(table1.Id, CancellationToken.None);
 
             Assert.Empty(results);
         }
@@ -152,8 +156,8 @@ namespace ExpenseTracker.Tests.Infrastructure
         [Fact]
         public async Task DeleteAsync_SoftDeletesExpense()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(15m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var id = await _repository.AddAsync(Expense.Create(15m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, table.Id), CancellationToken.None);
 
             await _repository.DeleteAsync(id);
 
@@ -175,8 +179,8 @@ namespace ExpenseTracker.Tests.Infrastructure
         [Fact]
         public async Task UpdateAsync_PersistsChanges()
         {
-            var user = await SeedUserAsync("auth0|user-1");
-            var id = await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, user), CancellationToken.None);
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var id = await _repository.AddAsync(Expense.Create(30m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, table.Id), CancellationToken.None);
             var expense = await _repository.GetByIdAsync(id, CancellationToken.None);
 
             expense!.UpdateDescription("Dinner with friends");

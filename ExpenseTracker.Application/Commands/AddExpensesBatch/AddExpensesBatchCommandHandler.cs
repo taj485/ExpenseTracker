@@ -14,13 +14,15 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
     {
         private readonly IExpenseWriter _expenseWriter;
         private readonly IReceiptWriter _receiptWriter;
+        private readonly IExpenseTableReader _expenseTableReader;
         private readonly IValidator<AddExpenseCommand> _validator;
         private readonly ICurrentUserProvider _currentUserProvider;
 
-        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
+        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
         {
             _expenseWriter = expenseWriter;
             _receiptWriter = receiptWriter;
+            _expenseTableReader = expenseTableReader;
             _validator = validator;
             _currentUserProvider = currentUserProvider;
         }
@@ -28,13 +30,17 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
         public async Task<AddExpensesBatchResult> Handle(AddExpensesBatchCommand request, CancellationToken cancellationToken)
         {
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
+
+            if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
+                throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
+
             var addedIds = new List<int>();
             var errors = new List<BatchItemError>();
             int? receiptId = null;
 
             for (int i = 0; i < request.Items.Count; i++)
             {
-                var item = request.Items[i];
+                var item = request.Items[i] with { ExpenseTableId = request.ExpenseTableId };
                 var validationResult = await _validator.ValidateAsync(item, cancellationToken);
 
                 if (!validationResult.IsValid)
@@ -49,7 +55,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
-                var expense = Expense.Create(item.Amount, item.Category, item.Description, item.Date, currentUser, item.Merchant, receiptId);
+                var expense = Expense.Create(item.Amount, item.Category, item.Description, item.Date, item.ExpenseTableId, item.Merchant, receiptId);
                 var id = await _expenseWriter.AddAsync(expense, cancellationToken);
                 addedIds.Add(id);
             }

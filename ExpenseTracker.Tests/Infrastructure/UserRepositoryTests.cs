@@ -92,6 +92,26 @@ namespace ExpenseTracker.Tests.Infrastructure
             Assert.Equal("new@example.com", updated!.Email);
         }
 
+        [Fact]
+        public async Task GetAllByEmailAsync_ReturnsMatchingUsers()
+        {
+            await _repository.AddAsync(User.Create("auth0|user-1", "person@example.com"), CancellationToken.None);
+            await _repository.AddAsync(User.Create("auth0|user-2", "other@example.com"), CancellationToken.None);
+
+            var results = await _repository.GetAllByEmailAsync("person@example.com", CancellationToken.None);
+
+            Assert.Single(results);
+            Assert.Equal("auth0|user-1", results.Single().Subject);
+        }
+
+        [Fact]
+        public async Task GetAllByEmailAsync_ReturnsEmpty_WhenNoMatch()
+        {
+            var results = await _repository.GetAllByEmailAsync("nobody@example.com", CancellationToken.None);
+
+            Assert.Empty(results);
+        }
+
         public void Dispose()
         {
             _context.Dispose();

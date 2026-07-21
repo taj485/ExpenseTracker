@@ -1,25 +1,22 @@
-﻿using ExpenseTracker.Application.DTO;
-using ExpenseTracker.Application.Queries.GetAllExpenses;
+using ExpenseTracker.Application.DTO;
 using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Interfaces;
 using FluentValidation;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ExpenseTracker.Application.Queries.GetExpenseById
 {
     public class GetExpenseByIdQueryHandler : IRequestHandler<GetExpenseByIdQuery, ExpenseDto>
     {
         private readonly IExpenseReader _expenseReader;
+        private readonly IExpenseTableReader _expenseTableReader;
         private readonly ICurrentUserProvider _currentUserProvider;
         private readonly GetExpenseByIdValidator _validator;
 
-        public GetExpenseByIdQueryHandler(IExpenseReader expenseReader, ICurrentUserProvider currentUserProvider)
+        public GetExpenseByIdQueryHandler(IExpenseReader expenseReader, IExpenseTableReader expenseTableReader, ICurrentUserProvider currentUserProvider)
         {
             _expenseReader = expenseReader;
+            _expenseTableReader = expenseTableReader;
             _currentUserProvider = currentUserProvider;
             _validator = new GetExpenseByIdValidator();
         }
@@ -37,7 +34,7 @@ namespace ExpenseTracker.Application.Queries.GetExpenseById
                 throw new NotFoundException($"Expense with id {request.Id} was not found");
 
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
-            if (!expense.Users.Any(u => u.Id == currentUser.Id))
+            if (!await _expenseTableReader.IsMemberAsync(expense.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense with id {request.Id} was not found");
 
             return new ExpenseDto
@@ -49,7 +46,8 @@ namespace ExpenseTracker.Application.Queries.GetExpenseById
                 Description = expense.Description,
                 Date = expense.Date,
                 Merchant = expense.Merchant,
-                ReceiptId = expense.ReceiptId
+                ReceiptId = expense.ReceiptId,
+                ExpenseTableId = expense.ExpenseTableId
             };
         }
     }
