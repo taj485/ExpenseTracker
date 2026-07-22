@@ -1,0 +1,24 @@
+<div class="select-tables">
+  <h3 class="select-tables-title">Add to which table(s)?</h3>
+  <p class="select-tables-subtitle">Choose one or more — the same entries will be added to each.</p>
+
+  <div class="table-checkbox-list">
+    @for (table of tables(); track table.id) {
+      <label class="table-checkbox-row">
+        <input
+          type="checkbox"
+          [checked]="selectedIds().has(table.id)"
+          (change)="toggle(table.id)"
+        />
+        {{ table.name }}
+      </label>
+    }
+  </div>
+
+  <div class="select-tables-actions">
+    <button type="button" class="btn-cancel" [disabled]="submitting" (click)="cancelled.emit()">Back</button>
+    <button type="button" class="btn-submit" [disabled]="selectedIds().size === 0 || submitting" (click)="confirm()">
+      {{ submitting ? 'Adding...' : 'Confirm' }}
+    </button>
+  </div>
+</div>

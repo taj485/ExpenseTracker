@@ -8,18 +8,24 @@ namespace ExpenseTracker.Application.Queries.GetExpensesByReceiptId
     public class GetExpensesByReceiptIdQueryHandler : IRequestHandler<GetExpensesByReceiptIdQuery, IReadOnlyList<ExpenseDto>>
     {
         private readonly IExpenseReader _expenseReader;
+        private readonly IExpenseTableReader _expenseTableReader;
         private readonly ICurrentUserProvider _currentUserProvider;
 
-        public GetExpensesByReceiptIdQueryHandler(IExpenseReader expenseReader, ICurrentUserProvider currentUserProvider)
+        public GetExpensesByReceiptIdQueryHandler(IExpenseReader expenseReader, IExpenseTableReader expenseTableReader, ICurrentUserProvider currentUserProvider)
         {
             _expenseReader = expenseReader;
+            _expenseTableReader = expenseTableReader;
             _currentUserProvider = currentUserProvider;
         }
 
         public async Task<IReadOnlyList<ExpenseDto>> Handle(GetExpensesByReceiptIdQuery request, CancellationToken cancellationToken)
         {
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
-            var expenses = await _expenseReader.GetByReceiptIdAsync(request.ReceiptId, currentUser.Id, cancellationToken);
+
+            if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
+                throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
+
+            var expenses = await _expenseReader.GetByReceiptIdAsync(request.ReceiptId, request.ExpenseTableId, cancellationToken);
 
             return expenses
                 .Select(expense => new ExpenseDto
@@ -31,7 +37,8 @@ namespace ExpenseTracker.Application.Queries.GetExpensesByReceiptId
                 Description = expense.Description,
                 Date = expense.Date,
                 Merchant = expense.Merchant,
-                ReceiptId = expense.ReceiptId
+                ReceiptId = expense.ReceiptId,
+                ExpenseTableId = expense.ExpenseTableId
             }).ToList();
         }
     }

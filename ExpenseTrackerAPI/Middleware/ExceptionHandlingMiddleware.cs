@@ -43,6 +43,17 @@ namespace ExpenseTrackerAPI.Middleware
                     error = ex.Message
                 });
             }
+            catch (ForbiddenException ex)
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    status = 403,
+                    title = "Forbidden",
+                    error = ex.Message
+                });
+            }
             catch (NotFoundException ex)
             {
                 context.Response.StatusCode = 404;

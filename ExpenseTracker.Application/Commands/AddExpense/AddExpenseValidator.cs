@@ -9,6 +9,8 @@ namespace ExpenseTracker.Application.Commands.AddExpense
     {
         public AddExpenseValidator()
         {
+            RuleFor(x => x.ExpenseTableId)
+                .GreaterThan(0).WithMessage("ExpenseTableId is required.");
             RuleFor(x => x.Amount)
                 .GreaterThan(0).WithMessage("Amount must be greater than zero.");
             RuleFor(x => x.Description)

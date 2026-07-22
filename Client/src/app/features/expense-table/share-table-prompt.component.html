@@ -1,0 +1,36 @@
+<div class="overlay" (click)="cancelled.emit()">
+  <div class="card" (click)="$event.stopPropagation()">
+    <h3 class="title">Share this table</h3>
+    <p class="subtitle">Invite an existing ExpenseTracker user by email.</p>
+
+    <form (ngSubmit)="onSubmit()" #f="ngForm">
+      <div class="form-group">
+        <label for="invitee-email">Email</label>
+        <input
+          id="invitee-email"
+          type="email"
+          placeholder="person@example.com"
+          [value]="email()"
+          (input)="email.set($any($event.target).value)"
+          required
+        />
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" [checked]="makeAdmin()" (change)="makeAdmin.set($any($event.target).checked)" />
+        Make this person an admin
+      </label>
+
+      @if (formError()) {
+        <p class="form-error">{{ formError() }}</p>
+      }
+
+      <div class="actions">
+        <button type="button" class="btn-cancel" [disabled]="submitting()" (click)="cancelled.emit()">Cancel</button>
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          {{ submitting() ? 'Inviting...' : 'Invite' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

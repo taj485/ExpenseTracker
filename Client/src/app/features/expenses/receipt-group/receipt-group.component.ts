@@ -21,6 +21,8 @@ export class ReceiptGroupComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly expenseService = inject(ExpenseService);
 
+  private tableId!: number;
+
   readonly items = signal<Expense[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -33,6 +35,7 @@ export class ReceiptGroupComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
+      this.tableId = Number(params.get('tableId'));
       this.loadGroup(Number(params.get('receiptId')));
     });
   }
@@ -45,6 +48,7 @@ export class ReceiptGroupComponent implements OnInit {
     this.actionError.set(null);
 
     this.expenseService.loadByReceiptId(
+      this.tableId,
       receiptId,
       (items) => {
         if (items.length === 0) {
@@ -59,15 +63,15 @@ export class ReceiptGroupComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/expenses']);
+    this.router.navigate(['/expenses/table', this.tableId]);
   }
 
   viewItem(id: number): void {
-    this.router.navigate(['/expenses', id]);
+    this.router.navigate(['/expenses/table', this.tableId, id]);
   }
 
   editItem(id: number): void {
-    this.router.navigate(['/expenses', id, 'edit']);
+    this.router.navigate(['/expenses/table', this.tableId, id, 'edit']);
   }
 
   confirmGroupDelete(): void {
@@ -76,8 +80,9 @@ export class ReceiptGroupComponent implements OnInit {
 
     this.actionError.set(null);
     this.expenseService.deleteExpenses(
+      this.tableId,
       ids,
-      () => this.router.navigate(['/expenses']),
+      () => this.router.navigate(['/expenses/table', this.tableId]),
       (msg) => {
         this.confirmingGroupDelete.set(false);
         this.actionError.set(msg);

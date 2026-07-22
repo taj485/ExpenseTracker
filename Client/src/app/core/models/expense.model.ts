@@ -12,6 +12,7 @@ export interface Expense {
 }
 
 export interface AddExpenseCommand {
+  expenseTableId: number;
   amount: number;
   category: ExpenseCategory;
   description: string;

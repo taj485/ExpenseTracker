@@ -1,5 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ExpenseTableService } from '../../core/services/expense-table.service';
+import { CreateExpenseTableDialogService } from '../../core/services/create-expense-table-dialog.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,4 +13,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export class SidebarComponent {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
+
+  readonly expenseTableService = inject(ExpenseTableService);
+  readonly createTableDialogService = inject(CreateExpenseTableDialogService);
 }

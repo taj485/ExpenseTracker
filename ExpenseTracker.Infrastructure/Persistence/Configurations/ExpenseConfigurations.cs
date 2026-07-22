@@ -56,13 +56,11 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                    .IsRequired(false)
                    .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasMany(e => e.Users)
-                   .WithMany(u => u.Expenses)
-                   .UsingEntity(j => j.ToTable("ExpenseUsers"));
-
-            builder.Navigation(e => e.Users)
-                   .UsePropertyAccessMode(PropertyAccessMode.Field);
-
+            builder.HasOne(e => e.ExpenseTable)
+                   .WithMany()
+                   .HasForeignKey(e => e.ExpenseTableId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

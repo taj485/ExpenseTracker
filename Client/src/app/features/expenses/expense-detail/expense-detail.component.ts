@@ -28,10 +28,13 @@ export class ExpenseDetailComponent implements OnInit {
   readonly confirmingDelete = signal(false);
   readonly actionError = signal<string | null>(null);
 
+  private tableId!: number;
+
   getCategoryMeta = getCategoryMeta;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
+      this.tableId = Number(params.get('tableId'));
       this.loadExpense(Number(params.get('id')));
     });
   }
@@ -44,6 +47,7 @@ export class ExpenseDetailComponent implements OnInit {
     this.actionError.set(null);
 
     this.expenseService.loadById(
+      this.tableId,
       id,
       (e) => {
         this.expense.set(e);
@@ -54,12 +58,12 @@ export class ExpenseDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/expenses']);
+    this.router.navigate(['/expenses/table', this.tableId]);
   }
 
   editExpense(): void {
     const e = this.expense();
-    if (e) this.router.navigate(['/expenses', e.id, 'edit']);
+    if (e) this.router.navigate(['/expenses/table', this.tableId, e.id, 'edit']);
   }
 
   confirmDelete(): void {
@@ -68,8 +72,9 @@ export class ExpenseDetailComponent implements OnInit {
 
     this.actionError.set(null);
     this.expenseService.deleteExpense(
+      this.tableId,
       e.id,
-      () => this.router.navigate(['/expenses']),
+      () => this.router.navigate(['/expenses/table', this.tableId]),
       (msg) => {
         this.confirmingDelete.set(false);
         this.actionError.set(msg);

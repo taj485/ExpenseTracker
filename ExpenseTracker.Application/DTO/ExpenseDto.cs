@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace ExpenseTracker.Application.DTO
 {
@@ -14,5 +12,6 @@ namespace ExpenseTracker.Application.DTO
         public DateTime Date { get; set; }
         public string? Merchant { get; set; }
         public int? ReceiptId { get; set; }
+        public int ExpenseTableId { get; set; }
     }
 }

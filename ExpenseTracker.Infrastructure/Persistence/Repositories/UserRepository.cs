@@ -1,6 +1,7 @@
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ExpenseTracker.Infrastructure.Persistence.Repositories
 {
@@ -17,6 +18,13 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
         {
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.Subject == subject, ct);
+        }
+
+        public async Task<IReadOnlyList<User>> GetAllByEmailAsync(string email, CancellationToken ct = default)
+        {
+            return await _context.Users
+                .Where(u => u.Email == email)
+                .ToListAsync(ct);
         }
 
         public async Task<int> AddAsync(User user, CancellationToken ct)

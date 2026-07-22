@@ -3,15 +3,12 @@ using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Domain.Exceptions;
 using FluentAssertions;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using static FluentAssertions.Equivalency.Pathway;
 
 namespace ExpenseTracker.Tests.Domain
 {
     public class ExpenseTest
     {
-        private static User TestUser() => User.Create("auth0|test-user");
+        private const int TestTableId = 1;
 
         [Fact]
         public void Create_WithValidData_ReturnsExpense()
@@ -20,10 +17,9 @@ namespace ExpenseTracker.Tests.Domain
             var amount = 50m;
             var category = ExpenseCategory.Food;
             var description = "Lunch";
-            var owner = TestUser();
 
             // Act
-            var expense = Expense.Create(amount, category, description, DateTime.UtcNow, owner);
+            var expense = Expense.Create(amount, category, description, DateTime.UtcNow, TestTableId);
 
             // Assert
             expense.Amount.Amount.Should().Be(50m);
@@ -31,7 +27,7 @@ namespace ExpenseTracker.Tests.Domain
             expense.Description.Should().Be("Lunch");
             expense.Date.Date.Should().Be(DateTime.UtcNow.Date);
             expense.IsDeleted.Should().BeFalse();
-            expense.Users.Should().ContainSingle().Which.Should().Be(owner);
+            expense.ExpenseTableId.Should().Be(TestTableId);
         }
 
         [Theory]
@@ -43,7 +39,7 @@ namespace ExpenseTracker.Tests.Domain
             var category = ExpenseCategory.Entertainment;
             var description = "Movie";
             // Act
-            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestUser());
+            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestTableId);
             // Assert
             act.Should().Throw<DomainException>()
                 .WithMessage("Amount must be greater than zero.");
@@ -57,7 +53,7 @@ namespace ExpenseTracker.Tests.Domain
             var category = ExpenseCategory.Transport;
             var description = "";
             // Act
-            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestUser());
+            Action act = () => Expense.Create(amount, category, description, DateTime.UtcNow, TestTableId);
             // Assert
             act.Should().Throw<DomainException>()
                 .WithMessage("Description is required");
@@ -67,7 +63,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateAmount_WithValidAmount_UpdatesAmount()
         {
             // Arrange
-            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestUser());
+            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestTableId);
             var newAmount = 35m;
             // Act
             expense.UpdateAmount(newAmount);
@@ -79,7 +75,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateDescription_WithValidDescription_UpdatesDescription()
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestTableId);
             var newDescription = "Dentist visit";
             // Act
             expense.UpdateDescription(newDescription);
@@ -93,7 +89,7 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateDescription_WithEmptyDescription_ThrowsDomainException(string newDescription)
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestTableId);
             // Act
             Action act = () => expense.UpdateDescription(newDescription);
             // Assert
@@ -105,44 +101,11 @@ namespace ExpenseTracker.Tests.Domain
         public void UpdateCategory_WithValidCategory_UpdatesCategory()
         {
             // Arrange
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestUser());
+            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, TestTableId);
             // Act
             expense.UpdateCategory(ExpenseCategory.Transport);
             // Assert
             expense.Category.Should().Be(ExpenseCategory.Transport);
-        }
-
-        [Fact]
-        public void AddUser_WithNewUser_AddsToUsers()
-        {
-            // Arrange
-            var owner = TestUser();
-            owner.Id = 1;
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, owner);
-            var secondUser = User.Create("auth0|second-user");
-            secondUser.Id = 2;
-
-            // Act
-            expense.AddUser(secondUser);
-
-            // Assert
-            expense.Users.Should().HaveCount(2);
-            expense.Users.Should().Contain(secondUser);
-        }
-
-        [Fact]
-        public void AddUser_WithDuplicateUser_ThrowsDomainException()
-        {
-            // Arrange
-            var owner = TestUser();
-            var expense = Expense.Create(15m, ExpenseCategory.Health, "Doctor visit", DateTime.UtcNow, owner);
-
-            // Act
-            Action act = () => expense.AddUser(owner);
-
-            // Assert
-            act.Should().Throw<DomainException>()
-                .WithMessage("User already has access to this expense");
         }
     }
 }

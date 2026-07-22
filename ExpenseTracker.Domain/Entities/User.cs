@@ -1,5 +1,4 @@
 using ExpenseTracker.Domain.Exceptions;
-using System.Collections.Generic;
 
 namespace ExpenseTracker.Domain.Entities
 {
@@ -8,9 +7,6 @@ namespace ExpenseTracker.Domain.Entities
         public int Id { get; internal set; }
         public string Subject { get; private set; }
         public string? Email { get; private set; }
-
-        private readonly List<Expense> _expenses = new();
-        public IReadOnlyCollection<Expense> Expenses => _expenses.AsReadOnly();
 
         private User() { }
 
