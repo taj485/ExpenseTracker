@@ -1,64 +1,68 @@
-<div class="app">
-  <div class="sidebar-overlay" [class.open]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+@if (expenseTableService.loaded() && expenseTableService.tables().length === 0) {
+  <app-create-expense-table-prompt />
+} @else {
+  <div class="app">
+    <div class="sidebar-overlay" [class.open]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
 
-  <app-sidebar [isOpen]="sidebarOpen()" (close)="sidebarOpen.set(false)" />
+    <app-sidebar [isOpen]="sidebarOpen()" (close)="sidebarOpen.set(false)" />
 
-  <div class="main-wrapper">
-    <app-topbar
-      [pageTitle]="pageTitle()"
-      (menuClicked)="sidebarOpen.set(true)"
-    />
+    <div class="main-wrapper">
+      <app-topbar
+        [pageTitle]="pageTitle()"
+        (menuClicked)="sidebarOpen.set(true)"
+      />
 
-    <div class="content">
-      <div class="page-area">
-        <router-outlet (activate)="onRouteActivated($event)" />
+      <div class="content">
+        <div class="page-area">
+          <router-outlet (activate)="onRouteActivated($event)" />
+        </div>
+
+        <!-- Add Expense panel — desktop -->
+        <aside class="add-panel">
+          <button type="button" class="btn-upload-receipt" (click)="uploadDrawer.open()">📷 Upload Receipt</button>
+          <app-add-expense-form (submitted)="drawer.close()" />
+        </aside>
       </div>
 
-      <!-- Add Expense panel — desktop -->
-      <aside class="add-panel">
-        <button type="button" class="btn-upload-receipt" (click)="uploadDrawer.open()">📷 Upload Receipt</button>
+      <!-- Bottom tab bar — mobile -->
+      <div class="mobile-footer">
+        <a class="tab-item" routerLink="/dashboard" routerLinkActive="active">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Dashboard</span>
+        </a>
+        <a class="tab-item" routerLink="/expenses" routerLinkActive="active">
+          <span class="tab-icon">📋</span>
+          <span class="tab-label">Expenses</span>
+        </a>
+        <button type="button" class="tab-item" [class.active]="drawer.isOpen()" (click)="drawer.open()">
+          <span class="tab-icon">➕</span>
+          <span class="tab-label">Add</span>
+        </button>
+        <button type="button" class="tab-item" [class.active]="uploadDrawer.isOpen()" (click)="uploadDrawer.open()">
+          <span class="tab-icon">📷</span>
+          <span class="tab-label">Receipt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Expense drawer — mobile -->
+  @if (drawer.isOpen()) {
+    <div class="drawer-overlay" (click)="drawer.close()">
+      <div class="drawer" appDragToDismiss (dismissed)="drawer.close()" (click)="$event.stopPropagation()">
+        <div class="drawer-handle"></div>
         <app-add-expense-form (submitted)="drawer.close()" />
-      </aside>
+      </div>
     </div>
+  }
 
-    <!-- Bottom tab bar — mobile -->
-    <div class="mobile-footer">
-      <a class="tab-item" routerLink="/dashboard" routerLinkActive="active">
-        <span class="tab-icon">📊</span>
-        <span class="tab-label">Dashboard</span>
-      </a>
-      <a class="tab-item" routerLink="/expenses" routerLinkActive="active">
-        <span class="tab-icon">📋</span>
-        <span class="tab-label">Expenses</span>
-      </a>
-      <button type="button" class="tab-item" [class.active]="drawer.isOpen()" (click)="drawer.open()">
-        <span class="tab-icon">➕</span>
-        <span class="tab-label">Add</span>
-      </button>
-      <button type="button" class="tab-item" [class.active]="uploadDrawer.isOpen()" (click)="uploadDrawer.open()">
-        <span class="tab-icon">📷</span>
-        <span class="tab-label">Receipt</span>
-      </button>
+  <!-- Upload Receipt drawer — mobile -->
+  @if (uploadDrawer.isOpen()) {
+    <div class="drawer-overlay" (click)="uploadDrawer.close()">
+      <div class="drawer" appDragToDismiss (dismissed)="uploadDrawer.close()" (click)="$event.stopPropagation()">
+        <div class="drawer-handle"></div>
+        <app-upload-receipt (submitted)="uploadDrawer.close()" />
+      </div>
     </div>
-  </div>
-</div>
-
-<!-- Add Expense drawer — mobile -->
-@if (drawer.isOpen()) {
-  <div class="drawer-overlay" (click)="drawer.close()">
-    <div class="drawer" appDragToDismiss (dismissed)="drawer.close()" (click)="$event.stopPropagation()">
-      <div class="drawer-handle"></div>
-      <app-add-expense-form (submitted)="drawer.close()" />
-    </div>
-  </div>
-}
-
-<!-- Upload Receipt drawer — mobile -->
-@if (uploadDrawer.isOpen()) {
-  <div class="drawer-overlay" (click)="uploadDrawer.close()">
-    <div class="drawer" appDragToDismiss (dismissed)="uploadDrawer.close()" (click)="$event.stopPropagation()">
-      <div class="drawer-handle"></div>
-      <app-upload-receipt (submitted)="uploadDrawer.close()" />
-    </div>
-  </div>
+  }
 }

@@ -39,9 +39,11 @@ ExpenseTracker/
 │   │       ├── app.config.ts
 │   │       ├── core/
 │   │       │   ├── models/
-│   │       │   │   └── expense.model.ts
+│   │       │   │   ├── expense.model.ts
+│   │       │   │   └── expense-table.model.ts
 │   │       │   ├── services/
 │   │       │   │   ├── expense.service.ts
+│   │       │   │   ├── expense-table.service.ts
 │   │       │   │   ├── add-expense-drawer.service.ts
 │   │       │   │   ├── upload-receipt-drawer.service.ts
 │   │       │   │   ├── image-resize.service.ts
@@ -115,10 +117,14 @@ ExpenseTracker/
 │   │           │   ├── add-expense-form.component.ts
 │   │           │   ├── add-expense-form.component.html
 │   │           │   └── add-expense-form.component.css
-│   │           └── upload-receipt/
-│   │               ├── upload-receipt.component.ts
-│   │               ├── upload-receipt.component.html
-│   │               └── upload-receipt.component.css
+│   │           ├── upload-receipt/
+│   │           │   ├── upload-receipt.component.ts
+│   │           │   ├── upload-receipt.component.html
+│   │           │   └── upload-receipt.component.css
+│   │           └── expense-table/
+│   │               ├── create-expense-table-prompt.component.ts
+│   │               ├── create-expense-table-prompt.component.html
+│   │               └── create-expense-table-prompt.component.css
 │   ├── public/
 │   │   ├── favicon.ico
 │   │   └── staticwebapp.config.json
