@@ -7,6 +7,7 @@ import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { getCategoryMeta, ALL_CATEGORIES } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 
 type SortColumn = 'date' | 'description' | 'amount' | 'category' | 'merchant';
@@ -27,7 +28,7 @@ interface ExpenseRow {
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent],
+  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +42,8 @@ export class ExpenseListComponent implements OnInit {
   readonly tableId = signal<number>(0);
   readonly isStarred = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isStarred ?? false);
   readonly pageTitle = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.name ?? 'Expenses');
+  readonly isAdmin = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isCurrentUserAdmin ?? false);
+  readonly showShareDialog = signal(false);
 
   getCategoryMeta = getCategoryMeta;
   readonly categories = ALL_CATEGORIES;

@@ -10,3 +10,9 @@ export interface ExpenseTable {
 export interface CreateExpenseTableCommand {
   name: string;
 }
+
+export interface InviteUserToTableCommand {
+  expenseTableId: number;
+  inviteeEmail: string;
+  isAdmin: boolean;
+}

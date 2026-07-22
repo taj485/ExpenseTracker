@@ -4,10 +4,15 @@
   <p class="status-msg error">{{ store.error() }}</p>
 } @else {
   <div class="page-header">
-    <h2 class="page-header-title">{{ pageTitle() }}</h2>
-    <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this table' : 'Star this table'">
-      {{ isStarred() ? '★' : '☆' }}
-    </button>
+    <div class="page-header-title-group">
+      <h2 class="page-header-title">{{ pageTitle() }}</h2>
+      <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this table' : 'Star this table'">
+        {{ isStarred() ? '★' : '☆' }}
+      </button>
+    </div>
+    @if (isAdmin()) {
+      <button type="button" class="settings-btn" (click)="showShareDialog.set(true)" aria-label="Table settings">⚙️</button>
+    }
   </div>
 
   <div class="filter-bar">
@@ -132,6 +137,14 @@
       confirmLabel="Delete"
       (confirmed)="confirmDelete(id)"
       (cancelled)="deletingId.set(null)"
+    />
+  }
+
+  @if (showShareDialog()) {
+    <app-share-table-prompt
+      [tableId]="tableId()"
+      (invited)="showShareDialog.set(false)"
+      (cancelled)="showShareDialog.set(false)"
     />
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CreateExpenseTableCommand, ExpenseTable } from '../models/expense-table.model';
+import { CreateExpenseTableCommand, ExpenseTable, InviteUserToTableCommand } from '../models/expense-table.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -65,6 +65,17 @@ export class ExpenseTableService {
         onSuccess();
       },
       error: () => onError('Failed to unstar this table. Please try again.'),
+    });
+  }
+
+  // API CALL: POST /api/expensetable/{id}/members — invites an existing user (by email) onto the table
+  inviteUser(command: InviteUserToTableCommand, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.post<void>(`${this.apiUrl}/${command.expenseTableId}/members`, command).subscribe({
+      next: () => {
+        this.getTables();
+        onSuccess();
+      },
+      error: (err) => onError(err?.error?.error ?? 'Failed to invite user. Please try again.'),
     });
   }
 }
