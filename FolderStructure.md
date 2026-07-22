@@ -181,7 +181,9 @@ ExpenseTracker/
 │   │   │   ├── CreateExpenseTableCommandHandlerTests.cs
 │   │   │   ├── InviteUserToTableCommandHandlerTests.cs
 │   │   │   ├── RemoveUserFromTableCommandHandlerTests.cs
-│   │   │   └── DeleteExpenseTableCommandHandlerTests.cs
+│   │   │   ├── DeleteExpenseTableCommandHandlerTests.cs
+│   │   │   ├── StarExpenseTableCommandHandlerTests.cs
+│   │   │   └── UnstarExpenseTableCommandHandlerTests.cs
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
@@ -238,10 +240,18 @@ ExpenseTracker/
 │   │   │   ├── RemoveUserFromTableCommand.cs
 │   │   │   ├── RemoveUserFromTableCommandHandler.cs
 │   │   │   └── RemoveUserFromTableValidator.cs
-│   │   └── DeleteExpenseTable/
-│   │       ├── DeleteExpenseTableCommand.cs
-│   │       ├── DeleteExpenseTableCommandHandler.cs
-│   │       └── DeleteExpenseTableValidator.cs
+│   │   ├── DeleteExpenseTable/
+│   │   │   ├── DeleteExpenseTableCommand.cs
+│   │   │   ├── DeleteExpenseTableCommandHandler.cs
+│   │   │   └── DeleteExpenseTableValidator.cs
+│   │   ├── StarExpenseTable/
+│   │   │   ├── StarExpenseTableCommand.cs
+│   │   │   ├── StarExpenseTableCommandHandler.cs
+│   │   │   └── StarExpenseTableValidator.cs
+│   │   └── UnstarExpenseTable/
+│   │       ├── UnstarExpenseTableCommand.cs
+│   │       ├── UnstarExpenseTableCommandHandler.cs
+│   │       └── UnstarExpenseTableValidator.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs

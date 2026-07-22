@@ -7,11 +7,12 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/expense`;
 
   private tableUrl(tableId: number): string {
     return `${environment.apiUrl}/expensetable/${tableId}/expenses`;
   }
+
+  private currentTableId: number | null = null;
 
   // ── State ────────────────────────────────────────────────────────────────
   readonly expenses = signal<Expense[]>([]);
@@ -76,6 +77,7 @@ export class ExpenseService {
 
   // API CALL: GET /api/expensetable/{tableId}/expenses — loads a table's expenses into signal
   loadAll(tableId: number): void {
+    this.currentTableId = tableId;
     this.loading.set(true);
     this.error.set(null);
     this.http.get<Expense[]>(this.tableUrl(tableId)).subscribe({
@@ -104,38 +106,51 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: POST /api/expense — add new expense, appends to signal on success
-  addExpense(command: AddExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
-    this.http.post<{ id: number }>(this.apiUrl, command).subscribe({
-      next: ({ id }) => {
-        this.http.get<Expense>(`${this.apiUrl}/${id}`).subscribe({
-          next: expense => {
-            this.expenses.update(list => [expense, ...list]);
-            onSuccess();
-          },
-          error: () => onError('Expense added but failed to refresh. Please reload.'),
-        });
-      },
-      error: () => onError('Failed to add expense. Please try again.'),
-    });
-  }
-
-  // API CALL: POST /api/expense/batch — adds multiple expenses; valid ones are stored even if others fail
-  addExpensesBatch(
-    commands: AddExpenseCommand[],
-    onSuccess: (result: AddExpensesBatchResult) => void,
+  // API CALL: POST /api/expensetable/{tableId}/expenses for each selected table — adds one expense to every checked table
+  addExpenseToTables(
+    tableIds: number[],
+    command: Omit<AddExpenseCommand, 'expenseTableId'>,
+    onSuccess: () => void,
     onError: (msg: string) => void,
   ): void {
-    this.http.post<AddExpensesBatchResult>(`${this.apiUrl}/batch`, commands).subscribe({
-      next: (result) => {
-        onSuccess(result);
+    forkJoin(tableIds.map(tableId =>
+      this.http.post<{ id: number }>(this.tableUrl(tableId), { ...command, expenseTableId: tableId })
+    )).subscribe({
+      next: () => {
+        this.refreshIfCurrentTableAffected(tableIds);
+        onSuccess();
       },
-      error: () => onError('Failed to add expenses. Please try again.'),
+      error: () => onError('Failed to add expense to one or more tables. Please try again.'),
     });
   }
 
-  // API CALL: POST /api/expense/extract-receipt — extracts structured line items from a receipt photo (multipart upload)
+  // API CALL: POST /api/expensetable/{tableId}/expenses/batch for each selected table — adds multiple expenses to every checked table
+  addExpensesBatchToTables(
+    tableIds: number[],
+    commands: AddExpenseCommand[],
+    onSuccess: (results: AddExpensesBatchResult[]) => void,
+    onError: (msg: string) => void,
+  ): void {
+    forkJoin(tableIds.map(tableId =>
+      this.http.post<AddExpensesBatchResult>(`${this.tableUrl(tableId)}/batch`, commands)
+    )).subscribe({
+      next: (results) => {
+        this.refreshIfCurrentTableAffected(tableIds);
+        onSuccess(results);
+      },
+      error: () => onError('Failed to add expenses to one or more tables. Please try again.'),
+    });
+  }
+
+  private refreshIfCurrentTableAffected(tableIds: number[]): void {
+    if (this.currentTableId !== null && tableIds.includes(this.currentTableId)) {
+      this.loadAll(this.currentTableId);
+    }
+  }
+
+  // API CALL: POST /api/expensetable/{tableId}/expenses/extract-receipt — extracts structured line items from a receipt photo (multipart upload)
   extractReceipt(
+    tableId: number,
     file: File,
     onSuccess: (items: ExtractedExpense[]) => void,
     onError: (msg: string) => void,
@@ -143,7 +158,7 @@ export class ExpenseService {
     const formData = new FormData();
     formData.append('file', file);
 
-    this.http.post<ExtractedExpense[]>(`${this.apiUrl}/extract-receipt`, formData).subscribe({
+    this.http.post<ExtractedExpense[]>(`${this.tableUrl(tableId)}/extract-receipt`, formData).subscribe({
       next: onSuccess,
       error: () => onError("Couldn't read this receipt. Try a different photo or enter it manually."),
     });

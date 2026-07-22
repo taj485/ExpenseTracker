@@ -29,6 +29,15 @@
     @if (error()) {
       <p class="upload-error">{{ error() }}</p>
     }
+  } @else if (step() === 'select-tables') {
+    @if (formError()) {
+      <p class="upload-error">{{ formError() }}</p>
+    }
+    <app-select-tables-prompt
+      [submitting]="submitting()"
+      (confirmed)="onTablesConfirmed($event)"
+      (cancelled)="onTablesCancelled()"
+    />
   } @else {
     <div class="upload-header">
       <h2 class="upload-title">Review Your Receipt</h2>

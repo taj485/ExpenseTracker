@@ -3,6 +3,7 @@ export interface ExpenseTable {
   name: string;
   dateCreated: string;
   isCurrentUserAdmin: boolean;
+  isStarred: boolean;
   memberCount: number;
 }
 

@@ -15,6 +15,9 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             builder.Property(m => m.IsAdmin)
                 .IsRequired();
 
+            builder.Property(m => m.IsStarred)
+                .IsRequired();
+
             builder.HasOne(m => m.User)
                 .WithMany()
                 .HasForeignKey(m => m.UserId)

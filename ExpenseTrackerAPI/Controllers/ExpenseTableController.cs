@@ -2,6 +2,8 @@ using ExpenseTracker.Application.Commands.CreateExpenseTable;
 using ExpenseTracker.Application.Commands.DeleteExpenseTable;
 using ExpenseTracker.Application.Commands.InviteUserToTable;
 using ExpenseTracker.Application.Commands.RemoveUserFromTable;
+using ExpenseTracker.Application.Commands.StarExpenseTable;
+using ExpenseTracker.Application.Commands.UnstarExpenseTable;
 using ExpenseTracker.Application.Queries.GetExpenseTablesForUser;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -53,6 +55,22 @@ namespace ExpenseTrackerAPI.Controllers
         public async Task<IActionResult> RemoveMember(int id, int userId, CancellationToken cancellationToken)
         {
             await _mediator.Send(new RemoveUserFromTableCommand(id, userId), cancellationToken);
+            return NoContent();
+        }
+
+        // POST api/expensetable/5/star
+        [HttpPost("{id}/star")]
+        public async Task<IActionResult> Star(int id, CancellationToken cancellationToken)
+        {
+            await _mediator.Send(new StarExpenseTableCommand(id), cancellationToken);
+            return NoContent();
+        }
+
+        // DELETE api/expensetable/5/star
+        [HttpDelete("{id}/star")]
+        public async Task<IActionResult> Unstar(int id, CancellationToken cancellationToken)
+        {
+            await _mediator.Send(new UnstarExpenseTableCommand(id), cancellationToken);
             return NoContent();
         }
 

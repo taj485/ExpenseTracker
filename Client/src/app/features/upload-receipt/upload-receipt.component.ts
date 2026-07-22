@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, computed, inject, signal } from '@angular/core';
 import { ImageResizeService } from '../../core/services/image-resize.service';
 import { ExpenseService } from '../../core/services/expense.service';
+import { ExpenseTableService } from '../../core/services/expense-table.service';
 import { convertIfHeic } from '../../core/utils/heic-converter';
 import { todayLocalISODate } from '../../core/utils/date.utils';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
+import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.8;
@@ -14,6 +16,7 @@ type DraftExpense = ExtractedExpense & { id: number };
 @Component({
   selector: 'app-upload-receipt',
   standalone: true,
+  imports: [SelectTablesPromptComponent],
   templateUrl: './upload-receipt.component.html',
   styleUrl: './upload-receipt.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +27,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
 
   private readonly imageResizeService = inject(ImageResizeService);
   private readonly expenseService = inject(ExpenseService);
+  private readonly expenseTableService = inject(ExpenseTableService);
   private nextDraftId = 0;
 
   readonly categories = ALL_CATEGORIES;
@@ -41,6 +45,9 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   submitting        = signal(false);
   formError         = signal<string | null>(null);
   imageEnlarged     = signal(false);
+
+  readonly step = signal<'review' | 'select-tables'>('review');
+  private pendingCommands: AddExpenseCommand[] | null = null;
 
   readonly hasExtraction = computed(() => this.extractedExpenses().length > 0);
 
@@ -128,8 +135,9 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
 
       this.setFile(resizedFile);
 
+      const tableId = this.expenseTableService.tables()[0]?.id ?? 0;
       const items = await new Promise<ExtractedExpense[]>((resolve, reject) => {
-        this.expenseService.extractReceipt(resizedFile, resolve, (msg) => reject(new Error(msg)));
+        this.expenseService.extractReceipt(tableId, resizedFile, resolve, (msg) => reject(new Error(msg)));
       });
       this.extractedExpenses.set(items.map(e => ({ ...e, id: this.nextDraftId++ })));
     } catch {
@@ -163,42 +171,62 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     if (items.length === 0 || this.submitting()) return;
 
     this.formError.set(null);
-    this.submitting.set(true);
-
-    const commands: AddExpenseCommand[] = items.map(i => ({
+    this.pendingCommands = items.map(i => ({
+      expenseTableId: 0,
       amount: Math.round(i.amount * i.quantity * 100) / 100,
       category: i.category,
       description: i.description.trim(),
       date: i.date,
       merchant: i.merchant,
     }));
+    this.step.set('select-tables');
+  }
 
-    this.expenseService.addExpensesBatch(
-      commands,
-      (result) => {
+  onTablesConfirmed(tableIds: number[]): void {
+    if (!this.pendingCommands) return;
+    const items = this.extractedExpenses();
+
+    this.submitting.set(true);
+    this.expenseService.addExpensesBatchToTables(
+      tableIds,
+      this.pendingCommands,
+      (results) => {
         this.submitting.set(false);
 
-        if (result.errors.length === 0) {
+        const failedIndexes = new Set<number>();
+        const failureMessages: string[] = [];
+
+        results.forEach((result, tableIndex) => {
+          for (const err of result.errors) {
+            failedIndexes.add(err.index);
+            const item = items[err.index];
+            failureMessages.push(`${item?.description ?? 'Item'} (table ${tableIndex + 1}): ${err.errors.join(' ')}`);
+          }
+        });
+
+        if (failedIndexes.size === 0) {
+          this.pendingCommands = null;
           this.setFile(null);
           this.extractedExpenses.set([]);
+          this.step.set('review');
           this.submitted.emit();
           return;
         }
 
-        const failedIds = new Set(result.errors.map(e => items[e.index].id));
-        this.extractedExpenses.update(list => list.filter(i => failedIds.has(i.id)));
-
-        const messages = result.errors.map(e => {
-          const item = items[e.index];
-          return `${item.description}: ${e.errors.join(' ')}`;
-        });
-        this.formError.set(messages.join(' '));
+        this.extractedExpenses.update(list => list.filter((_, i) => failedIndexes.has(i)));
+        this.pendingCommands = null;
+        this.step.set('review');
+        this.formError.set(failureMessages.join(' '));
       },
       (msg) => {
         this.submitting.set(false);
         this.formError.set(msg);
       }
     );
+  }
+
+  onTablesCancelled(): void {
+    this.step.set('review');
   }
 
   openEnlargedImage(): void {

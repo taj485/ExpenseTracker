@@ -1,6 +1,7 @@
 using ExpenseTracker.Application.Commands.CreateExpenseTable;
 using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Domain.Interfaces;
 using FluentAssertions;
 using FluentValidation;
@@ -10,6 +11,7 @@ namespace ExpenseTracker.Tests.Application.Commands
 {
     public class CreateExpenseTableCommandHandlerTests
     {
+        private readonly Mock<IExpenseTableReader> _mockExpenseTableReader;
         private readonly Mock<IExpenseTableWriter> _mockExpenseTableWriter;
         private readonly Mock<ICurrentUserProvider> _mockCurrentUserProvider;
         private readonly User _currentUser;
@@ -17,15 +19,18 @@ namespace ExpenseTracker.Tests.Application.Commands
 
         public CreateExpenseTableCommandHandlerTests()
         {
+            _mockExpenseTableReader = new Mock<IExpenseTableReader>();
             _mockExpenseTableWriter = new Mock<IExpenseTableWriter>();
             _mockCurrentUserProvider = new Mock<ICurrentUserProvider>();
             _currentUser = User.Create("auth0|test-user");
             _currentUser.Id = 1;
             _mockCurrentUserProvider.Setup(x => x.GetOrProvisionAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_currentUser);
+            _mockExpenseTableReader.Setup(x => x.GetAllForUserAsync(_currentUser.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ExpenseTable>());
             var validator = new CreateExpenseTableValidator();
 
-            _handler = new CreateExpenseTableCommandHandler(_mockExpenseTableWriter.Object, validator, _mockCurrentUserProvider.Object);
+            _handler = new CreateExpenseTableCommandHandler(_mockExpenseTableReader.Object, _mockExpenseTableWriter.Object, validator, _mockCurrentUserProvider.Object);
         }
 
         [Fact]
@@ -63,6 +68,26 @@ namespace ExpenseTracker.Tests.Application.Commands
             await act.Should().ThrowAsync<ValidationException>()
                 .WithMessage("*Name*");
 
+            _mockExpenseTableWriter.Verify(
+                x => x.AddAsync(It.IsAny<ExpenseTable>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WhenNameAlreadyExistsForUser_ThrowsDomainException()
+        {
+            // Arrange
+            var existing = ExpenseTable.Create("Household", _currentUser.Id);
+            _mockExpenseTableReader.Setup(x => x.GetAllForUserAsync(_currentUser.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ExpenseTable> { existing });
+
+            var command = new CreateExpenseTableCommand("household"); // different casing, should still collide
+
+            // Act
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<DomainException>();
             _mockExpenseTableWriter.Verify(
                 x => x.AddAsync(It.IsAny<ExpenseTable>(), It.IsAny<CancellationToken>()),
                 Times.Never);

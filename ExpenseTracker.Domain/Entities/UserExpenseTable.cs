@@ -5,6 +5,7 @@ namespace ExpenseTracker.Domain.Entities
         public int UserId { get; private set; }
         public int ExpenseTableId { get; private set; }
         public bool IsAdmin { get; private set; }
+        public bool IsStarred { get; private set; }
 
         public User User { get; private set; }
         public ExpenseTable ExpenseTable { get; private set; }

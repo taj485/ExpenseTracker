@@ -3,6 +3,13 @@
 } @else if (store.error()) {
   <p class="status-msg error">{{ store.error() }}</p>
 } @else {
+  <div class="page-header">
+    <h2 class="page-header-title">{{ pageTitle() }}</h2>
+    <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this table' : 'Star this table'">
+      {{ isStarred() ? '★' : '☆' }}
+    </button>
+  </div>
+
   <div class="filter-bar">
     <select class="filter-select" [ngModel]="selectedMonth() ?? ''" (ngModelChange)="onMonthChange($event)">
       <option value="">All Months</option>

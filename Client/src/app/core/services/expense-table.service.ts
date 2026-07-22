@@ -42,7 +42,29 @@ export class ExpenseTableService {
         this.getTables();
         onSuccess();
       },
-      error: () => onError('Failed to create expense table. Please try again.'),
+      error: (err) => onError(err?.error?.error ?? 'Failed to create expense table. Please try again.'),
+    });
+  }
+
+  // API CALL: POST /api/expensetable/{id}/star — stars a table (clears any other starred table server-side), then refreshes the list
+  starTable(tableId: number, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.post<void>(`${this.apiUrl}/${tableId}/star`, {}).subscribe({
+      next: () => {
+        this.getTables();
+        onSuccess();
+      },
+      error: () => onError('Failed to star this table. Please try again.'),
+    });
+  }
+
+  // API CALL: DELETE /api/expensetable/{id}/star — unstars a table, then refreshes the list
+  unstarTable(tableId: number, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.delete<void>(`${this.apiUrl}/${tableId}/star`).subscribe({
+      next: () => {
+        this.getTables();
+        onSuccess();
+      },
+      error: () => onError('Failed to unstar this table. Please try again.'),
     });
   }
 }

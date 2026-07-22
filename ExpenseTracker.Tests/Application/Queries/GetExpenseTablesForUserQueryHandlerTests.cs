@@ -44,6 +44,7 @@ namespace ExpenseTracker.Tests.Application.Queries
             result.Single(t => t.Name == "Household").IsCurrentUserAdmin.Should().BeTrue();
             result.Single(t => t.Name == "Work Trip").IsCurrentUserAdmin.Should().BeFalse();
             result.Single(t => t.Name == "Work Trip").MemberCount.Should().Be(2);
+            result.Single(t => t.Name == "Household").IsStarred.Should().BeFalse();
         }
     }
 }

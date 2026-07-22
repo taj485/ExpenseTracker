@@ -33,14 +33,14 @@ interface ExpenseRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpenseListComponent implements OnInit {
-  readonly pageTitle: string;
-
   readonly store  = inject(ExpenseService);
   readonly expenseTableService = inject(ExpenseTableService);
   readonly router = inject(Router);
   readonly route  = inject(ActivatedRoute);
 
   readonly tableId = signal<number>(0);
+  readonly isStarred = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isStarred ?? false);
+  readonly pageTitle = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.name ?? 'Expenses');
 
   getCategoryMeta = getCategoryMeta;
   readonly categories = ALL_CATEGORIES;
@@ -56,12 +56,6 @@ export class ExpenseListComponent implements OnInit {
 
   readonly selectedMonth    = computed(() => this.queryParams()?.get('month') ?? null);
   readonly selectedCategory = computed(() => this.queryParams()?.get('category') as ExpenseCategory | null ?? null);
-
-  constructor() {
-    const initialTableId = Number(this.route.snapshot.paramMap.get('tableId'));
-    const table = this.expenseTableService.tables().find(t => t.id === initialTableId);
-    this.pageTitle = table?.name ?? 'Expenses';
-  }
 
   readonly availableMonths = computed(() => {
     const now = new Date();
@@ -242,5 +236,14 @@ export class ExpenseListComponent implements OnInit {
         this.actionError.set(msg);
       }
     );
+  }
+
+  toggleStar(): void {
+    const id = this.tableId();
+    if (this.isStarred()) {
+      this.expenseTableService.unstarTable(id, () => {}, () => {});
+    } else {
+      this.expenseTableService.starTable(id, () => {}, () => {});
+    }
   }
 }

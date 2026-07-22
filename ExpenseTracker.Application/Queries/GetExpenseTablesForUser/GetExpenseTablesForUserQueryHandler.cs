@@ -28,6 +28,7 @@ namespace ExpenseTracker.Application.Queries.GetExpenseTablesForUser
                     Name = table.Name,
                     DateCreated = table.DateCreated,
                     IsCurrentUserAdmin = table.Members.Any(m => m.UserId == currentUser.Id && m.IsAdmin),
+                    IsStarred = table.Members.Any(m => m.UserId == currentUser.Id && m.IsStarred),
                     MemberCount = table.Members.Count
                 }).ToList();
         }

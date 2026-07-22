@@ -1,0 +1,10 @@
+<div class="picker">
+  <h3 class="picker-title">Go to table</h3>
+  <div class="picker-list">
+    @for (table of tables(); track table.id) {
+      <button type="button" class="picker-item" (click)="selectTable(table.id)">
+        <span class="picker-icon">📋</span> {{ table.name }}
+      </button>
+    }
+  </div>
+</div>

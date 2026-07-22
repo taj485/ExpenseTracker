@@ -65,6 +65,24 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task StarTableAsync(int userId, int expenseTableId, CancellationToken cancellationToken)
+        {
+            await _context.UserExpenseTables
+                .Where(m => m.UserId == userId && m.IsStarred && m.ExpenseTableId != expenseTableId)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsStarred, false), cancellationToken);
+
+            await _context.UserExpenseTables
+                .Where(m => m.UserId == userId && m.ExpenseTableId == expenseTableId)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsStarred, true), cancellationToken);
+        }
+
+        public async Task UnstarTableAsync(int userId, int expenseTableId, CancellationToken cancellationToken)
+        {
+            await _context.UserExpenseTables
+                .Where(m => m.UserId == userId && m.ExpenseTableId == expenseTableId)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsStarred, false), cancellationToken);
+        }
+
         public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             await _context.SaveChangesAsync(cancellationToken);

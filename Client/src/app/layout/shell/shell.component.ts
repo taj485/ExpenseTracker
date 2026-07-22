@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TopbarComponent } from '../topbar/topbar.component';
@@ -10,31 +10,41 @@ import { DragToDismissDirective } from '../../shared/drag-to-dismiss.directive';
 import { ExpenseTableService } from '../../core/services/expense-table.service';
 import { CreateExpenseTablePromptComponent } from '../../features/expense-table/create-expense-table-prompt.component';
 import { CreateExpenseTableDialogService } from '../../core/services/create-expense-table-dialog.service';
+import { ExpenseTablePickerComponent } from '../../features/expense-table/expense-table-picker.component';
+import { ExpenseTablePickerDrawerService } from '../../core/services/expense-table-picker-drawer.service';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, SidebarComponent, TopbarComponent, AddExpenseFormComponent, UploadReceiptComponent, DragToDismissDirective, CreateExpenseTablePromptComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, SidebarComponent, TopbarComponent, AddExpenseFormComponent, UploadReceiptComponent, DragToDismissDirective, CreateExpenseTablePromptComponent, ExpenseTablePickerComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShellComponent implements OnInit {
   sidebarOpen  = signal(false);
-  pageTitle    = signal('Dashboard');
+  activatedComponent = signal<unknown>(null);
+
+  readonly pageTitle = computed(() => {
+    const component = this.activatedComponent();
+    if (component && typeof component === 'object' && 'pageTitle' in component) {
+      const title = (component as { pageTitle: unknown }).pageTitle;
+      return typeof title === 'function' ? title() : String(title);
+    }
+    return 'Dashboard';
+  });
 
   readonly drawer = inject(AddExpenseDrawerService);
   readonly uploadDrawer = inject(UploadReceiptDrawerService);
   readonly expenseTableService = inject(ExpenseTableService);
   readonly createTableDialogService = inject(CreateExpenseTableDialogService);
+  readonly tablePickerDrawer = inject(ExpenseTablePickerDrawerService);
 
   ngOnInit(): void {
     this.expenseTableService.getTables();
   }
 
   onRouteActivated(component: unknown): void {
-    if (component && typeof component === 'object' && 'pageTitle' in component) {
-      this.pageTitle.set((component as { pageTitle: string }).pageTitle);
-    }
+    this.activatedComponent.set(component);
   }
 }

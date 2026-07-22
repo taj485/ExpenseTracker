@@ -150,6 +150,64 @@ namespace ExpenseTracker.Tests.Infrastructure
             await Assert.ThrowsAsync<NotFoundException>(() => _repository.DeleteAsync(999));
         }
 
+        [Fact]
+        public async Task StarTableAsync_SetsIsStarred_AndClearsOtherStarredTableForSameUser()
+        {
+            var user = await SeedUserAsync("auth0|user-1");
+            var tableA = ExpenseTable.Create("Table A", user.Id);
+            var idA = await _repository.AddAsync(tableA, CancellationToken.None);
+            var tableB = ExpenseTable.Create("Table B", user.Id);
+            var idB = await _repository.AddAsync(tableB, CancellationToken.None);
+
+            await _repository.StarTableAsync(user.Id, idA, CancellationToken.None);
+            await _repository.StarTableAsync(user.Id, idB, CancellationToken.None);
+
+            using var verifyContext = CreateContext();
+            var memberships = await verifyContext.UserExpenseTables
+                .Where(m => m.UserId == user.Id)
+                .ToListAsync();
+
+            Assert.False(memberships.Single(m => m.ExpenseTableId == idA).IsStarred);
+            Assert.True(memberships.Single(m => m.ExpenseTableId == idB).IsStarred);
+        }
+
+        [Fact]
+        public async Task StarTableAsync_DoesNotAffectOtherUsersStars()
+        {
+            var user1 = await SeedUserAsync("auth0|user-1");
+            var user2 = await SeedUserAsync("auth0|user-2");
+            var table = ExpenseTable.Create("Shared Table", user1.Id);
+            table.AddMember(user2.Id, isAdmin: false);
+            var id = await _repository.AddAsync(table, CancellationToken.None);
+
+            await _repository.StarTableAsync(user1.Id, id, CancellationToken.None);
+
+            using var verifyContext = CreateContext();
+            var memberships = await verifyContext.UserExpenseTables
+                .Where(m => m.ExpenseTableId == id)
+                .ToListAsync();
+
+            Assert.True(memberships.Single(m => m.UserId == user1.Id).IsStarred);
+            Assert.False(memberships.Single(m => m.UserId == user2.Id).IsStarred);
+        }
+
+        [Fact]
+        public async Task UnstarTableAsync_ClearsIsStarred()
+        {
+            var user = await SeedUserAsync("auth0|user-1");
+            var table = ExpenseTable.Create("Household", user.Id);
+            var id = await _repository.AddAsync(table, CancellationToken.None);
+
+            await _repository.StarTableAsync(user.Id, id, CancellationToken.None);
+            await _repository.UnstarTableAsync(user.Id, id, CancellationToken.None);
+
+            using var verifyContext = CreateContext();
+            var membership = await verifyContext.UserExpenseTables
+                .SingleAsync(m => m.UserId == user.Id && m.ExpenseTableId == id);
+
+            Assert.False(membership.IsStarred);
+        }
+
         public void Dispose()
         {
             _context.Dispose();
