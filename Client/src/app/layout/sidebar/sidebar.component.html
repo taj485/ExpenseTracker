@@ -5,9 +5,14 @@
     <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" (click)="close.emit()">
       <span class="nav-icon">📊</span> Dashboard
     </a>
-    <a class="nav-item" routerLink="/expenses" routerLinkActive="active" (click)="close.emit()">
-      <span class="nav-icon">📋</span> All Expenses
-    </a>
+    @for (table of expenseTableService.tables(); track table.id) {
+      <a class="nav-item" [routerLink]="['/expenses/table', table.id]" routerLinkActive="active" (click)="close.emit()">
+        <span class="nav-icon">📋</span> {{ table.name }}
+      </a>
+    }
+    <button type="button" class="btn-add-table" (click)="createTableDialogService.open()">
+      + New Table
+    </button>
   </nav>
 
   <div class="sidebar-footer">ExpenseTracker v1.0</div>

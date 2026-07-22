@@ -1,28 +1,45 @@
-<div class="page">
-  <div class="card">
-    <h2 class="title">Create your expense table</h2>
-    <p class="subtitle">You'll need at least one expense table before you can start tracking expenses.</p>
+<ng-template #formContent>
+  <h2 class="title">Create your expense table</h2>
+  <p class="subtitle">You'll need at least one expense table before you can start tracking expenses.</p>
 
-    <form (ngSubmit)="onSubmit()" #f="ngForm">
-      <div class="form-group">
-        <label for="table-name">Table name</label>
-        <input
-          id="table-name"
-          type="text"
-          placeholder="e.g. Household Expenses"
-          [value]="name()"
-          (input)="name.set($any($event.target).value)"
-          required
-        />
-      </div>
+  <form (ngSubmit)="onSubmit()" #f="ngForm">
+    <div class="form-group">
+      <label for="table-name">Table name</label>
+      <input
+        id="table-name"
+        type="text"
+        placeholder="e.g. Household Expenses"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+        required
+      />
+    </div>
 
-      @if (formError()) {
-        <p class="form-error">{{ formError() }}</p>
+    @if (formError()) {
+      <p class="form-error">{{ formError() }}</p>
+    }
+
+    <div class="actions" [class.actions-split]="dismissible">
+      @if (dismissible) {
+        <button type="button" class="btn-cancel" (click)="cancelled.emit()">Cancel</button>
       }
-
       <button type="submit" class="btn-submit" [disabled]="submitting()">
         {{ submitting() ? 'Creating...' : 'Create Table' }}
       </button>
-    </form>
+    </div>
+  </form>
+</ng-template>
+
+@if (dismissible) {
+  <div class="overlay" (click)="cancelled.emit()">
+    <div class="card" (click)="$event.stopPropagation()">
+      <ng-container *ngTemplateOutlet="formContent" />
+    </div>
   </div>
-</div>
+} @else {
+  <div class="page">
+    <div class="card">
+      <ng-container *ngTemplateOutlet="formContent" />
+    </div>
+  </div>
+}

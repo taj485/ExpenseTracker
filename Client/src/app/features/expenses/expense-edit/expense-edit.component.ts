@@ -20,6 +20,7 @@ export class ExpenseEditComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly expenseService = inject(ExpenseService);
 
+  private tableId!: number;
   private id!: number;
 
   readonly categories = ALL_CATEGORIES;
@@ -35,8 +36,10 @@ export class ExpenseEditComponent implements OnInit {
   formError = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.tableId = Number(this.route.snapshot.paramMap.get('tableId'));
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.expenseService.loadById(
+      this.tableId,
       this.id,
       (e) => {
         this.amount.set(String(e.amount));
@@ -69,11 +72,12 @@ export class ExpenseEditComponent implements OnInit {
     this.submitting.set(true);
 
     this.expenseService.updateExpense(
+      this.tableId,
       this.id,
       { amount, category: this.category(), description, merchant: this.merchant().trim() || null },
       () => {
         this.submitting.set(false);
-        this.router.navigate(['/expenses', this.id]);
+        this.router.navigate(['/expenses/table', this.tableId, this.id]);
       },
       (msg) => {
         this.submitting.set(false);
@@ -83,6 +87,6 @@ export class ExpenseEditComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/expenses', this.id]);
+    this.router.navigate(['/expenses/table', this.tableId, this.id]);
   }
 }

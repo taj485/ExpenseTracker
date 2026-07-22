@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../../core/services/expense.service';
+import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { getCategoryMeta, ALL_CATEGORIES } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
@@ -32,11 +33,14 @@ interface ExpenseRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpenseListComponent implements OnInit {
-  readonly pageTitle = 'All Expenses';
+  readonly pageTitle: string;
 
   readonly store  = inject(ExpenseService);
+  readonly expenseTableService = inject(ExpenseTableService);
   readonly router = inject(Router);
   readonly route  = inject(ActivatedRoute);
+
+  readonly tableId = signal<number>(0);
 
   getCategoryMeta = getCategoryMeta;
   readonly categories = ALL_CATEGORIES;
@@ -52,6 +56,12 @@ export class ExpenseListComponent implements OnInit {
 
   readonly selectedMonth    = computed(() => this.queryParams()?.get('month') ?? null);
   readonly selectedCategory = computed(() => this.queryParams()?.get('category') as ExpenseCategory | null ?? null);
+
+  constructor() {
+    const initialTableId = Number(this.route.snapshot.paramMap.get('tableId'));
+    const table = this.expenseTableService.tables().find(t => t.id === initialTableId);
+    this.pageTitle = table?.name ?? 'Expenses';
+  }
 
   readonly availableMonths = computed(() => {
     const now = new Date();
@@ -144,7 +154,11 @@ export class ExpenseListComponent implements OnInit {
   readonly pagedRows = computed<ExpenseRow[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
 
   ngOnInit(): void {
-    this.store.loadAll();
+    this.route.paramMap.subscribe(params => {
+      const tableId = Number(params.get('tableId'));
+      this.tableId.set(tableId);
+      this.store.loadAll(tableId);
+    });
   }
 
   formatMonthLabel(monthKey: string): string {
@@ -203,23 +217,24 @@ export class ExpenseListComponent implements OnInit {
   }
 
   viewExpense(id: number): void {
-    this.router.navigate(['/expenses', id]);
+    this.router.navigate(['/expenses/table', this.tableId(), id]);
   }
 
   onMerchantCellClick(event: MouseEvent, expense: Expense): void {
     if (expense.receiptId != null) {
       event.stopPropagation();
-      this.router.navigate(['/expenses/receipt', expense.receiptId]);
+      this.router.navigate(['/expenses/table', this.tableId(), 'receipt', expense.receiptId]);
     }
   }
 
   editExpense(id: number): void {
-    this.router.navigate(['/expenses', id, 'edit']);
+    this.router.navigate(['/expenses/table', this.tableId(), id, 'edit']);
   }
 
   confirmDelete(id: number): void {
     this.actionError.set(null);
     this.store.deleteExpense(
+      this.tableId(),
       id,
       () => this.deletingId.set(null),
       (msg) => {

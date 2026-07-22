@@ -9,6 +9,10 @@ export class ExpenseService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/expense`;
 
+  private tableUrl(tableId: number): string {
+    return `${environment.apiUrl}/expensetable/${tableId}/expenses`;
+  }
+
   // ── State ────────────────────────────────────────────────────────────────
   readonly expenses = signal<Expense[]>([]);
   readonly loading  = signal(false);
@@ -70,11 +74,11 @@ export class ExpenseService {
 
   // ── API calls ─────────────────────────────────────────────────────────────
 
-  // API CALL: GET /api/expense — loads all expenses into signal
-  loadAll(): void {
+  // API CALL: GET /api/expensetable/{tableId}/expenses — loads a table's expenses into signal
+  loadAll(tableId: number): void {
     this.loading.set(true);
     this.error.set(null);
-    this.http.get<Expense[]>(this.apiUrl).subscribe({
+    this.http.get<Expense[]>(this.tableUrl(tableId)).subscribe({
       next: expenses => {
         this.expenses.set(expenses);
         this.loading.set(false);
@@ -86,12 +90,12 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: GET /api/expense/{id} — fetch single expense by id
-  loadById(id: number, onSuccess: (e: Expense) => void, onError: () => void): void {
+  // API CALL: GET /api/expensetable/{tableId}/expenses/{id} — fetch single expense by id
+  loadById(tableId: number, id: number, onSuccess: (e: Expense) => void, onError: () => void): void {
     const cached = this.expenses().find(e => e.id === id);
     if (cached) { onSuccess(cached); return; }
 
-    this.http.get<Expense>(`${this.apiUrl}/${id}`).subscribe({
+    this.http.get<Expense>(`${this.tableUrl(tableId)}/${id}`).subscribe({
       next: expense => {
         this.expenses.update(list => [...list, expense]);
         onSuccess(expense);
@@ -124,7 +128,6 @@ export class ExpenseService {
   ): void {
     this.http.post<AddExpensesBatchResult>(`${this.apiUrl}/batch`, commands).subscribe({
       next: (result) => {
-        if (result.addedIds.length > 0) this.loadAll();
         onSuccess(result);
       },
       error: () => onError('Failed to add expenses. Please try again.'),
@@ -146,9 +149,9 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: PUT /api/expense/{id} — update an expense, patches the signal on success
-  updateExpense(id: number, command: UpdateExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
-    this.http.put<void>(`${this.apiUrl}/${id}`, { id, ...command }).subscribe({
+  // API CALL: PUT /api/expensetable/{tableId}/expenses/{id} — update an expense, patches the signal on success
+  updateExpense(tableId: number, id: number, command: UpdateExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.put<void>(`${this.tableUrl(tableId)}/${id}`, { id, ...command }).subscribe({
       next: () => {
         this.expenses.update(list => list.map(e => e.id === id ? { ...e, ...command } : e));
         onSuccess();
@@ -157,9 +160,9 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: DELETE /api/expense/{id} — delete an expense, removes it from the signal on success
-  deleteExpense(id: number, onSuccess: () => void, onError: (msg: string) => void): void {
-    this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
+  // API CALL: DELETE /api/expensetable/{tableId}/expenses/{id} — delete an expense, removes it from the signal on success
+  deleteExpense(tableId: number, id: number, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.delete<void>(`${this.tableUrl(tableId)}/${id}`).subscribe({
       next: () => {
         this.expenses.update(list => list.filter(e => e.id !== id));
         onSuccess();
@@ -168,9 +171,9 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: GET /api/expense/by-receipt/{receiptId} — fetch all expenses sharing a receipt group
-  loadByReceiptId(receiptId: number, onSuccess: (items: Expense[]) => void, onError: (msg: string) => void): void {
-    this.http.get<Expense[]>(`${this.apiUrl}/by-receipt/${receiptId}`).subscribe({
+  // API CALL: GET /api/expensetable/{tableId}/expenses/by-receipt/{receiptId} — fetch all expenses sharing a receipt group
+  loadByReceiptId(tableId: number, receiptId: number, onSuccess: (items: Expense[]) => void, onError: (msg: string) => void): void {
+    this.http.get<Expense[]>(`${this.tableUrl(tableId)}/by-receipt/${receiptId}`).subscribe({
       next: (items) => {
         const ids = new Set(items.map(i => i.id));
         this.expenses.update(list => [...list.filter(e => !ids.has(e.id)), ...items]);
@@ -180,11 +183,11 @@ export class ExpenseService {
     });
   }
 
-  // API CALL: DELETE /api/expense/{id} for every id — deletes all expenses in a receipt group
-  deleteExpenses(ids: number[], onSuccess: () => void, onError: (msg: string) => void): void {
+  // API CALL: DELETE /api/expensetable/{tableId}/expenses/{id} for every id — deletes all expenses in a receipt group
+  deleteExpenses(tableId: number, ids: number[], onSuccess: () => void, onError: (msg: string) => void): void {
     if (ids.length === 0) { onSuccess(); return; }
 
-    forkJoin(ids.map(id => this.http.delete<void>(`${this.apiUrl}/${id}`))).subscribe({
+    forkJoin(ids.map(id => this.http.delete<void>(`${this.tableUrl(tableId)}/${id}`))).subscribe({
       next: () => {
         const idSet = new Set(ids);
         this.expenses.update(list => list.filter(e => !idSet.has(e.id)));

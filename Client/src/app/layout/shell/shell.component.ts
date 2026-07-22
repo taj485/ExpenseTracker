@@ -9,6 +9,7 @@ import { UploadReceiptDrawerService } from '../../core/services/upload-receipt-d
 import { DragToDismissDirective } from '../../shared/drag-to-dismiss.directive';
 import { ExpenseTableService } from '../../core/services/expense-table.service';
 import { CreateExpenseTablePromptComponent } from '../../features/expense-table/create-expense-table-prompt.component';
+import { CreateExpenseTableDialogService } from '../../core/services/create-expense-table-dialog.service';
 
 @Component({
   selector: 'app-shell',
@@ -25,6 +26,7 @@ export class ShellComponent implements OnInit {
   readonly drawer = inject(AddExpenseDrawerService);
   readonly uploadDrawer = inject(UploadReceiptDrawerService);
   readonly expenseTableService = inject(ExpenseTableService);
+  readonly createTableDialogService = inject(CreateExpenseTableDialogService);
 
   ngOnInit(): void {
     this.expenseTableService.getTables();

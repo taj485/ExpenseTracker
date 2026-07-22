@@ -65,4 +65,13 @@
       </div>
     </div>
   }
+
+  <!-- Create Expense Table dialog -->
+  @if (createTableDialogService.isOpen()) {
+    <app-create-expense-table-prompt
+      [dismissible]="true"
+      (created)="createTableDialogService.close()"
+      (cancelled)="createTableDialogService.close()"
+    />
+  }
 }

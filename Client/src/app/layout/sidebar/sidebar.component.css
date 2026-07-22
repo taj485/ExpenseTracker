@@ -48,6 +48,24 @@
 
 .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
 
+.btn-add-table {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 10px 20px 0;
+  padding: 10px;
+  background: var(--teal);
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.btn-add-table:hover { background: var(--teal-dark); }
+
 .sidebar-footer {
   padding: 16px 20px;
   border-top: 1px solid var(--border);
