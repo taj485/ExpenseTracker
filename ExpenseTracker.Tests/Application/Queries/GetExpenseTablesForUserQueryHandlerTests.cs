@@ -46,5 +46,21 @@ namespace ExpenseTracker.Tests.Application.Queries
             result.Single(t => t.Name == "Work Trip").MemberCount.Should().Be(2);
             result.Single(t => t.Name == "Household").IsStarred.Should().BeFalse();
         }
+
+        [Fact]
+        public async Task Handle_WhenUserHasOnlyOneTable_ReturnsIsStarredTrue_EvenIfNeverExplicitlyStarred()
+        {
+            // Arrange
+            var onlyTable = ExpenseTable.Create("Household", _currentUser.Id);
+
+            _mockExpenseTableReader.Setup(x => x.GetAllForUserAsync(_currentUser.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ExpenseTable> { onlyTable });
+
+            // Act
+            var result = await _handler.Handle(new GetExpenseTablesForUserQuery(), CancellationToken.None);
+
+            // Assert
+            result.Single().IsStarred.Should().BeTrue();
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace ExpenseTracker.Application.Queries.GetExpenseTablesForUser
         public async Task<IReadOnlyList<ExpenseTableDto>> Handle(GetExpenseTablesForUserQuery request, CancellationToken cancellationToken)
         {
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
-            var tables = await _expenseTableReader.GetAllForUserAsync(currentUser.Id, cancellationToken);
+            var tables = (await _expenseTableReader.GetAllForUserAsync(currentUser.Id, cancellationToken)).ToList();
 
             return tables
                 .Select(table => new ExpenseTableDto
@@ -28,7 +28,7 @@ namespace ExpenseTracker.Application.Queries.GetExpenseTablesForUser
                     Name = table.Name,
                     DateCreated = table.DateCreated,
                     IsCurrentUserAdmin = table.Members.Any(m => m.UserId == currentUser.Id && m.IsAdmin),
-                    IsStarred = table.Members.Any(m => m.UserId == currentUser.Id && m.IsStarred),
+                    IsStarred = tables.Count == 1 || table.Members.Any(m => m.UserId == currentUser.Id && m.IsStarred),
                     MemberCount = table.Members.Count
                 }).ToList();
         }
