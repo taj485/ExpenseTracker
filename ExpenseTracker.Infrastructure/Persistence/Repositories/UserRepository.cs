@@ -22,8 +22,9 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
 
         public async Task<IReadOnlyList<User>> GetAllByEmailAsync(string email, CancellationToken ct = default)
         {
+            var normalized = email.Trim().ToLowerInvariant();
             return await _context.Users
-                .Where(u => u.Email == email)
+                .Where(u => u.Email == normalized)
                 .ToListAsync(ct);
         }
 

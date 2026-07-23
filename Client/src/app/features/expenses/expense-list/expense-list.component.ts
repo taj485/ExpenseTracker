@@ -43,7 +43,10 @@ export class ExpenseListComponent implements OnInit {
   readonly isStarred = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isStarred ?? false);
   readonly pageTitle = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.name ?? 'Expenses');
   readonly isAdmin = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isCurrentUserAdmin ?? false);
+  readonly isOnlyTable = computed(() => this.expenseTableService.tables().length === 1);
   readonly showShareDialog = signal(false);
+  readonly showSettingsMenu = signal(false);
+  readonly confirmingDeleteTable = signal(false);
 
   getCategoryMeta = getCategoryMeta;
   readonly categories = ALL_CATEGORIES;
@@ -242,11 +245,28 @@ export class ExpenseListComponent implements OnInit {
   }
 
   toggleStar(): void {
+    if (this.isOnlyTable()) return;
+
     const id = this.tableId();
     if (this.isStarred()) {
       this.expenseTableService.unstarTable(id, () => {}, () => {});
     } else {
       this.expenseTableService.starTable(id, () => {}, () => {});
     }
+  }
+
+  confirmDeleteTable(): void {
+    this.actionError.set(null);
+    this.expenseTableService.deleteTable(
+      this.tableId(),
+      () => {
+        this.confirmingDeleteTable.set(false);
+        this.router.navigate(['/dashboard']);
+      },
+      (msg) => {
+        this.confirmingDeleteTable.set(false);
+        this.actionError.set(msg);
+      }
+    );
   }
 }

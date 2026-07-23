@@ -15,12 +15,14 @@ namespace ExpenseTracker.Domain.Entities
             if (string.IsNullOrWhiteSpace(subject))
                 throw new DomainException("Subject is required");
 
-            return new User { Subject = subject, Email = email };
+            return new User { Subject = subject, Email = Normalize(email) };
         }
 
         public void UpdateEmail(string? email)
         {
-            Email = email;
+            Email = Normalize(email);
         }
+
+        private static string? Normalize(string? email) => email?.Trim().ToLowerInvariant();
     }
 }

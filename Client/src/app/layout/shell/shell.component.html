@@ -30,7 +30,7 @@
           <span class="tab-icon">📊</span>
           <span class="tab-label">Dashboard</span>
         </a>
-        <button type="button" class="tab-item" [class.active]="tablePickerDrawer.isOpen()" (click)="tablePickerDrawer.open()">
+        <button type="button" class="tab-item" [class.active]="tablePickerDrawer.isOpen()" (click)="onExpensesTabClick()">
           <span class="tab-icon">📋</span>
           <span class="tab-label">Expenses</span>
         </button>

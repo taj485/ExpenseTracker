@@ -78,4 +78,15 @@ export class ExpenseTableService {
       error: (err) => onError(err?.error?.error ?? 'Failed to invite user. Please try again.'),
     });
   }
+
+  // API CALL: DELETE /api/expensetable/{id} — deletes a table, then refreshes the list
+  deleteTable(tableId: number, onSuccess: () => void, onError: (msg: string) => void): void {
+    this.http.delete<void>(`${this.apiUrl}/${tableId}`).subscribe({
+      next: () => {
+        this.getTables();
+        onSuccess();
+      },
+      error: (err) => onError(err?.error?.error ?? 'Failed to delete table. Please try again.'),
+    });
+  }
 }

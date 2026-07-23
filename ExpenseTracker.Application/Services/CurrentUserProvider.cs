@@ -29,7 +29,7 @@ namespace ExpenseTracker.Application.Services
                 return user;
             }
 
-            if (email is not null && email != user.Email)
+            if (email is not null && email.Trim().ToLowerInvariant() != user.Email)
             {
                 user.UpdateEmail(email);
                 await _userWriter.UpdateAsync(user);

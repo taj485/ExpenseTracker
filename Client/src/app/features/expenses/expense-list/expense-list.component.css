@@ -33,17 +33,67 @@
 }
 
 .settings-btn {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   font-size: 1.3rem;
   line-height: 1;
   cursor: pointer;
-  color: var(--muted);
+  color: #000;
   padding: 0;
 }
 
 .settings-btn:hover {
+  opacity: 0.7;
+}
+
+.settings-menu-wrapper {
+  position: relative;
+}
+
+.settings-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
+.settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.settings-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  font-size: 1rem;
   color: var(--text);
+  cursor: pointer;
+}
+
+.settings-menu-item:hover {
+  background: var(--bg);
+}
+
+.settings-menu-item.danger {
+  color: #c0392b;
+}
+
+.settings-menu-item.danger:hover {
+  background: #fdecea;
 }
 
 .filter-bar {
