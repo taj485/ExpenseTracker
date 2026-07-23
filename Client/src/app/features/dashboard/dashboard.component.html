@@ -3,6 +3,10 @@
 } @else if (store.error()) {
   <p class="status-msg error">{{ store.error() }}</p>
 } @else {
+  @if (currentTableName()) {
+    <h2 class="page-header-title">{{ currentTableName() }}</h2>
+  }
+
   <app-summary-cards
     [thisMonthSpent]="store.thisMonthSpent()"
     [transactionCount]="store.transactionCount()"
@@ -13,5 +17,5 @@
     <h2 class="section-title">Spending by Category This Month</h2>
   </div>
 
-  <app-category-breakdown [stats]="store.categoryBreakdown()" />
+  <app-category-breakdown [stats]="store.categoryBreakdown()" [tableId]="currentTableId()" />
 }

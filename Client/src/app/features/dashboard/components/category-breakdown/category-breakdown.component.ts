@@ -14,14 +14,17 @@ import { getCategoryMeta } from '../../../../core/utils/category.utils';
 })
 export class CategoryBreakdownComponent {
   @Input() stats: CategoryStat[] = [];
+  @Input() tableId: number | null = null;
 
   private readonly router = inject(Router);
 
   getCategoryMeta = getCategoryMeta;
 
   viewCategory(category: ExpenseCategory): void {
+    if (this.tableId === null) return;
+
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    this.router.navigate(['/expenses'], { queryParams: { category, month } });
+    this.router.navigate(['/expenses/table', this.tableId], { queryParams: { category, month } });
   }
 }

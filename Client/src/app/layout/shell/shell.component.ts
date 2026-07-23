@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TopbarComponent } from '../topbar/topbar.component';
 import { AddExpenseFormComponent } from '../../features/add-expense/add-expense-form.component';
@@ -39,6 +39,7 @@ export class ShellComponent implements OnInit {
   readonly expenseTableService = inject(ExpenseTableService);
   readonly createTableDialogService = inject(CreateExpenseTableDialogService);
   readonly tablePickerDrawer = inject(ExpenseTablePickerDrawerService);
+  readonly router = inject(Router);
 
   ngOnInit(): void {
     this.expenseTableService.getTables();
@@ -46,5 +47,14 @@ export class ShellComponent implements OnInit {
 
   onRouteActivated(component: unknown): void {
     this.activatedComponent.set(component);
+  }
+
+  onExpensesTabClick(): void {
+    const tables = this.expenseTableService.tables();
+    if (tables.length === 1) {
+      this.router.navigate(['/expenses/table', tables[0].id]);
+    } else {
+      this.tablePickerDrawer.open();
+    }
   }
 }
