@@ -52,5 +52,28 @@ namespace ExpenseTracker.Tests.Domain
             // Assert
             user.Email.Should().Be("new@example.com");
         }
+
+        [Fact]
+        public void Create_WithMixedCaseEmail_StoresLowercase()
+        {
+            // Act
+            var user = User.Create("auth0|abc123", "Person@Example.COM");
+
+            // Assert
+            user.Email.Should().Be("person@example.com");
+        }
+
+        [Fact]
+        public void UpdateEmail_WithMixedCaseEmail_StoresLowercase()
+        {
+            // Arrange
+            var user = User.Create("auth0|abc123", "old@example.com");
+
+            // Act
+            user.UpdateEmail("New@Example.COM");
+
+            // Assert
+            user.Email.Should().Be("new@example.com");
+        }
     }
 }

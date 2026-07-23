@@ -57,6 +57,28 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_NormalizesEmail_TrimsAndLowercasesBeforeLookup()
+        {
+            // Arrange
+            var invitee = User.Create("auth0|invitee");
+            invitee.Id = 2;
+            var table = ExpenseTable.Create("Household", _currentUser.Id);
+            var command = new InviteUserToTableCommand(TableId, "  Invitee@Example.COM  ");
+
+            _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, _currentUser.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            _mockExpenseTableReader.Setup(x => x.IsAdminAsync(TableId, _currentUser.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            _mockUserReader.Setup(x => x.GetAllByEmailAsync("invitee@example.com", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<User> { invitee });
+            _mockExpenseTableReader.Setup(x => x.GetByIdAsync(TableId, It.IsAny<CancellationToken>())).ReturnsAsync(table);
+
+            // Act
+            await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            _mockUserReader.Verify(x => x.GetAllByEmailAsync("invitee@example.com", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
         public async Task Handle_WhenCallerIsNotMember_ThrowsNotFoundException()
         {
             // Arrange

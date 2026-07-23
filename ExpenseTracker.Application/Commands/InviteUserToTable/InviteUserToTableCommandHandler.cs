@@ -30,6 +30,8 @@ namespace ExpenseTracker.Application.Commands.InviteUserToTable
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
 
+            var normalizedEmail = request.InviteeEmail.Trim().ToLowerInvariant();
+
             var currentUser = await _currentUserProvider.GetOrProvisionAsync(cancellationToken);
 
             if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
@@ -38,13 +40,13 @@ namespace ExpenseTracker.Application.Commands.InviteUserToTable
             if (!await _expenseTableReader.IsAdminAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new ForbiddenException("Only an admin can invite users to this expense table");
 
-            var matches = await _userReader.GetAllByEmailAsync(request.InviteeEmail, cancellationToken);
+            var matches = await _userReader.GetAllByEmailAsync(normalizedEmail, cancellationToken);
 
             if (matches.Count == 0)
-                throw new NotFoundException($"No user found with email {request.InviteeEmail}");
+                throw new NotFoundException($"No user found with email {normalizedEmail}");
 
             if (matches.Count > 1)
-                throw new DomainException($"Multiple users found with email {request.InviteeEmail}; cannot determine invitee");
+                throw new DomainException($"Multiple users found with email {normalizedEmail}; cannot determine invitee");
 
             var table = await _expenseTableReader.GetByIdAsync(request.ExpenseTableId, cancellationToken);
 

@@ -112,6 +112,17 @@ namespace ExpenseTracker.Tests.Infrastructure
             Assert.Empty(results);
         }
 
+        [Fact]
+        public async Task GetAllByEmailAsync_IsCaseInsensitive()
+        {
+            await _repository.AddAsync(User.Create("auth0|user-1", "person@example.com"), CancellationToken.None);
+
+            var results = await _repository.GetAllByEmailAsync("Person@Example.COM", CancellationToken.None);
+
+            Assert.Single(results);
+            Assert.Equal("auth0|user-1", results.Single().Subject);
+        }
+
         public void Dispose()
         {
             _context.Dispose();
