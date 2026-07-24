@@ -31,6 +31,44 @@ resource "azurerm_linux_web_app" "api" {
     "Auth0__Audience"                      = var.auth0_audience
     "Cors__AllowedOrigin"                  = "https://${azurerm_static_web_app.spa.default_host_name}"
     "Gemini__ApiKey"                       = var.gemini_api_key
+    "BlobStorage__ConnectionString"        = azurerm_storage_account.receipts.primary_connection_string
+    "BlobStorage__ContainerName"           = azurerm_storage_container.receipts.name
+  }
+}
+
+resource "azurerm_storage_account" "receipts" {
+  name                     = var.storage_account_name
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  access_tier              = "Hot"
+}
+
+resource "azurerm_storage_container" "receipts" {
+  name                  = var.blob_container_name
+  storage_account_id    = azurerm_storage_account.receipts.id
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_management_policy" "receipts" {
+  storage_account_id = azurerm_storage_account.receipts.id
+
+  rule {
+    name    = "move-to-cool-then-cold"
+    enabled = true
+
+    filters {
+      prefix_match = [azurerm_storage_container.receipts.name]
+      blob_types   = ["blockBlob"]
+    }
+
+    actions {
+      base_blob {
+        tier_to_cool_after_days_since_modification_greater_than = 20
+        tier_to_cold_after_days_since_modification_greater_than = 40
+      }
+    }
   }
 }
 

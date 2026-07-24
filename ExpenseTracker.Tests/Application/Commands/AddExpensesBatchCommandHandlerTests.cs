@@ -119,6 +119,25 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WithReceiptImageReference_SetsItOnCreatedReceipt()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
+            }, ReceiptImageReference: "abc123.jpg");
+
+            Receipt? capturedReceipt = null;
+            _mockReceiptWriter.Setup(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()))
+                .Callback<Receipt, CancellationToken>((r, _) => capturedReceipt = r)
+                .ReturnsAsync(1);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            capturedReceipt.Should().NotBeNull();
+            capturedReceipt!.ImageReference.Should().Be("abc123.jpg");
+        }
+
+        [Fact]
         public async Task Handle_WhenCurrentUserNotMemberOfTable_ThrowsNotFoundException()
         {
             var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>

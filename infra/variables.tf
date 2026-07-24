@@ -48,3 +48,14 @@ variable "gemini_api_key" {
   type        = string
   sensitive   = true
 }
+
+variable "storage_account_name" {
+  description = "Globally-unique name for the Storage Account holding receipt images (lowercase letters/numbers only, max 24 chars)"
+  type        = string
+}
+
+variable "blob_container_name" {
+  description = "Blob container name for storing receipt images"
+  type        = string
+  default     = "receipt-images"
+}

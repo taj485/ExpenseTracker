@@ -13,3 +13,8 @@ output "static_web_app_api_key" {
   value       = azurerm_static_web_app.spa.api_key
   sensitive   = true
 }
+
+output "storage_account_name" {
+  description = "Name of the Storage Account holding receipt images"
+  value       = azurerm_storage_account.receipts.name
+}

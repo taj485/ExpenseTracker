@@ -52,6 +52,7 @@ ExpenseTracker/
 │   │       │   │   ├── category.utils.ts
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
+│   │       │   │   ├── download.utils.ts
 │   │       │   │   ├── heic-converter.ts
 │   │       │   │   └── heic-converter.spec.ts
 │   │       │   └── auth/
@@ -141,7 +142,8 @@ ExpenseTracker/
 │   │   └── UserExpenseTable.cs
 │   ├── ValueObjects/
 │   │   ├── Money.cs
-│   │   └── ExtractedReceiptItem.cs
+│   │   ├── ExtractedReceiptItem.cs
+│   │   └── ReceiptImage.cs
 │   ├── Enums/
 │   │   └── ExpenseCategory.cs
 │   ├── Interfaces/
@@ -154,7 +156,9 @@ ExpenseTracker/
 │   │   ├── IUserWriter.cs
 │   │   ├── ICurrentUserService.cs
 │   │   ├── IReceiptExtractionService.cs
-│   │   └── IReceiptWriter.cs
+│   │   ├── IReceiptWriter.cs
+│   │   ├── IReceiptReader.cs
+│   │   └── IReceiptImageStore.cs
 │   ├── Services/
 │   │   ├── ISummaryCalculator.cs
 │   │   ├── MonthlySummaryCalculator.cs
@@ -183,11 +187,13 @@ ExpenseTracker/
 │   │   │   ├── RemoveUserFromTableCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseTableCommandHandlerTests.cs
 │   │   │   ├── StarExpenseTableCommandHandlerTests.cs
-│   │   │   └── UnstarExpenseTableCommandHandlerTests.cs
+│   │   │   ├── UnstarExpenseTableCommandHandlerTests.cs
+│   │   │   └── UploadReceiptImageCommandHandlerTests.cs
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
-│   │   │   └── GetExpenseTablesForUserQueryHandlerTests.cs
+│   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
+│   │   │   └── GetReceiptImageQueryHandlerTests.cs
 │   │   └── Services/
 │   │       └── CurrentUserProviderTests.cs
 │   ├── Infrastructure/
@@ -248,10 +254,13 @@ ExpenseTracker/
 │   │   │   ├── StarExpenseTableCommand.cs
 │   │   │   ├── StarExpenseTableCommandHandler.cs
 │   │   │   └── StarExpenseTableValidator.cs
-│   │   └── UnstarExpenseTable/
-│   │       ├── UnstarExpenseTableCommand.cs
-│   │       ├── UnstarExpenseTableCommandHandler.cs
-│   │       └── UnstarExpenseTableValidator.cs
+│   │   ├── UnstarExpenseTable/
+│   │   │   ├── UnstarExpenseTableCommand.cs
+│   │   │   ├── UnstarExpenseTableCommandHandler.cs
+│   │   │   └── UnstarExpenseTableValidator.cs
+│   │   └── UploadReceiptImage/
+│   │       ├── UploadReceiptImageCommand.cs
+│   │       └── UploadReceiptImageCommandHandler.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs
@@ -265,14 +274,18 @@ ExpenseTracker/
 │   │   ├── GetMonthlySummary/
 │   │   │   ├── GetMonthlySummaryQuery.cs
 │   │   │   └── GetMonthlySummaryQueryHandler.cs
-│   │   └── GetExpenseTablesForUser/
-│   │       ├── GetExpenseTablesForUserQuery.cs
-│   │       └── GetExpenseTablesForUserQueryHandler.cs
+│   │   ├── GetExpenseTablesForUser/
+│   │   │   ├── GetExpenseTablesForUserQuery.cs
+│   │   │   └── GetExpenseTablesForUserQueryHandler.cs
+│   │   └── GetReceiptImage/
+│   │       ├── GetReceiptImageQuery.cs
+│   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
 │   │   ├── ExpenseDto.cs
 │   │   ├── ExpenseTableDto.cs
 │   │   ├── MonthlySummaryDto.cs
-│   │   └── ExtractedExpenseDto.cs
+│   │   ├── ExtractedExpenseDto.cs
+│   │   └── ReceiptImageDto.cs
 │   ├── Mappings/
 │   │   └── ExpenseMappingProfile.cs
 │   └── Services/
@@ -300,4 +313,7 @@ ExpenseTracker/
     ├── AI/
     │   ├── GeminiOptions.cs
     │   └── GeminiReceiptExtractionService.cs
+    ├── Storage/
+    │   ├── AzureBlobStorageOptions.cs
+    │   └── AzureBlobReceiptImageStore.cs
     └── DependencyInjection.cs

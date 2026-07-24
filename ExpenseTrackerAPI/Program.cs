@@ -20,7 +20,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy(SpaCorsPolicy, policy =>
         policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]!)
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .WithExposedHeaders("Content-Disposition"));
 });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

@@ -3,6 +3,7 @@ using ExpenseTracker.Infrastructure.AI;
 using ExpenseTracker.Infrastructure.Auth;
 using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTracker.Infrastructure.Persistence.Repositories;
+using ExpenseTracker.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,13 +36,19 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddScoped<IReceiptWriter, ReceiptRepository>();
 
-            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IReceiptReader, ReceiptRepository>();  
 
-            services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddScoped<IReceiptExtractionService, GeminiReceiptExtractionService>();
 
             services.AddAuth0Authentication(configuration);
+
+            services.AddScoped<IReceiptImageStore, AzureBlobReceiptImageStore>();
+
+            services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
+
+            services.Configure<AzureBlobStorageOptions>(configuration.GetSection("BlobStorage"));
 
             return services;
         }

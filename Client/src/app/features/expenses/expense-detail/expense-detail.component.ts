@@ -4,6 +4,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
+import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -64,6 +65,19 @@ export class ExpenseDetailComponent implements OnInit {
   editExpense(): void {
     const e = this.expense();
     if (e) this.router.navigate(['/expenses/table', this.tableId, e.id, 'edit']);
+  }
+
+  downloadReceipt(): void {
+    const e = this.expense();
+    if (!e || e.receiptId === null) return;
+
+    this.actionError.set(null);
+    this.expenseService.downloadReceiptImage(
+      this.tableId,
+      e.receiptId,
+      (blob, filename) => triggerBlobDownload(blob, filename),
+      (msg) => this.actionError.set(msg),
+    );
   }
 
   confirmDelete(): void {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
+import { parseFilenameFromContentDisposition } from '../utils/download.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
@@ -128,11 +129,16 @@ export class ExpenseService {
   addExpensesBatchToTables(
     tableIds: number[],
     commands: AddExpenseCommand[],
+    receiptImageReference: string | null,
     onSuccess: (results: AddExpensesBatchResult[]) => void,
     onError: (msg: string) => void,
   ): void {
     forkJoin(tableIds.map(tableId =>
-      this.http.post<AddExpensesBatchResult>(`${this.tableUrl(tableId)}/batch`, commands)
+      this.http.post<AddExpensesBatchResult>(`${this.tableUrl(tableId)}/batch`, {
+        expenseTableId: tableId,
+        items: commands,
+        receiptImageReference,
+      })
     )).subscribe({
       next: (results) => {
         this.refreshIfCurrentTableAffected(tableIds);
@@ -161,6 +167,42 @@ export class ExpenseService {
     this.http.post<ExtractedExpense[]>(`${this.tableUrl(tableId)}/extract-receipt`, formData).subscribe({
       next: onSuccess,
       error: () => onError("Couldn't read this receipt. Try a different photo or enter it manually."),
+    });
+  }
+
+  // API CALL: POST /api/expensetable/{tableId}/expenses/receipt-image — uploads the receipt photo to blob storage, returns a reference for later download
+  uploadReceiptImage(
+    tableId: number,
+    file: File,
+    onSuccess: (imageReference: string) => void,
+    onError: (msg: string) => void,
+  ): void {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.http.post<{ imageReference: string }>(`${this.tableUrl(tableId)}/receipt-image`, formData).subscribe({
+      next: (result) => onSuccess(result.imageReference),
+      error: () => onError('Failed to upload receipt image.'),
+    });
+  }
+
+  // API CALL: GET /api/expensetable/{tableId}/expenses/by-receipt/{receiptId}/image — downloads the receipt image as a blob
+  downloadReceiptImage(
+    tableId: number,
+    receiptId: number,
+    onSuccess: (blob: Blob, filename: string) => void,
+    onError: (msg: string) => void,
+  ): void {
+    this.http.get(`${this.tableUrl(tableId)}/by-receipt/${receiptId}/image`, {
+      observe: 'response',
+      responseType: 'blob',
+    }).subscribe({
+      next: (response) => {
+        const filename = parseFilenameFromContentDisposition(response.headers.get('content-disposition'))
+          ?? `receipt-${receiptId}.jpg`;
+        onSuccess(response.body as Blob, filename);
+      },
+      error: () => onError('No image is available for this receipt.'),
     });
   }
 
