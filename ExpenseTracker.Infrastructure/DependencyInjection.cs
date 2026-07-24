@@ -48,7 +48,7 @@ namespace ExpenseTracker.Infrastructure
 
             services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
 
-            services.Configure<AzureBlobStorageOptions>(configuration.GetSection("AzureBlobStorage"));
+            services.Configure<AzureBlobStorageOptions>(configuration.GetSection("BlobStorage"));
 
             return services;
         }
