@@ -50,6 +50,9 @@
 
     <div class="detail-toolbar">
       <button class="btn btn-primary" (click)="editExpense()">Edit</button>
+      @if (e.receiptId !== null) {
+        <button class="btn btn-secondary" (click)="downloadReceipt()">Download Receipt</button>
+      }
       <button class="btn btn-danger" (click)="confirmingDelete.set(true)">Delete</button>
     </div>
 

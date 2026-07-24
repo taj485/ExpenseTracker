@@ -45,6 +45,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   submitting        = signal(false);
   formError         = signal<string | null>(null);
   imageEnlarged     = signal(false);
+  receiptImageReference = signal<string | null>(null);
 
   readonly step = signal<'review' | 'select-tables'>('review');
   private pendingCommands: AddExpenseCommand[] | null = null;
@@ -140,6 +141,13 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
         this.expenseService.extractReceipt(tableId, resizedFile, resolve, (msg) => reject(new Error(msg)));
       });
       this.extractedExpenses.set(items.map(e => ({ ...e, id: this.nextDraftId++ })));
+
+      this.expenseService.uploadReceiptImage(
+        tableId,
+        resizedFile,
+        (ref) => this.receiptImageReference.set(ref),
+        () => {},
+      );
     } catch {
       this.error.set("Couldn't process this image. Try a different photo or format.");
       void this.startCamera();
@@ -162,6 +170,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.error.set(null);
     this.formError.set(null);
     this.extractedExpenses.set([]);
+    this.receiptImageReference.set(null);
     this.setFile(null);
     void this.startCamera();
   }
@@ -190,6 +199,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.expenseService.addExpensesBatchToTables(
       tableIds,
       this.pendingCommands,
+      this.receiptImageReference(),
       (results) => {
         this.submitting.set(false);
 
@@ -208,6 +218,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
           this.pendingCommands = null;
           this.setFile(null);
           this.extractedExpenses.set([]);
+          this.receiptImageReference.set(null);
           this.step.set('review');
           this.submitted.emit();
           return;

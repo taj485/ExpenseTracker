@@ -43,6 +43,7 @@
         }
       </div>
       <div class="group-toolbar">
+        <button class="btn btn-secondary" (click)="downloadReceipt()">Download Receipt Image</button>
         <button class="btn btn-danger" (click)="confirmingGroupDelete.set(true)">
           Delete Entire Group ({{ items().length }} items)
         </button>

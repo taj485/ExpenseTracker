@@ -51,7 +51,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
                 if (receiptId is null)
                 {
-                    var receipt = Receipt.Create(DateTime.UtcNow);
+                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference);
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 

@@ -4,6 +4,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
+import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -22,6 +23,7 @@ export class ReceiptGroupComponent implements OnInit {
   private readonly expenseService = inject(ExpenseService);
 
   private tableId!: number;
+  private receiptId!: number;
 
   readonly items = signal<Expense[]>([]);
   readonly loading = signal(true);
@@ -41,6 +43,7 @@ export class ReceiptGroupComponent implements OnInit {
   }
 
   private loadGroup(receiptId: number): void {
+    this.receiptId = receiptId;
     this.loading.set(true);
     this.error.set(null);
     this.items.set([]);
@@ -72,6 +75,16 @@ export class ReceiptGroupComponent implements OnInit {
 
   editItem(id: number): void {
     this.router.navigate(['/expenses/table', this.tableId, id, 'edit']);
+  }
+
+  downloadReceipt(): void {
+    this.actionError.set(null);
+    this.expenseService.downloadReceiptImage(
+      this.tableId,
+      this.receiptId,
+      (blob, filename) => triggerBlobDownload(blob, filename),
+      (msg) => this.actionError.set(msg),
+    );
   }
 
   confirmGroupDelete(): void {
