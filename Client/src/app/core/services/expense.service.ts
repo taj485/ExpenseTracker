@@ -1,13 +1,18 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
-import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
+import { Observable, first, firstValueFrom, forkJoin, switchMap, timeout, timer } from 'rxjs';
+import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, ExtractionOutcome, ReceiptExtractionStatus, StartExtractionResult, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 import { parseFilenameFromContentDisposition } from '../utils/download.utils';
+import { ReceiptExtractionRealtimeService } from './receipt-extraction-realtime.service';
+
+const EXTRACTION_POLL_INTERVAL_MS = 1_500;
+const EXTRACTION_TIMEOUT_MS = 90_000;
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
   private readonly http = inject(HttpClient);
+  private readonly realtime = inject(ReceiptExtractionRealtimeService);
 
   private tableUrl(tableId: number): string {
     return `${environment.apiUrl}/expensetable/${tableId}/expenses`;
@@ -129,7 +134,7 @@ export class ExpenseService {
   addExpensesBatchToTables(
     tableIds: number[],
     commands: AddExpenseCommand[],
-    receiptImageReference: string | null,
+    tempImageReference: string | null,
     onSuccess: (results: AddExpensesBatchResult[]) => void,
     onError: (msg: string) => void,
   ): void {
@@ -137,7 +142,7 @@ export class ExpenseService {
       this.http.post<AddExpensesBatchResult>(`${this.tableUrl(tableId)}/batch`, {
         expenseTableId: tableId,
         items: commands,
-        receiptImageReference,
+        tempImageReference,
       })
     )).subscribe({
       next: (results) => {
@@ -154,36 +159,52 @@ export class ExpenseService {
     }
   }
 
-  // API CALL: POST /api/expensetable/{tableId}/expenses/extract-receipt — extracts structured line items from a receipt photo (multipart upload)
+  // API CALL: POST /api/expensetable/{tableId}/expenses/extract-receipt — queues extraction, returns 202 with a job id
+  startReceiptExtraction(tableId: number, file: File): Observable<StartExtractionResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<StartExtractionResult>(`${this.tableUrl(tableId)}/extract-receipt`, formData);
+  }
+
+  // API CALL: GET /api/expensetable/{tableId}/expenses/extract-receipt/{jobId} — fallback when the SignalR push doesn't land
+  getExtractionStatus(tableId: number, jobId: string): Observable<ReceiptExtractionStatus> {
+    return this.http.get<ReceiptExtractionStatus>(`${this.tableUrl(tableId)}/extract-receipt/${jobId}`);
+  }
+
+  /**
+   * Uploads a receipt and resolves once extraction finishes, preferring the SignalR push and
+   * silently falling back to polling. Callers can't tell which path served them.
+   */
   extractReceipt(
     tableId: number,
     file: File,
-    onSuccess: (items: ExtractedExpense[]) => void,
+    onSuccess: (outcome: ExtractionOutcome) => void,
     onError: (msg: string) => void,
   ): void {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    this.http.post<ExtractedExpense[]>(`${this.tableUrl(tableId)}/extract-receipt`, formData).subscribe({
-      next: onSuccess,
-      error: () => onError("Couldn't read this receipt. Try a different photo or enter it manually."),
+    this.startReceiptExtraction(tableId, file).subscribe({
+      next: ({ jobId, tempReference }) => {
+        this.realtime.awaitResult(jobId)
+          .then((pushed) => pushed ?? firstValueFrom(this.pollExtraction(tableId, jobId)))
+          .then((status) => {
+            if (status.status === 'Failed') {
+              onError(status.error ?? "Couldn't read this receipt. Try a different photo or enter it manually.");
+              return;
+            }
+            onSuccess({ items: status.items ?? [], tempReference });
+          })
+          .catch(() => onError("Couldn't read this receipt. Try a different photo or enter it manually."));
+      },
+      error: () => onError("Couldn't upload this receipt. Please try again."),
     });
   }
 
-  // API CALL: POST /api/expensetable/{tableId}/expenses/receipt-image — uploads the receipt photo to blob storage, returns a reference for later download
-  uploadReceiptImage(
-    tableId: number,
-    file: File,
-    onSuccess: (imageReference: string) => void,
-    onError: (msg: string) => void,
-  ): void {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    this.http.post<{ imageReference: string }>(`${this.tableUrl(tableId)}/receipt-image`, formData).subscribe({
-      next: (result) => onSuccess(result.imageReference),
-      error: () => onError('Failed to upload receipt image.'),
-    });
+  private pollExtraction(tableId: number, jobId: string): Observable<ReceiptExtractionStatus> {
+    return timer(0, EXTRACTION_POLL_INTERVAL_MS).pipe(
+      switchMap(() => this.getExtractionStatus(tableId, jobId)),
+      first(status => status.status === 'Completed' || status.status === 'Failed'),
+      timeout(EXTRACTION_TIMEOUT_MS),
+    );
   }
 
   // API CALL: GET /api/expensetable/{tableId}/expenses/by-receipt/{receiptId}/image — downloads the receipt image as a blob

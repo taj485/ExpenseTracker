@@ -46,6 +46,7 @@ ExpenseTracker/
 │   │       │   │   ├── expense-table.service.ts
 │   │       │   │   ├── add-expense-drawer.service.ts
 │   │       │   │   ├── upload-receipt-drawer.service.ts
+│   │       │   │   ├── receipt-extraction-realtime.service.ts
 │   │       │   │   ├── image-resize.service.ts
 │   │       │   │   └── image-resize.service.spec.ts
 │   │       │   ├── utils/
@@ -138,14 +139,17 @@ ExpenseTracker/
 │   │   ├── Expense.cs
 │   │   ├── ExpenseTable.cs
 │   │   ├── Receipt.cs
+│   │   ├── ReceiptExtractionJob.cs
 │   │   ├── User.cs
 │   │   └── UserExpenseTable.cs
 │   ├── ValueObjects/
 │   │   ├── Money.cs
 │   │   ├── ExtractedReceiptItem.cs
+│   │   ├── ReceiptExtractionResult.cs
 │   │   └── ReceiptImage.cs
 │   ├── Enums/
-│   │   └── ExpenseCategory.cs
+│   │   ├── ExpenseCategory.cs
+│   │   └── ReceiptExtractionStatus.cs
 │   ├── Interfaces/
 │   │   ├── IExpenseReader.cs
 │   │   ├── IExpenseWriter.cs
@@ -155,7 +159,10 @@ ExpenseTracker/
 │   │   ├── IUserReader.cs
 │   │   ├── IUserWriter.cs
 │   │   ├── ICurrentUserService.cs
-│   │   ├── IReceiptExtractionService.cs
+│   │   ├── IReceiptExtractionRequestPublisher.cs
+│   │   ├── IReceiptExtractionResultReader.cs
+│   │   ├── IReceiptExtractionJobReader.cs
+│   │   ├── IReceiptExtractionJobWriter.cs
 │   │   ├── IReceiptWriter.cs
 │   │   ├── IReceiptReader.cs
 │   │   └── IReceiptImageStore.cs
@@ -187,12 +194,12 @@ ExpenseTracker/
 │   │   │   ├── RemoveUserFromTableCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseTableCommandHandlerTests.cs
 │   │   │   ├── StarExpenseTableCommandHandlerTests.cs
-│   │   │   ├── UnstarExpenseTableCommandHandlerTests.cs
-│   │   │   └── UploadReceiptImageCommandHandlerTests.cs
+│   │   │   └── UnstarExpenseTableCommandHandlerTests.cs
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
+│   │   │   ├── GetReceiptExtractionStatusQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
 │   │   └── Services/
 │   │       └── CurrentUserProviderTests.cs
@@ -207,6 +214,10 @@ ExpenseTracker/
 │   ├── Controllers/
 │   │   ├── ExpenseController.cs
 │   │   └── ExpenseTableController.cs
+│   ├── Hubs/
+│   │   └── ReceiptExtractionHub.cs
+│   ├── Messaging/
+│   │   └── ReceiptExtractionCompletedConsumer.cs
 │   ├── Middleware/
 │   │   └── ExceptionHandlingMiddleware.cs
 │   ├── Program.cs
@@ -254,13 +265,10 @@ ExpenseTracker/
 │   │   │   ├── StarExpenseTableCommand.cs
 │   │   │   ├── StarExpenseTableCommandHandler.cs
 │   │   │   └── StarExpenseTableValidator.cs
-│   │   ├── UnstarExpenseTable/
-│   │   │   ├── UnstarExpenseTableCommand.cs
-│   │   │   ├── UnstarExpenseTableCommandHandler.cs
-│   │   │   └── UnstarExpenseTableValidator.cs
-│   │   └── UploadReceiptImage/
-│   │       ├── UploadReceiptImageCommand.cs
-│   │       └── UploadReceiptImageCommandHandler.cs
+│   │   └── UnstarExpenseTable/
+│   │       ├── UnstarExpenseTableCommand.cs
+│   │       ├── UnstarExpenseTableCommandHandler.cs
+│   │       └── UnstarExpenseTableValidator.cs
 │   ├── Queries/
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs
@@ -277,6 +285,9 @@ ExpenseTracker/
 │   │   ├── GetExpenseTablesForUser/
 │   │   │   ├── GetExpenseTablesForUserQuery.cs
 │   │   │   └── GetExpenseTablesForUserQueryHandler.cs
+│   │   ├── GetReceiptExtractionStatus/
+│   │   │   ├── GetReceiptExtractionStatusQuery.cs
+│   │   │   └── GetReceiptExtractionStatusQueryHandler.cs
 │   │   └── GetReceiptImage/
 │   │       ├── GetReceiptImageQuery.cs
 │   │       └── GetReceiptImageQueryHandler.cs
@@ -285,6 +296,7 @@ ExpenseTracker/
 │   │   ├── ExpenseTableDto.cs
 │   │   ├── MonthlySummaryDto.cs
 │   │   ├── ExtractedExpenseDto.cs
+│   │   ├── ReceiptExtractionStatusDto.cs
 │   │   └── ReceiptImageDto.cs
 │   ├── Mappings/
 │   │   └── ExpenseMappingProfile.cs
@@ -299,20 +311,27 @@ ExpenseTracker/
     │   │   ├── ExpenseConfiguration.cs
     │   │   ├── ExpenseTableConfiguration.cs
     │   │   ├── ReceiptConfigurations.cs
+    │   │   ├── ReceiptExtractionJobConfiguration.cs
     │   │   ├── UserConfiguration.cs
     │   │   └── UserExpenseTableConfiguration.cs
     │   └── Repositories/
     │       ├── ExpenseRepository.cs
     │       ├── ExpenseTableRepository.cs
     │       ├── ReceiptRepository.cs
+    │       ├── ReceiptExtractionJobRepository.cs
     │       └── UserRepository.cs
     ├── Migrations/
     ├── Auth/
     │   ├── AuthenticationServiceCollectionExtensions.cs
     │   └── CurrentUserService.cs
-    ├── AI/
-    │   ├── GeminiOptions.cs
-    │   └── GeminiReceiptExtractionService.cs
+    ├── Messaging/
+    │   ├── KafkaOptions.cs
+    │   ├── KafkaReceiptExtractionPublisher.cs
+    │   └── ReceiptExtractionMessages.cs
+    ├── Analyser/
+    │   ├── ReceiptAnalyserOptions.cs
+    │   ├── Auth0TokenProvider.cs
+    │   └── ReceiptAnalyserClient.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
     │   └── AzureBlobReceiptImageStore.cs

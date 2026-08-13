@@ -14,6 +14,7 @@ namespace ExpenseTracker.Infrastructure.Persistence
         public DbSet<Receipt> Receipts { get; set; }
         public DbSet<ExpenseTable> ExpenseTables { get; set; }
         public DbSet<UserExpenseTable> UserExpenseTables { get; set; }
+        public DbSet<ReceiptExtractionJob> ReceiptExtractionJobs { get; set; }
 
         public ExpenseTrackerDbContext(DbContextOptions options) : base(options)
         {

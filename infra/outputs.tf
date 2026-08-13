@@ -18,3 +18,8 @@ output "storage_account_name" {
   description = "Name of the Storage Account holding receipt images"
   value       = azurerm_storage_account.receipts.name
 }
+
+output "blob_temp_container_name" {
+  description = "Name of the container holding receipts awaiting a keep/abandon decision"
+  value       = azurerm_storage_container.receipts_temp.name
+}

@@ -30,9 +30,19 @@ resource "azurerm_linux_web_app" "api" {
     "Auth0__Domain"                        = var.auth0_domain
     "Auth0__Audience"                      = var.auth0_audience
     "Cors__AllowedOrigin"                  = "https://${azurerm_static_web_app.spa.default_host_name}"
-    "Gemini__ApiKey"                       = var.gemini_api_key
     "BlobStorage__ConnectionString"        = azurerm_storage_account.receipts.primary_connection_string
     "BlobStorage__ContainerName"           = azurerm_storage_container.receipts.name
+    "BlobStorage__TempContainerName"       = azurerm_storage_container.receipts_temp.name
+
+    # Receipt extraction now runs in the separate receipt-analyser service. Until a broker and that
+    # service are deployed these stay empty, and extraction will fail in production while the rest
+    # of the app is unaffected.
+    "Kafka__BootstrapServers"        = var.kafka_bootstrap_servers
+    "ReceiptAnalyser__BaseUrl"       = var.receipt_analyser_base_url
+    "ReceiptAnalyser__TokenEndpoint" = "https://${var.auth0_domain}/oauth/token"
+    "ReceiptAnalyser__Audience"      = var.auth0_audience
+    "ReceiptAnalyser__ClientId"      = var.receipt_analyser_client_id
+    "ReceiptAnalyser__ClientSecret"  = var.receipt_analyser_client_secret
   }
 }
 
@@ -51,6 +61,18 @@ resource "azurerm_storage_container" "receipts" {
   container_access_type = "private"
 }
 
+# Landing spot for a receipt photo between upload and the user deciding to keep it. On save the API
+# server-side copies the blob into the permanent container under the same name; on abandon the
+# lifecycle rule below is the entire cleanup story.
+resource "azurerm_storage_container" "receipts_temp" {
+  name                  = var.blob_temp_container_name
+  storage_account_id    = azurerm_storage_account.receipts.id
+  container_access_type = "private"
+}
+
+# Azure allows exactly one management policy per storage account (its ARM name is always "default"),
+# so both rules must live in this single resource. Adding a second
+# azurerm_storage_management_policy for the same account would silently fight with this one.
 resource "azurerm_storage_management_policy" "receipts" {
   storage_account_id = azurerm_storage_account.receipts.id
 
@@ -67,6 +89,24 @@ resource "azurerm_storage_management_policy" "receipts" {
       base_blob {
         tier_to_cool_after_days_since_modification_greater_than = 20
         tier_to_cold_after_days_since_modification_greater_than = 40
+      }
+    }
+  }
+
+  rule {
+    name    = "delete-temp-after-1-day"
+    enabled = true
+
+    filters {
+      prefix_match = [azurerm_storage_container.receipts_temp.name]
+      blob_types   = ["blockBlob"]
+    }
+
+    actions {
+      base_blob {
+        # Azure evaluates lifecycle rules roughly daily, so this is "within ~24-48h" in practice.
+        # Never treat a temp blob as guaranteed gone by a deadline.
+        delete_after_days_since_creation_greater_than = 1
       }
     }
   }

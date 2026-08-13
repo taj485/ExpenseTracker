@@ -5,7 +5,7 @@ import { ExpenseTableService } from '../../core/services/expense-table.service';
 import { convertIfHeic } from '../../core/utils/heic-converter';
 import { todayLocalISODate } from '../../core/utils/date.utils';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
-import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
+import { AddExpenseCommand, ExtractedExpense, ExtractionOutcome } from '../../core/models/expense.model';
 import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
 
 const MAX_DIMENSION = 1600;
@@ -45,7 +45,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   submitting        = signal(false);
   formError         = signal<string | null>(null);
   imageEnlarged     = signal(false);
-  receiptImageReference = signal<string | null>(null);
+  tempImageReference = signal<string | null>(null);
 
   readonly step = signal<'review' | 'select-tables'>('review');
   private pendingCommands: AddExpenseCommand[] | null = null;
@@ -137,19 +137,18 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       this.setFile(resizedFile);
 
       const tableId = this.expenseTableService.tables()[0]?.id ?? 0;
-      const items = await new Promise<ExtractedExpense[]>((resolve, reject) => {
+      // The same call now uploads the photo to the temp container and extracts from it, so there is
+      // no longer a separate fire-and-forget image upload that could fail unnoticed.
+      const outcome = await new Promise<ExtractionOutcome>((resolve, reject) => {
         this.expenseService.extractReceipt(tableId, resizedFile, resolve, (msg) => reject(new Error(msg)));
       });
-      this.extractedExpenses.set(items.map(e => ({ ...e, id: this.nextDraftId++ })));
 
-      this.expenseService.uploadReceiptImage(
-        tableId,
-        resizedFile,
-        (ref) => this.receiptImageReference.set(ref),
-        () => {},
-      );
-    } catch {
-      this.error.set("Couldn't process this image. Try a different photo or format.");
+      this.extractedExpenses.set(outcome.items.map(e => ({ ...e, id: this.nextDraftId++ })));
+      this.tempImageReference.set(outcome.tempReference);
+    } catch (err) {
+      this.error.set(err instanceof Error && err.message
+        ? err.message
+        : "Couldn't process this image. Try a different photo or format.");
       void this.startCamera();
     } finally {
       this.processing.set(false);
@@ -170,7 +169,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.error.set(null);
     this.formError.set(null);
     this.extractedExpenses.set([]);
-    this.receiptImageReference.set(null);
+    this.tempImageReference.set(null);
     this.setFile(null);
     void this.startCamera();
   }
@@ -199,7 +198,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.expenseService.addExpensesBatchToTables(
       tableIds,
       this.pendingCommands,
-      this.receiptImageReference(),
+      this.tempImageReference(),
       (results) => {
         this.submitting.set(false);
 
@@ -218,7 +217,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
           this.pendingCommands = null;
           this.setFile(null);
           this.extractedExpenses.set([]);
-          this.receiptImageReference.set(null);
+          this.tempImageReference.set(null);
           this.step.set('review');
           this.submitted.emit();
           return;

@@ -43,6 +43,27 @@ export interface ExtractedExpense {
   merchant: string | null;
 }
 
+export type ExtractionStatus = 'Pending' | 'Processing' | 'Completed' | 'Failed';
+
+/** Response of POST .../extract-receipt — the work is queued, not done. */
+export interface StartExtractionResult {
+  jobId: string;
+  tempReference: string;
+}
+
+/** Shape shared by the SignalR push and the fallback poll, so both are interchangeable. */
+export interface ReceiptExtractionStatus {
+  jobId: string;
+  status: ExtractionStatus;
+  items: ExtractedExpense[];
+  error: string | null;
+}
+
+export interface ExtractionOutcome {
+  items: ExtractedExpense[];
+  tempReference: string;
+}
+
 export interface BatchItemError {
   index: number;
   errors: string[];

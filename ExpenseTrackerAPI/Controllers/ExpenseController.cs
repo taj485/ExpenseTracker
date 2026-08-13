@@ -3,10 +3,10 @@ using ExpenseTracker.Application.Commands.AddExpensesBatch;
 using ExpenseTracker.Application.Commands.DeleteExpense;
 using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
 using ExpenseTracker.Application.Commands.UpdateExpense;
-using ExpenseTracker.Application.Commands.UploadReceiptImage;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
 using ExpenseTracker.Application.Queries.GetExpensesByReceiptId;
+using ExpenseTracker.Application.Queries.GetReceiptExtractionStatus;
 using ExpenseTracker.Application.Queries.GetReceiptImage;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -98,6 +98,8 @@ namespace ExpenseTrackerAPI.Controllers
         }
 
         // POST api/expensetable/{tableId}/expenses/extract-receipt
+        // Queues the extraction and returns immediately; the result arrives over SignalR, with
+        // GetExtractionStatus below as the fallback.
         [HttpPost("extract-receipt")]
         [RequestSizeLimit(MaxReceiptFileSizeBytes)]
         public async Task<IActionResult> ExtractReceipt(int tableId, IFormFile file, CancellationToken cancellationToken)
@@ -108,23 +110,16 @@ namespace ExpenseTrackerAPI.Controllers
             using var stream = new MemoryStream();
             await file.CopyToAsync(stream, cancellationToken);
 
-            var result = await _mediator.Send(new ExtractReceiptExpensesCommand(stream.ToArray(), file.ContentType), cancellationToken);
-            return Ok(result);
+            var result = await _mediator.Send(new ExtractReceiptExpensesCommand(tableId, stream.ToArray(), file.ContentType), cancellationToken);
+            return Accepted(new { jobId = result.JobId, tempReference = result.TempReference });
         }
 
-        // POST api/expensetable/{tableId}/expenses/receipt-image
-        [HttpPost("receipt-image")]
-        [RequestSizeLimit(MaxReceiptFileSizeBytes)]
-        public async Task<IActionResult> UploadReceiptImage(int tableId, IFormFile file, CancellationToken cancellationToken)
+        // GET api/expensetable/{tableId}/expenses/extract-receipt/{jobId}
+        [HttpGet("extract-receipt/{jobId:guid}")]
+        public async Task<IActionResult> GetExtractionStatus(int tableId, Guid jobId, CancellationToken cancellationToken)
         {
-            if (ValidateReceiptFile(file) is IActionResult invalid)
-                return invalid;
-
-            using var stream = new MemoryStream();
-            await file.CopyToAsync(stream, cancellationToken);
-
-            var imageReference = await _mediator.Send(new UploadReceiptImageCommand(tableId, stream.ToArray(), file.ContentType), cancellationToken);
-            return Ok(new { imageReference });
+            var status = await _mediator.Send(new GetReceiptExtractionStatusQuery(jobId), cancellationToken);
+            return Ok(status);
         }
 
         // PUT api/expensetable/{tableId}/expenses/5

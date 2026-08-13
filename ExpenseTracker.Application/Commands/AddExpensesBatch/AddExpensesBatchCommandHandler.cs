@@ -15,14 +15,16 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
         private readonly IExpenseWriter _expenseWriter;
         private readonly IReceiptWriter _receiptWriter;
         private readonly IExpenseTableReader _expenseTableReader;
+        private readonly IReceiptImageStore _receiptImageStore;
         private readonly IValidator<AddExpenseCommand> _validator;
         private readonly ICurrentUserProvider _currentUserProvider;
 
-        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
+        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IExpenseTableReader expenseTableReader, IReceiptImageStore receiptImageStore, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
         {
             _expenseWriter = expenseWriter;
             _receiptWriter = receiptWriter;
             _expenseTableReader = expenseTableReader;
+            _receiptImageStore = receiptImageStore;
             _validator = validator;
             _currentUserProvider = currentUserProvider;
         }
@@ -37,6 +39,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
             var addedIds = new List<int>();
             var errors = new List<BatchItemError>();
             int? receiptId = null;
+            var imageReference = await PromoteImageAsync(request.TempImageReference, cancellationToken);
 
             for (int i = 0; i < request.Items.Count; i++)
             {
@@ -51,7 +54,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
                 if (receiptId is null)
                 {
-                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference);
+                    var receipt = Receipt.Create(DateTime.UtcNow, imageReference);
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
@@ -61,6 +64,25 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
             }
 
             return new AddExpensesBatchResult(addedIds, errors);
+        }
+
+        /// <summary>
+        /// Copies the receipt image out of the temp container into permanent storage. A missing or
+        /// already-swept image must not fail the save — the expenses matter more than the photo.
+        /// </summary>
+        private async Task<string?> PromoteImageAsync(string? tempReference, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(tempReference))
+                return null;
+
+            try
+            {
+                return await _receiptImageStore.PromoteTempAsync(tempReference, cancellationToken);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         private readonly Mock<IExpenseWriter> _mockExpenseWriter;
         private readonly Mock<IReceiptWriter> _mockReceiptWriter;
         private readonly Mock<IExpenseTableReader> _mockExpenseTableReader;
+        private readonly Mock<IReceiptImageStore> _mockReceiptImageStore;
         private readonly Mock<ICurrentUserProvider> _mockCurrentUserProvider;
         private readonly User _currentUser;
         private readonly AddExpensesBatchCommandHandler _handler;
@@ -24,15 +25,19 @@ namespace ExpenseTracker.Tests.Application.Commands
             _mockExpenseWriter = new Mock<IExpenseWriter>();
             _mockReceiptWriter = new Mock<IReceiptWriter>();
             _mockExpenseTableReader = new Mock<IExpenseTableReader>();
+            _mockReceiptImageStore = new Mock<IReceiptImageStore>();
             _mockCurrentUserProvider = new Mock<ICurrentUserProvider>();
             _currentUser = User.Create("auth0|test-user");
             _mockCurrentUserProvider.Setup(x => x.GetOrProvisionAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_currentUser);
             _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
+            // Promotion keeps the blob name, so the permanent reference matches the temp one.
+            _mockReceiptImageStore.Setup(x => x.PromoteTempAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string name, CancellationToken _) => name);
 
             var validator = new AddExpenseValidator();
-            _handler = new AddExpensesBatchCommandHandler(_mockExpenseWriter.Object, _mockReceiptWriter.Object, _mockExpenseTableReader.Object, validator, _mockCurrentUserProvider.Object);
+            _handler = new AddExpensesBatchCommandHandler(_mockExpenseWriter.Object, _mockReceiptWriter.Object, _mockExpenseTableReader.Object, _mockReceiptImageStore.Object, validator, _mockCurrentUserProvider.Object);
 
             var nextId = 1;
             _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
@@ -119,22 +124,83 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
-        public async Task Handle_WithReceiptImageReference_SetsItOnCreatedReceipt()
+        public async Task Handle_WithTempImageReference_PromotesItAndSetsItOnCreatedReceipt()
         {
             var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
             {
                 new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
-            }, ReceiptImageReference: "abc123.jpg");
+            }, TempImageReference: "abc123.jpg");
 
-            Receipt? capturedReceipt = null;
-            _mockReceiptWriter.Setup(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()))
-                .Callback<Receipt, CancellationToken>((r, _) => capturedReceipt = r)
-                .ReturnsAsync(1);
+            var capturedReceipt = CaptureReceipt();
 
             await _handler.Handle(command, CancellationToken.None);
 
-            capturedReceipt.Should().NotBeNull();
-            capturedReceipt!.ImageReference.Should().Be("abc123.jpg");
+            _mockReceiptImageStore.Verify(x => x.PromoteTempAsync("abc123.jpg", It.IsAny<CancellationToken>()), Times.Once);
+            capturedReceipt().Should().NotBeNull();
+            capturedReceipt()!.ImageReference.Should().Be("abc123.jpg");
+        }
+
+        [Fact]
+        public async Task Handle_WithoutTempImageReference_DoesNotPromote()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
+            });
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            _mockReceiptImageStore.Verify(x => x.PromoteTempAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WhenPromotionReturnsNull_StillSavesExpensesWithoutImage()
+        {
+            // The temp blob was swept by the lifecycle rule before the user hit save. Losing the photo
+            // is acceptable; losing the expenses is not.
+            _mockReceiptImageStore.Setup(x => x.PromoteTempAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string?)null);
+
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
+            }, TempImageReference: "gone.jpg");
+
+            var capturedReceipt = CaptureReceipt();
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().ContainSingle();
+            result.Errors.Should().BeEmpty();
+            capturedReceipt()!.ImageReference.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task Handle_WhenPromotionThrows_StillSavesExpensesWithoutImage()
+        {
+            _mockReceiptImageStore.Setup(x => x.PromoteTempAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("storage unavailable"));
+
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
+            }, TempImageReference: "boom.jpg");
+
+            var capturedReceipt = CaptureReceipt();
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().ContainSingle();
+            capturedReceipt()!.ImageReference.Should().BeNull();
+        }
+
+        private Func<Receipt?> CaptureReceipt()
+        {
+            Receipt? captured = null;
+            _mockReceiptWriter.Setup(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()))
+                .Callback<Receipt, CancellationToken>((r, _) => captured = r)
+                .ReturnsAsync(1);
+            return () => captured;
         }
 
         [Fact]
