@@ -126,7 +126,7 @@ export class ExpenseListComponent implements OnInit {
     return groups;
   });
 
-  private readonly PAGE_SIZE = 10;
+  private readonly PAGE_SIZE = 100;
   readonly currentPage = signal(1);
 
   readonly pages = computed<ExpenseRow[][]>(() => {
