@@ -1,0 +1,13 @@
+.merchant-logo {
+  display: block;
+  height: 32px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.merchant-name {
+  display: block;
+  overflow-wrap: anywhere;
+}

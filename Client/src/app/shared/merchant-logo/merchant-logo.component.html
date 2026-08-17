@@ -1,0 +1,12 @@
+@if (logoUrl(); as url) {
+  <img
+    class="merchant-logo"
+    [src]="url"
+    [alt]="merchant() ?? ''"
+    [title]="merchant() ?? ''"
+    loading="lazy"
+    (error)="onLogoError()"
+  />
+} @else {
+  <span class="merchant-name">{{ merchant() || '—' }}</span>
+}

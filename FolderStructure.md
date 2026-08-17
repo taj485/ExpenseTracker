@@ -54,7 +54,9 @@ ExpenseTracker/
 │   │       │   │   ├── date.utils.spec.ts
 │   │       │   │   ├── download.utils.ts
 │   │       │   │   ├── heic-converter.ts
-│   │       │   │   └── heic-converter.spec.ts
+│   │       │   │   ├── heic-converter.spec.ts
+│   │       │   │   ├── merchant.utils.ts
+│   │       │   │   └── merchant.utils.spec.ts
 │   │       │   └── auth/
 │   │       │       ├── auth.guard.ts
 │   │       │       ├── auth.guard.spec.ts
@@ -75,10 +77,14 @@ ExpenseTracker/
 │   │       │       └── topbar.component.css
 │   │       ├── shared/
 │   │       │   ├── drag-to-dismiss.directive.ts
-│   │       │   └── confirm-dialog/
-│   │       │       ├── confirm-dialog.component.ts
-│   │       │       ├── confirm-dialog.component.html
-│   │       │       └── confirm-dialog.component.css
+│   │       │   ├── confirm-dialog/
+│   │       │   │   ├── confirm-dialog.component.ts
+│   │       │   │   ├── confirm-dialog.component.html
+│   │       │   │   └── confirm-dialog.component.css
+│   │       │   └── merchant-logo/
+│   │       │       ├── merchant-logo.component.ts
+│   │       │       ├── merchant-logo.component.html
+│   │       │       └── merchant-logo.component.css
 │   │       └── features/
 │   │           ├── home/
 │   │           │   ├── home.component.ts

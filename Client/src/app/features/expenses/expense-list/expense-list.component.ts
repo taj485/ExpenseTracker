@@ -7,6 +7,7 @@ import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { getCategoryMeta, ALL_CATEGORIES } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { MerchantLogoComponent } from '../../../shared/merchant-logo/merchant-logo.component';
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 
@@ -28,7 +29,7 @@ interface ExpenseRow {
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent],
+  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent, MerchantLogoComponent],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

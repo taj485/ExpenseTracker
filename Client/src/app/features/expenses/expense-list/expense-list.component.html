@@ -103,7 +103,9 @@
               (mouseleave)="hoveredGroupKey.set(null)"
               (click)="viewExpense(row.expense.id)">
             @if (row.isGroupStart) {
-              <td class="col-merchant" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.merchant || '—' }}</td>
+              <td class="col-merchant" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">
+                <app-merchant-logo [merchant]="row.expense.merchant" />
+              </td>
               <td class="col-date" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.date | date:'dd/MM/yy' }}</td>
             }
             <td class="col-description">{{ row.expense.description }}</td>
