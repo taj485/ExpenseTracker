@@ -30,9 +30,14 @@ resource "azurerm_linux_web_app" "api" {
     "Auth0__Domain"                        = var.auth0_domain
     "Auth0__Audience"                      = var.auth0_audience
     "Cors__AllowedOrigin"                  = "https://${azurerm_static_web_app.spa.default_host_name}"
-    "BlobStorage__ConnectionString"        = azurerm_storage_account.receipts.primary_connection_string
-    "BlobStorage__ContainerName"           = azurerm_storage_container.receipts.name
-    "BlobStorage__TempContainerName"       = azurerm_storage_container.receipts_temp.name
+
+    # Still required: the deployed API extracts receipts in-process. Remove this only once the
+    # Kafka-based receipt-analyser is actually deployed and serving extractions, not merely merged.
+    "Gemini__ApiKey" = var.gemini_api_key
+
+    "BlobStorage__ConnectionString"  = azurerm_storage_account.receipts.primary_connection_string
+    "BlobStorage__ContainerName"     = azurerm_storage_container.receipts.name
+    "BlobStorage__TempContainerName" = azurerm_storage_container.receipts_temp.name
 
     # Receipt extraction now runs in the separate receipt-analyser service. Until a broker and that
     # service are deployed these stay empty, and extraction will fail in production while the rest

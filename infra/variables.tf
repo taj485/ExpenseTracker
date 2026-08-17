@@ -43,11 +43,11 @@ variable "database_connection_string" {
   sensitive   = true
 }
 
-# Extraction moved out of the API into the expensetracker-receipt-analyser service, which is not
-# deployed by this configuration yet. Kept declared so existing terraform.tfvars stays valid and the
-# key is ready to wire up when that service gets an Azure home.
+# Still consumed by the deployed API, which extracts receipts in-process. The Kafka-based
+# receipt-analyser will take this over, but it is not deployed by this configuration yet, so
+# removing this setting from the web app breaks receipt extraction in production.
 variable "gemini_api_key" {
-  description = "API key for the Google Gemini API. Consumed by the receipt-analyser service, no longer by the API."
+  description = "API key for the Google Gemini API used for receipt extraction"
   type        = string
   sensitive   = true
 }

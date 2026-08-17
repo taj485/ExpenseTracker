@@ -7,7 +7,8 @@ storage_account_name       = "stexpensetrackerprod"
 blob_container_name        = "receipt-images"
 blob_temp_container_name   = "receipt-temp"
 
-# Consumed by the receipt-analyser service, not by the API.
+# Required: the deployed API extracts receipts in-process. The receipt-analyser will take this over
+# once it is deployed; until then, dropping this breaks receipt extraction in production.
 gemini_api_key = "xxx"
 
 # Receipt extraction runs in expensetracker-receipt-analyser, which this configuration does not
