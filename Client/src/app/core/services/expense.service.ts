@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 import { parseFilenameFromContentDisposition } from '../utils/download.utils';
+import { expenseTotal } from '../utils/expense.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
@@ -30,7 +31,7 @@ export class ExpenseService {
   });
 
   readonly thisMonthSpent = computed(() =>
-    this.thisMonthExpenses().reduce((sum, e) => sum + e.amount, 0)
+    this.thisMonthExpenses().reduce((sum, e) => sum + expenseTotal(e), 0)
   );
 
   readonly transactionCount = computed(() => this.thisMonthExpenses().length);
@@ -41,7 +42,7 @@ export class ExpenseService {
 
     const totals = new Map<ExpenseCategory, number>();
     for (const e of expenses) {
-      totals.set(e.category, (totals.get(e.category) ?? 0) + e.amount);
+      totals.set(e.category, (totals.get(e.category) ?? 0) + expenseTotal(e));
     }
 
     let topName: ExpenseCategory = expenses[0].category;
@@ -61,7 +62,7 @@ export class ExpenseService {
     const totals = new Map<ExpenseCategory, { total: number; count: number }>();
     for (const e of expenses) {
       const existing = totals.get(e.category) ?? { total: 0, count: 0 };
-      totals.set(e.category, { total: existing.total + e.amount, count: existing.count + 1 });
+      totals.set(e.category, { total: existing.total + expenseTotal(e), count: existing.count + 1 });
     }
 
     return Array.from(totals.entries())

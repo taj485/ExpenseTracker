@@ -35,7 +35,10 @@
               <span class="group-item-description">{{ item.description }}</span>
             </div>
             <div class="group-item-actions">
-              <span class="group-item-amount">£{{ item.amount | number:'1.2-2' }}</span>
+              @if (item.quantity > 1) {
+                <span class="group-item-qty">{{ item.quantity }} × £{{ item.unitPrice | number:'1.2-2' }}</span>
+              }
+              <span class="group-item-amount">£{{ lineTotal(item) | number:'1.2-2' }}</span>
               <button type="button" class="group-item-link" (click)="viewItem(item.id)">View</button>
               <button type="button" class="group-item-link" (click)="editItem(item.id)">Edit</button>
             </div>

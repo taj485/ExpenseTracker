@@ -53,6 +53,8 @@ ExpenseTracker/
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
 │   │       │   │   ├── download.utils.ts
+│   │       │   │   ├── expense.utils.ts
+│   │       │   │   ├── expense.utils.spec.ts
 │   │       │   │   ├── heic-converter.ts
 │   │       │   │   ├── heic-converter.spec.ts
 │   │       │   │   ├── merchant.utils.ts

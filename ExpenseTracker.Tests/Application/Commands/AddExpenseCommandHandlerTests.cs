@@ -47,26 +47,64 @@ namespace ExpenseTracker.Tests.Application.Commands
 
             // Assert
             _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e =>
-                e.Amount.Amount == command.Amount &&
+                e.UnitPrice.Amount == command.UnitPrice &&
                 e.Category == command.Category &&
                 e.Description == command.Description &&
                 e.ExpenseTableId == command.ExpenseTableId), It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task Handle_WithQuantity_PassesQuantityToExpense()
+        {
+            // Arrange
+            var command = new AddExpenseCommand(TableId, 2.50m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow, Quantity: 3);
+
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            // Act
+            await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e =>
+                e.UnitPrice.Amount == 2.50m &&
+                e.Quantity == 3), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(-10)]
-        public async Task Handle_WithInvalidAmount_ThrowsValidationException(decimal amount)
+        public async Task Handle_WithInvalidUnitPrice_ThrowsValidationException(decimal unitPrice)
         {
             // Arrange
-            var command = new AddExpenseCommand(TableId, amount, ExpenseCategory.Food, "Dinner", DateTime.UtcNow);
+            var command = new AddExpenseCommand(TableId, unitPrice, ExpenseCategory.Food, "Dinner", DateTime.UtcNow);
 
             // Act
             Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
             // Assert
             await act.Should().ThrowAsync<ValidationException>()
-                .WithMessage("*Amount*");
+                .WithMessage("*Unit price*");
+
+            _mockExpenseWriter.Verify(
+                x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-2)]
+        public async Task Handle_WithInvalidQuantity_ThrowsValidationException(int quantity)
+        {
+            // Arrange
+            var command = new AddExpenseCommand(TableId, 50m, ExpenseCategory.Food, "Dinner", DateTime.UtcNow, Quantity: quantity);
+
+            // Act
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*Quantity*");
 
             _mockExpenseWriter.Verify(
                 x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()),

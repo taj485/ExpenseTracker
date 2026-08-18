@@ -36,7 +36,7 @@ namespace ExpenseTracker.Tests.Application.Commands
             result.Should().HaveCount(2);
             result[0].Should().BeEquivalentTo(new ExtractedExpenseDto
             {
-                Amount = 4.5m,
+                UnitPrice = 4.5m,
                 Category = "Food",
                 Description = "Coffee",
                 Date = new DateOnly(2026, 7, 10),

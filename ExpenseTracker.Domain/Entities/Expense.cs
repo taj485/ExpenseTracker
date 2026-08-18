@@ -8,7 +8,8 @@ namespace ExpenseTracker.Domain.Entities
     public class Expense
     {
         public int Id { get; private set; }
-        public Money Amount { get; private set; }
+        public Money UnitPrice { get; private set; }
+        public int Quantity { get; private set; }
         public ExpenseCategory Category { get; private set; }
         public string Description { get; private set; }
         public DateTime Date { get; private set; }
@@ -21,15 +22,19 @@ namespace ExpenseTracker.Domain.Entities
 
         private Expense() { }
 
-        public static Expense Create(decimal amount, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            string? merchant = null, int? receiptId = null)
+        public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
+            string? merchant = null, int? receiptId = null, int quantity = 1)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
 
+            if (quantity < 1)
+                throw new DomainException("Quantity must be at least 1");
+
             return new Expense
             {
-                Amount = Money.Create(amount),
+                UnitPrice = Money.Create(unitPrice),
+                Quantity = quantity,
                 Category = category,
                 Description = description,
                 Date = date,
@@ -40,9 +45,17 @@ namespace ExpenseTracker.Domain.Entities
             };
         }
 
-        public void UpdateAmount(decimal newAmount)
+        public void UpdateUnitPrice(decimal newUnitPrice)
         {
-            Amount = Money.Create(newAmount);
+            UnitPrice = Money.Create(newUnitPrice);
+        }
+
+        public void UpdateQuantity(int quantity)
+        {
+            if (quantity < 1)
+                throw new DomainException("Quantity must be at least 1");
+
+            Quantity = quantity;
         }
 
         public void UpdateDescription(string description)

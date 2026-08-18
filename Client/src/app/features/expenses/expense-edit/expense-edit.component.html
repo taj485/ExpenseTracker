@@ -11,15 +11,28 @@
 
       <form (ngSubmit)="onSubmit()" #f="ngForm">
         <div class="form-group">
-          <label for="amount">Amount (£)</label>
+          <label for="unitPrice">Unit Price (£)</label>
           <input
-            id="amount"
+            id="unitPrice"
             type="number"
             step="0.01"
             min="0.01"
             placeholder="0.00"
-            [value]="amount()"
-            (input)="amount.set($any($event.target).value)"
+            [value]="unitPrice()"
+            (input)="unitPrice.set($any($event.target).value)"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Quantity</label>
+          <input
+            id="quantity"
+            type="number"
+            step="1"
+            min="1"
+            [value]="quantity()"
+            (input)="quantity.set($any($event.target).value)"
             required
           />
         </div>

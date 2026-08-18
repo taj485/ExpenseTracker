@@ -157,11 +157,15 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 560px;
+  min-width: 620px;
 }
 
-.col-amount {
+.col-unit-price {
   width: 100px;
+}
+
+.col-quantity {
+  width: 56px;
 }
 
 .col-merchant {

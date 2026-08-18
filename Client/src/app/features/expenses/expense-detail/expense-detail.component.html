@@ -28,8 +28,12 @@
 
       <div class="detail-fields">
         <div class="field">
-          <div class="field-label">Amount</div>
-          <div class="field-value amount">£{{ e.amount | number:'1.2-2' }} {{ e.currency }}</div>
+          <div class="field-label">Unit Price</div>
+          <div class="field-value amount">£{{ e.unitPrice | number:'1.2-2' }} {{ e.currency }}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Quantity</div>
+          <div class="field-value">{{ e.quantity }}</div>
         </div>
         @if (e.merchant) {
           <div class="field">

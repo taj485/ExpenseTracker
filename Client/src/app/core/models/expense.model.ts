@@ -2,7 +2,8 @@ export type ExpenseCategory = 'Food' | 'Transport' | 'Utilities' | 'Entertainmen
 
 export interface Expense {
   id: number;
-  amount: number;
+  unitPrice: number;
+  quantity: number;
   currency: string;
   description: string;
   category: ExpenseCategory;
@@ -13,7 +14,8 @@ export interface Expense {
 
 export interface AddExpenseCommand {
   expenseTableId: number;
-  amount: number;
+  unitPrice: number;
+  quantity: number;
   category: ExpenseCategory;
   description: string;
   date: string;
@@ -21,7 +23,8 @@ export interface AddExpenseCommand {
 }
 
 export interface UpdateExpenseCommand {
-  amount: number;
+  unitPrice: number;
+  quantity: number;
   category: ExpenseCategory;
   description: string;
   merchant: string | null;
@@ -35,7 +38,7 @@ export interface CategoryStat {
 }
 
 export interface ExtractedExpense {
-  amount: number;
+  unitPrice: number;
   category: ExpenseCategory;
   description: string;
   date: string;
