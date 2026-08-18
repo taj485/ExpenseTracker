@@ -33,7 +33,7 @@ namespace ExpenseTracker.Application.Commands.AddExpense
             if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
 
-            var expense = Expense.Create(request.Amount, request.Category, request.Description, request.Date, request.ExpenseTableId, request.Merchant);
+            var expense = Expense.Create(request.UnitPrice, request.Category, request.Description, request.Date, request.ExpenseTableId, request.Merchant, quantity: request.Quantity);
             int id = await _expenseWriter.AddAsync(expense, cancellationToken);
             return id;
         }

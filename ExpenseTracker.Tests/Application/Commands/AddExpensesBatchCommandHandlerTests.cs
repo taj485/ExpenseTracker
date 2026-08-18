@@ -96,7 +96,7 @@ namespace ExpenseTracker.Tests.Application.Commands
             result.AddedIds.Should().Equal(1, 2);
             result.Errors.Should().ContainSingle();
             result.Errors[0].Index.Should().Be(1);
-            result.Errors[0].Errors.Should().Contain(m => m.Contains("Amount"));
+            result.Errors[0].Errors.Should().Contain(m => m.Contains("Unit price"));
             _mockExpenseWriter.Verify(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
             _mockReceiptWriter.Verify(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()), Times.Once);
         }

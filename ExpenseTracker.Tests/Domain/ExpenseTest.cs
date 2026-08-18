@@ -22,7 +22,7 @@ namespace ExpenseTracker.Tests.Domain
             var expense = Expense.Create(amount, category, description, DateTime.UtcNow, TestTableId);
 
             // Assert
-            expense.Amount.Amount.Should().Be(50m);
+            expense.UnitPrice.Amount.Should().Be(50m);
             expense.Category.Should().Be(ExpenseCategory.Food);
             expense.Description.Should().Be("Lunch");
             expense.Date.Date.Should().Be(DateTime.UtcNow.Date);
@@ -60,15 +60,61 @@ namespace ExpenseTracker.Tests.Domain
         }
 
         [Fact]
-        public void UpdateAmount_WithValidAmount_UpdatesAmount()
+        public void Create_WithoutQuantity_DefaultsToOne()
+        {
+            // Arrange & Act
+            var expense = Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId);
+            // Assert
+            expense.Quantity.Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-3)]
+        public void Create_WithQuantityBelowOne_ThrowsDomainException(int quantity)
+        {
+            // Arrange & Act
+            Action act = () => Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId, quantity: quantity);
+            // Assert
+            act.Should().Throw<DomainException>()
+                .WithMessage("Quantity must be at least 1");
+        }
+
+        [Fact]
+        public void UpdateUnitPrice_WithValidUnitPrice_UpdatesUnitPrice()
         {
             // Arrange
             var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestTableId);
-            var newAmount = 35m;
+            var newUnitPrice = 35m;
             // Act
-            expense.UpdateAmount(newAmount);
+            expense.UpdateUnitPrice(newUnitPrice);
             // Assert
-            expense.Amount.Amount.Should().Be(35m);
+            expense.UnitPrice.Amount.Should().Be(35m);
+        }
+
+        [Fact]
+        public void UpdateQuantity_WithValidQuantity_UpdatesQuantity()
+        {
+            // Arrange
+            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestTableId);
+            // Act
+            expense.UpdateQuantity(5);
+            // Assert
+            expense.Quantity.Should().Be(5);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-3)]
+        public void UpdateQuantity_WithQuantityBelowOne_ThrowsDomainException(int quantity)
+        {
+            // Arrange
+            var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestTableId);
+            // Act
+            Action act = () => expense.UpdateQuantity(quantity);
+            // Assert
+            act.Should().Throw<DomainException>()
+                .WithMessage("Quantity must be at least 1");
         }
 
         [Fact]

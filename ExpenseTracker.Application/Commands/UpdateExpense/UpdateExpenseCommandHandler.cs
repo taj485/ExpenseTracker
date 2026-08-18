@@ -38,7 +38,8 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
             if (!await _expenseTableReader.IsMemberAsync(expense.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense with id {request.Id} was not found");
 
-            expense.UpdateAmount(request.Amount);
+            expense.UpdateUnitPrice(request.UnitPrice);
+            expense.UpdateQuantity(request.Quantity);
             expense.UpdateCategory(request.Category);
             expense.UpdateDescription(request.Description);
             expense.UpdateMerchant(request.Merchant);

@@ -182,7 +182,8 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.formError.set(null);
     this.pendingCommands = items.map(i => ({
       expenseTableId: 0,
-      amount: Math.round(i.amount * i.quantity * 100) / 100,
+      unitPrice: i.unitPrice,
+      quantity: i.quantity,
       category: i.category,
       description: i.description.trim(),
       date: i.date,

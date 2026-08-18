@@ -96,6 +96,8 @@
 
 .group-item-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
+.group-item-qty { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
 .group-item-amount { font-size: 0.9rem; font-weight: 700; color: var(--teal); }
 
 .group-item-link {

@@ -26,7 +26,8 @@ export class AddExpenseFormComponent {
   readonly step = signal<'form' | 'select-tables'>('form');
   private pendingCommand: Omit<AddExpenseCommand, 'expenseTableId'> | null = null;
 
-  amount      = signal('');
+  unitPrice   = signal('');
+  quantity    = signal('1');
   category    = signal<ExpenseCategory>('Food');
   description = signal('');
   date        = signal(todayLocalISODate());
@@ -35,11 +36,16 @@ export class AddExpenseFormComponent {
   formError   = signal<string | null>(null);
 
   onSubmit(): void {
-    const amount = parseFloat(this.amount());
+    const unitPrice = parseFloat(this.unitPrice());
+    const quantity = parseInt(this.quantity(), 10);
     const description = this.description().trim();
 
-    if (isNaN(amount) || amount <= 0) {
-      this.formError.set('Amount must be greater than zero.');
+    if (isNaN(unitPrice) || unitPrice <= 0) {
+      this.formError.set('Unit price must be greater than zero.');
+      return;
+    }
+    if (isNaN(quantity) || quantity < 1) {
+      this.formError.set('Quantity must be at least 1.');
       return;
     }
     if (!description) {
@@ -53,7 +59,8 @@ export class AddExpenseFormComponent {
 
     this.formError.set(null);
     this.pendingCommand = {
-      amount,
+      unitPrice,
+      quantity,
       category: this.category(),
       description,
       date: this.date(),
@@ -72,7 +79,8 @@ export class AddExpenseFormComponent {
       () => {
         this.submitting.set(false);
         this.pendingCommand = null;
-        this.amount.set('');
+        this.unitPrice.set('');
+        this.quantity.set('1');
         this.description.set('');
         this.category.set('Food');
         this.date.set(todayLocalISODate());

@@ -31,8 +31,9 @@ namespace ExpenseTracker.Application.Queries.GetExpensesByReceiptId
                 .Select(expense => new ExpenseDto
             {
                 Id = expense.Id,
-                Amount = expense.Amount.Amount,
-                Currency = expense.Amount.Currency,
+                UnitPrice = expense.UnitPrice.Amount,
+                Quantity = expense.Quantity,
+                Currency = expense.UnitPrice.Currency,
                 Category = expense.Category.ToString(),
                 Description = expense.Description,
                 Date = expense.Date,

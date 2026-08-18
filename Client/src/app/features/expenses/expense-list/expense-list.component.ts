@@ -10,8 +10,9 @@ import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-d
 import { MerchantLogoComponent } from '../../../shared/merchant-logo/merchant-logo.component';
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
+import { expenseTotal } from '../../../core/utils/expense.utils';
 
-type SortColumn = 'date' | 'description' | 'amount' | 'category' | 'merchant';
+type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
 
 interface ExpenseGroup {
@@ -90,7 +91,7 @@ export class ExpenseListComponent implements OnInit {
   });
 
   readonly filteredTotal = computed(() =>
-    this.filteredExpenses().reduce((sum, e) => sum + e.amount, 0)
+    this.filteredExpenses().reduce((sum, e) => sum + expenseTotal(e), 0)
   );
 
   readonly filteredCount = computed(() => this.filteredExpenses().length);
@@ -100,7 +101,8 @@ export class ExpenseListComponent implements OnInit {
     const direction = this.sortDirection() === 'asc' ? 1 : -1;
     switch (column) {
       case 'date':        return (new Date(a.date).getTime() - new Date(b.date).getTime()) * direction;
-      case 'amount':      return (a.amount - b.amount) * direction;
+      case 'unitPrice':   return (a.unitPrice - b.unitPrice) * direction;
+      case 'quantity':    return (a.quantity - b.quantity) * direction;
       case 'description': return a.description.localeCompare(b.description) * direction;
       case 'category':    return a.category.localeCompare(b.category) * direction;
       case 'merchant':    return (a.merchant ?? '').localeCompare(b.merchant ?? '') * direction;

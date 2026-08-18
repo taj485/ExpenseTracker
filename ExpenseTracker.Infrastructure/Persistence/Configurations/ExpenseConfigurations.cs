@@ -18,10 +18,10 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(250);
 
-            builder.ComplexProperty(e => e.Amount, money =>
+            builder.ComplexProperty(e => e.UnitPrice, money =>
             {
                 money.Property(e => e.Amount)
-                    .HasColumnName("Amount")
+                    .HasColumnName("UnitPrice")
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
 
@@ -30,6 +30,10 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                 .HasMaxLength(3)
                 .IsRequired();
             });
+
+            builder.Property(e => e.Quantity)
+                .IsRequired()
+                .HasDefaultValue(1);
 
             builder.Property(e => e.Date)
                 .HasConversion(

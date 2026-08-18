@@ -19,7 +19,7 @@ namespace ExpenseTracker.Application.Commands.ExtractReceiptExpenses
 
             return items.Select(i => new ExtractedExpenseDto
             {
-                Amount = i.Amount,
+                UnitPrice = i.UnitPrice,
                 Category = i.Category.ToString(),
                 Description = i.Description,
                 Date = i.Date,

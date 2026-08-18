@@ -55,7 +55,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
-                var expense = Expense.Create(item.Amount, item.Category, item.Description, item.Date, item.ExpenseTableId, item.Merchant, receiptId);
+                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, item.Merchant, receiptId, item.Quantity);
                 var id = await _expenseWriter.AddAsync(expense, cancellationToken);
                 addedIds.Add(id);
             }

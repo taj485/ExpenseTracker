@@ -93,7 +93,7 @@ namespace ExpenseTracker.Infrastructure.AI
 
             foreach (var raw in rawItems)
             {
-                if (raw.Amount <= 0)
+                if (raw.UnitPrice <= 0)
                     continue;
 
                 if (!TryNormalizeCategory(raw.Category, out var category))
@@ -106,7 +106,7 @@ namespace ExpenseTracker.Infrastructure.AI
                 var quantity = raw.Quantity < 1 ? 1 : raw.Quantity;
                 var merchant = string.IsNullOrWhiteSpace(raw.Merchant) ? null : ToTitleCase(raw.Merchant);
 
-                results.Add(new ExtractedReceiptItem(raw.Amount, category, ToTitleCase(raw.Description), date, quantity, merchant));
+                results.Add(new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant));
             }
 
             return results;
@@ -146,21 +146,21 @@ namespace ExpenseTracker.Infrastructure.AI
                     Type = GenAIType.Object,
                     Properties = new Dictionary<string, Schema>
                     {
-                        ["amount"] = new Schema { Type = GenAIType.Number, Description = "Unit price of the item, not the line total." },
+                        ["unitPrice"] = new Schema { Type = GenAIType.Number, Description = "Unit price of the item, not the line total." },
                         ["category"] = new Schema { Type = GenAIType.String, Enum = AllowedCategories.ToList() },
                         ["description"] = new Schema { Type = GenAIType.String },
                         ["date"] = new Schema { Type = GenAIType.String, Format = "date", Description = "Purchase date in YYYY-MM-DD format, if visible on the receipt." },
                         ["quantity"] = new Schema { Type = GenAIType.Integer },
                         ["merchant"] = new Schema { Type = GenAIType.String, Description = "The shop or merchant name printed on the receipt. Use the exact same value for every item on this receipt." },
                     },
-                    Required = new List<string> { "amount", "category", "description", "date", "quantity", "merchant" },
+                    Required = new List<string> { "unitPrice", "category", "description", "date", "quantity", "merchant" },
                 },
             };
         }
 
         private class RawReceiptItem
         {
-            public decimal Amount { get; set; }
+            public decimal UnitPrice { get; set; }
             public string? Category { get; set; }
             public string? Description { get; set; }
             public string? Date { get; set; }

@@ -28,7 +28,8 @@ export class ExpenseEditComponent implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
 
-  amount = signal('');
+  unitPrice = signal('');
+  quantity = signal('1');
   category = signal<ExpenseCategory>('Food');
   description = signal('');
   merchant = signal('');
@@ -42,7 +43,8 @@ export class ExpenseEditComponent implements OnInit {
       this.tableId,
       this.id,
       (e) => {
-        this.amount.set(String(e.amount));
+        this.unitPrice.set(String(e.unitPrice));
+        this.quantity.set(String(e.quantity));
         this.category.set(e.category);
         this.description.set(e.description);
         this.merchant.set(e.merchant ?? '');
@@ -56,11 +58,16 @@ export class ExpenseEditComponent implements OnInit {
   }
 
   onSubmit(): void {
-    const amount = parseFloat(this.amount());
+    const unitPrice = parseFloat(this.unitPrice());
+    const quantity = parseInt(this.quantity(), 10);
     const description = this.description().trim();
 
-    if (isNaN(amount) || amount <= 0) {
-      this.formError.set('Amount must be greater than zero.');
+    if (isNaN(unitPrice) || unitPrice <= 0) {
+      this.formError.set('Unit price must be greater than zero.');
+      return;
+    }
+    if (isNaN(quantity) || quantity < 1) {
+      this.formError.set('Quantity must be at least 1.');
       return;
     }
     if (!description) {
@@ -74,7 +81,7 @@ export class ExpenseEditComponent implements OnInit {
     this.expenseService.updateExpense(
       this.tableId,
       this.id,
-      { amount, category: this.category(), description, merchant: this.merchant().trim() || null },
+      { unitPrice, quantity, category: this.category(), description, merchant: this.merchant().trim() || null },
       () => {
         this.submitting.set(false);
         this.router.navigate(['/expenses/table', this.tableId, this.id]);

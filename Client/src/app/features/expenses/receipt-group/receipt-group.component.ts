@@ -4,6 +4,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
+import { expenseTotal } from '../../../core/utils/expense.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
@@ -32,8 +33,9 @@ export class ReceiptGroupComponent implements OnInit {
   readonly actionError = signal<string | null>(null);
 
   getCategoryMeta = getCategoryMeta;
+  lineTotal = expenseTotal;
 
-  readonly totalAmount = computed(() => this.items().reduce((sum, i) => sum + i.amount, 0));
+  readonly totalAmount = computed(() => this.items().reduce((sum, i) => sum + expenseTotal(i), 0));
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
