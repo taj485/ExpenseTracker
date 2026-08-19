@@ -12,13 +12,15 @@ namespace ExpenseTracker.Application.Commands.AddExpense
         private readonly IExpenseTableReader _expenseTableReader;
         private readonly IValidator<AddExpenseCommand> _validator;
         private readonly ICurrentUserProvider _currentUserProvider;
+        private readonly IMerchantResolver _merchantResolver;
 
-        public AddExpenseCommandHandler(IExpenseWriter expenseWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
+        public AddExpenseCommandHandler(IExpenseWriter expenseWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider, IMerchantResolver merchantResolver)
         {
             _expenseWriter = expenseWriter;
             _expenseTableReader = expenseTableReader;
             _validator = validator;
             _currentUserProvider = currentUserProvider;
+            _merchantResolver = merchantResolver;
         }
 
         public async Task<int> Handle(AddExpenseCommand request, CancellationToken cancellationToken)
@@ -33,7 +35,9 @@ namespace ExpenseTracker.Application.Commands.AddExpense
             if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
 
-            var expense = Expense.Create(request.UnitPrice, request.Category, request.Description, request.Date, request.ExpenseTableId, request.Merchant, quantity: request.Quantity);
+            var merchantId = await _merchantResolver.ResolveOrCreateAsync(request.Merchant, cancellationToken);
+
+            var expense = Expense.Create(request.UnitPrice, request.Category, request.Description, request.Date, request.ExpenseTableId, merchantId, quantity: request.Quantity);
             int id = await _expenseWriter.AddAsync(expense, cancellationToken);
             return id;
         }

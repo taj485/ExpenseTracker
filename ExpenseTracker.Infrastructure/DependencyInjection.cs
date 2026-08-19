@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.Domain.Interfaces;
+using ExpenseTracker.Domain.Interfaces;
 using ExpenseTracker.Infrastructure.AI;
 using ExpenseTracker.Infrastructure.Auth;
 using ExpenseTracker.Infrastructure.Persistence;
@@ -33,6 +33,10 @@ namespace ExpenseTracker.Infrastructure
             services.AddScoped<IExpenseTableWriter, ExpenseTableRepository>();
 
             services.AddScoped<IExpenseTableReader, ExpenseTableRepository>();
+
+            services.AddScoped<IMerchantReader, MerchantRepository>();
+
+            services.AddScoped<IMerchantWriter, MerchantRepository>();
 
             services.AddScoped<IReceiptWriter, ReceiptRepository>();
 

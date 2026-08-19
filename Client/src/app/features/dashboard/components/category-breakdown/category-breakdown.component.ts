@@ -15,6 +15,9 @@ import { getCategoryMeta } from '../../../../core/utils/category.utils';
 export class CategoryBreakdownComponent {
   @Input() stats: CategoryStat[] = [];
   @Input() tableId: number | null = null;
+  /** Month being shown, as 'YYYY-MM' — carried into the drill-through link. */
+  @Input() month = '';
+  @Input() monthLabel = '';
 
   private readonly router = inject(Router);
 
@@ -23,8 +26,8 @@ export class CategoryBreakdownComponent {
   viewCategory(category: ExpenseCategory): void {
     if (this.tableId === null) return;
 
-    const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    this.router.navigate(['/expenses/table', this.tableId], { queryParams: { category, month } });
+    this.router.navigate(['/expenses/table', this.tableId], {
+      queryParams: { category, month: this.month },
+    });
   }
 }

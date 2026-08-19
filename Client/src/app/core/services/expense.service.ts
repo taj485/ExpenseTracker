@@ -1,10 +1,23 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, UpdateExpenseCommand } from '../models/expense.model';
+import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, ExpenseCategory, ExtractedExpense, MerchantStat, UpdateExpenseCommand } from '../models/expense.model';
 import { environment } from '../../../environments/environment';
 import { parseFilenameFromContentDisposition } from '../utils/download.utils';
+import { MonthOption, currentMonthKey, formatMonthKey, monthKeyOf, monthKeysBack } from '../utils/date.utils';
 import { expenseTotal } from '../utils/expense.utils';
+
+/** How far back the dashboard month picker reaches, in months before the current one. */
+const MONTHS_SELECTABLE = 12;
+
+/**
+ * Slices in the merchant donut before the tail is folded into "Other". Six segments is the
+ * point past which a part-to-whole ring stops being readable at a glance.
+ */
+const TOP_MERCHANTS = 5;
+
+/** Shown for expenses with no merchant recorded. */
+const UNKNOWN_MERCHANT = 'Unknown';
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {
@@ -21,23 +34,51 @@ export class ExpenseService {
   readonly loading  = signal(false);
   readonly error    = signal<string | null>(null);
 
-  // ── Computed dashboard values ─────────────────────────────────────────────
-  private readonly thisMonthExpenses = computed(() => {
-    const now = new Date();
-    return this.expenses().filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-    });
+  // ── Month selection ───────────────────────────────────────────────────────
+  /** Month the dashboard is showing, as 'YYYY-MM'. Defaults to the current month. */
+  readonly selectedMonth = signal<string>(currentMonthKey());
+
+  /**
+   * The last 13 months (current plus 12 back), offered whether or not they hold expenses.
+   * Months outside that window are added when they contain expenses, so older data stays
+   * reachable rather than silently dropping off the dashboard.
+   */
+  readonly availableMonths = computed((): MonthOption[] => {
+    const keys = new Set(monthKeysBack(MONTHS_SELECTABLE));
+    for (const expense of this.expenses()) keys.add(monthKeyOf(expense.date));
+    keys.add(this.selectedMonth());
+
+    // 'YYYY-MM' sorts lexicographically in date order, so this is newest-first.
+    return [...keys]
+      .sort()
+      .reverse()
+      .map(key => ({ key, label: formatMonthKey(key) }));
   });
 
-  readonly thisMonthSpent = computed(() =>
-    this.thisMonthExpenses().reduce((sum, e) => sum + expenseTotal(e), 0)
+  // ── Computed dashboard values ─────────────────────────────────────────────
+  private readonly selectedMonthExpenses = computed(() =>
+    this.expenses().filter(e => monthKeyOf(e.date) === this.selectedMonth())
   );
 
-  readonly transactionCount = computed(() => this.thisMonthExpenses().length);
+  readonly selectedMonthSpent = computed(() =>
+    this.selectedMonthExpenses().reduce((sum, e) => sum + expenseTotal(e), 0)
+  );
+
+  readonly transactionCount = computed(() => this.selectedMonthExpenses().length);
+
+  /**
+   * Always the current calendar month, independent of selectedMonth. The expense list shows
+   * this beside its own filters, where "This Month" has to keep meaning today's month.
+   */
+  readonly currentMonthSpent = computed(() => {
+    const month = currentMonthKey();
+    return this.expenses()
+      .filter(e => monthKeyOf(e.date) === month)
+      .reduce((sum, e) => sum + expenseTotal(e), 0);
+  });
 
   readonly topCategory = computed((): { name: ExpenseCategory; total: number } | null => {
-    const expenses = this.thisMonthExpenses();
+    const expenses = this.selectedMonthExpenses();
     if (expenses.length === 0) return null;
 
     const totals = new Map<ExpenseCategory, number>();
@@ -55,8 +96,8 @@ export class ExpenseService {
   });
 
   readonly categoryBreakdown = computed((): CategoryStat[] => {
-    const expenses = this.thisMonthExpenses();
-    const total = this.thisMonthSpent();
+    const expenses = this.selectedMonthExpenses();
+    const total = this.selectedMonthSpent();
     if (expenses.length === 0) return [];
 
     const totals = new Map<ExpenseCategory, { total: number; count: number }>();
@@ -75,10 +116,70 @@ export class ExpenseService {
       .sort((a, b) => b.total - a.total);
   });
 
+  /** Spend per merchant for the selected month: the top few, then everything else as "Other". */
+  readonly merchantBreakdown = computed((): MerchantStat[] => {
+    const expenses = this.selectedMonthExpenses();
+    const total = this.selectedMonthSpent();
+    if (expenses.length === 0) return [];
+
+    // Group on merchantId so two spellings of one shop can never split; fall back to the
+    // name for anything not yet resolved to a reference-table row.
+    const groups = new Map<string, { merchant: string; website: string | null; total: number; count: number }>();
+
+    for (const e of expenses) {
+      const key = e.merchantId !== null ? `id:${e.merchantId}` : `name:${e.merchant ?? ''}`;
+      const existing = groups.get(key);
+
+      if (existing) {
+        existing.total += expenseTotal(e);
+        existing.count += 1;
+      } else {
+        groups.set(key, {
+          merchant: e.merchant ?? UNKNOWN_MERCHANT,
+          website: e.merchantWebsite,
+          total: expenseTotal(e),
+          count: 1,
+        });
+      }
+    }
+
+    const share = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0);
+    const ranked = [...groups.values()].sort((a, b) => b.total - a.total);
+    const top = ranked.slice(0, TOP_MERCHANTS);
+    const tail = ranked.slice(TOP_MERCHANTS);
+
+    const stats: MerchantStat[] = top.map(g => ({
+      merchant: g.merchant,
+      website: g.website,
+      total: g.total,
+      count: g.count,
+      percentage: share(g.total),
+      isOther: false,
+    }));
+
+    if (tail.length > 0) {
+      const tailTotal = tail.reduce((sum, g) => sum + g.total, 0);
+      stats.push({
+        merchant: `Other (${tail.length})`,
+        website: null,
+        total: tailTotal,
+        count: tail.reduce((sum, g) => sum + g.count, 0),
+        percentage: share(tailTotal),
+        isOther: true,
+      });
+    }
+
+    return stats;
+  });
+
   // ── API calls ─────────────────────────────────────────────────────────────
 
   // API CALL: GET /api/expensetable/{tableId}/expenses — loads a table's expenses into signal
   loadAll(tableId: number): void {
+    // Switching table starts fresh on the current month; a plain refresh after adding or
+    // editing an expense must not yank the user out of the month they were looking at.
+    if (this.currentTableId !== tableId) this.selectedMonth.set(currentMonthKey());
+
     this.currentTableId = tableId;
     this.loading.set(true);
     this.error.set(null);
@@ -211,7 +312,19 @@ export class ExpenseService {
   updateExpense(tableId: number, id: number, command: UpdateExpenseCommand, onSuccess: () => void, onError: (msg: string) => void): void {
     this.http.put<void>(`${this.tableUrl(tableId)}/${id}`, { id, ...command }).subscribe({
       next: () => {
-        this.expenses.update(list => list.map(e => e.id === id ? { ...e, ...command } : e));
+        this.expenses.update(list => list.map(e => {
+          if (e.id !== id) return e;
+          // The server resolves the merchant name to a reference-table row, so the id and website
+          // we hold are only valid while the name is unchanged. Clearing them makes the logo fall
+          // back to domain guessing rather than showing the previous merchant's brand.
+          const merchantChanged = e.merchant !== command.merchant;
+          return {
+            ...e,
+            ...command,
+            merchantId: merchantChanged ? null : e.merchantId,
+            merchantWebsite: merchantChanged ? null : e.merchantWebsite,
+          };
+        }));
         onSuccess();
       },
       error: () => onError('Failed to update expense. Please try again.'),

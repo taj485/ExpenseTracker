@@ -1,5 +1,6 @@
 using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
 using ExpenseTracker.Application.DTO;
+using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Domain.Interfaces;
 using ExpenseTracker.Domain.ValueObjects;
@@ -11,12 +12,14 @@ namespace ExpenseTracker.Tests.Application.Commands
     public class ExtractReceiptExpensesCommandHandlerTests
     {
         private readonly Mock<IReceiptExtractionService> _mockReceiptExtractionService;
+        private readonly Mock<IMerchantResolver> _mockMerchantResolver;
         private readonly ExtractReceiptExpensesCommandHandler _handler;
 
         public ExtractReceiptExpensesCommandHandlerTests()
         {
             _mockReceiptExtractionService = new Mock<IReceiptExtractionService>();
-            _handler = new ExtractReceiptExpensesCommandHandler(_mockReceiptExtractionService.Object);
+            _mockMerchantResolver = new Mock<IMerchantResolver>();
+            _handler = new ExtractReceiptExpensesCommandHandler(_mockReceiptExtractionService.Object, _mockMerchantResolver.Object);
         }
 
         [Fact]

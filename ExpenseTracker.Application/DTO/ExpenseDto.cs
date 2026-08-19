@@ -11,7 +11,9 @@ namespace ExpenseTracker.Application.DTO
         public string Description { get; set; }
         public string Category { get; set; }
         public DateTime Date { get; set; }
+        public int? MerchantId { get; set; }
         public string? Merchant { get; set; }
+        public string? MerchantWebsite { get; set; }
         public int? ReceiptId { get; set; }
         public int ExpenseTableId { get; set; }
     }

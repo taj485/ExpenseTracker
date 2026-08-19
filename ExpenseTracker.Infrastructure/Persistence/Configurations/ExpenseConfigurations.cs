@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ExpenseTracker.Domain.ValueObjects;
@@ -49,9 +49,6 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             builder.Property(e => e.IsDeleted)
                 .IsRequired();
 
-            builder.Property(e => e.Merchant)
-                .HasMaxLength(200);
-
             builder.HasQueryFilter(e => !e.IsDeleted);
 
             builder.HasOne(e => e.Receipt)
@@ -59,6 +56,12 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                    .HasForeignKey(e => e.ReceiptId)
                    .IsRequired(false)
                    .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne(e => e.Merchant)
+                   .WithMany()
+                   .HasForeignKey(e => e.MerchantId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.ExpenseTable)
                    .WithMany()

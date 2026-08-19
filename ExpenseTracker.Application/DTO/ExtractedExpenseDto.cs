@@ -8,5 +8,6 @@ namespace ExpenseTracker.Application.DTO
         public DateOnly Date { get; set; }
         public int Quantity { get; set; }
         public string? Merchant { get; set; }
+        public string? MerchantWebsite { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,8 @@ namespace ExpenseTracker.Infrastructure.Persistence
         public DbSet<Receipt> Receipts { get; set; }
         public DbSet<ExpenseTable> ExpenseTables { get; set; }
         public DbSet<UserExpenseTable> UserExpenseTables { get; set; }
+        public DbSet<Merchant> Merchants { get; set; }
+        public DbSet<MerchantAlias> MerchantAliases { get; set; }
 
         public ExpenseTrackerDbContext(DbContextOptions options) : base(options)
         {

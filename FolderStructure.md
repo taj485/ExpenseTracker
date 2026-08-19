@@ -43,6 +43,7 @@ ExpenseTracker/
 │   │       │   │   └── expense-table.model.ts
 │   │       │   ├── services/
 │   │       │   │   ├── expense.service.ts
+│   │       │   │   ├── expense.service.spec.ts
 │   │       │   │   ├── expense-table.service.ts
 │   │       │   │   ├── add-expense-drawer.service.ts
 │   │       │   │   ├── upload-receipt-drawer.service.ts
@@ -101,10 +102,15 @@ ExpenseTracker/
 │   │           │       │   ├── summary-cards.component.ts
 │   │           │       │   ├── summary-cards.component.html
 │   │           │       │   └── summary-cards.component.css
-│   │           │       └── category-breakdown/
-│   │           │           ├── category-breakdown.component.ts
-│   │           │           ├── category-breakdown.component.html
-│   │           │           └── category-breakdown.component.css
+│   │           │       ├── category-breakdown/
+│   │           │       │   ├── category-breakdown.component.ts
+│   │           │       │   ├── category-breakdown.component.html
+│   │           │       │   └── category-breakdown.component.css
+│   │           │       └── merchant-donut/
+│   │           │           ├── merchant-donut.component.ts
+│   │           │           ├── merchant-donut.component.html
+│   │           │           ├── merchant-donut.component.css
+│   │           │           └── merchant-donut.component.spec.ts
 │   │           ├── expenses/
 │   │           │   ├── expense-list/
 │   │           │   │   ├── expense-list.component.ts
@@ -145,6 +151,8 @@ ExpenseTracker/
 │   ├── Entities/
 │   │   ├── Expense.cs
 │   │   ├── ExpenseTable.cs
+│   │   ├── Merchant.cs
+│   │   ├── MerchantAlias.cs
 │   │   ├── Receipt.cs
 │   │   ├── User.cs
 │   │   └── UserExpenseTable.cs
@@ -160,6 +168,8 @@ ExpenseTracker/
 │   │   ├── IExpenseTableReader.cs
 │   │   ├── IExpenseTableWriter.cs
 │   │   ├── IExpenseRepository.cs
+│   │   ├── IMerchantReader.cs
+│   │   ├── IMerchantWriter.cs
 │   │   ├── IUserReader.cs
 │   │   ├── IUserWriter.cs
 │   │   ├── ICurrentUserService.cs
@@ -181,6 +191,7 @@ ExpenseTracker/
 │   ├── Domain/
 │   │   ├── MoneyTests.cs
 │   │   ├── ExpenseTests.cs
+│   │   ├── MerchantTests.cs
 │   │   ├── ExpenseTableTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
@@ -203,10 +214,13 @@ ExpenseTracker/
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
 │   │   └── Services/
-│   │       └── CurrentUserProviderTests.cs
+│   │       ├── CurrentUserProviderTests.cs
+│   │       └── MerchantResolverTests.cs
 │   ├── Infrastructure/
 │   │   ├── ExpenseRepositoryTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
+│   │   ├── MerchantRepositoryTests.cs
+│   │   ├── MerchantSeedDataTests.cs
 │   │   └── UserRepositoryTests.cs
 │   └── Api/
 │       └── ExpenseControllerAuthTests.cs
@@ -298,20 +312,26 @@ ExpenseTracker/
 │   │   └── ExpenseMappingProfile.cs
 │   └── Services/
 │       ├── ICurrentUserProvider.cs
-│       └── CurrentUserProvider.cs
+│       ├── CurrentUserProvider.cs
+│       ├── IMerchantResolver.cs
+│       └── MerchantResolver.cs
 │
 └── ExpenseTracker.Infrastructure/
     ├── Persistence/
     │   ├── ExpenseTrackerDbContext.cs
+    │   ├── MerchantSeedData.cs
     │   ├── Configurations/
-    │   │   ├── ExpenseConfiguration.cs
+    │   │   ├── ExpenseConfigurations.cs
     │   │   ├── ExpenseTableConfiguration.cs
+    │   │   ├── MerchantConfiguration.cs
+    │   │   ├── MerchantAliasConfiguration.cs
     │   │   ├── ReceiptConfigurations.cs
     │   │   ├── UserConfiguration.cs
     │   │   └── UserExpenseTableConfiguration.cs
     │   └── Repositories/
     │       ├── ExpenseRepository.cs
     │       ├── ExpenseTableRepository.cs
+    │       ├── MerchantRepository.cs
     │       ├── ReceiptRepository.cs
     │       └── UserRepository.cs
     ├── Migrations/
