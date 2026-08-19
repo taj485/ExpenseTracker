@@ -1,0 +1,87 @@
+@if (segments().length === 0) {
+  <p class="empty">No expenses in {{ monthLabel() || 'this month' }}.</p>
+} @else {
+  <div class="donut-layout">
+    <div class="donut-figure">
+      <svg
+        [attr.viewBox]="viewBox"
+        class="donut-svg"
+        role="img"
+        [attr.aria-label]="'Spending by merchant for ' + monthLabel()"
+      >
+        @if (isFullRing()) {
+          <!-- A single merchant: a 360° arc path would collapse, so draw a stroked ring. -->
+          <circle
+            [attr.cx]="centerX"
+            [attr.cy]="centerY"
+            [attr.r]="ringRadius"
+            fill="none"
+            [attr.stroke]="segments()[0].color"
+            [attr.stroke-width]="ringWidth"
+            (mouseenter)="onEnter(0)"
+            (mouseleave)="onLeave()"
+          />
+        } @else {
+          @for (segment of segments(); track segment.stat.merchant; let i = $index) {
+            <path
+              [attr.d]="segment.path"
+              [attr.fill]="segment.color"
+              class="slice"
+              [class.dimmed]="hovered() !== null && hovered() !== i"
+              (mouseenter)="onEnter(i)"
+              (mouseleave)="onLeave()"
+            />
+          }
+        }
+
+        @for (segment of segments(); track segment.stat.merchant) {
+          @if (segment.showLabel) {
+            <text
+              class="slice-label"
+              [attr.x]="segment.labelX"
+              [attr.y]="segment.labelY"
+              text-anchor="middle"
+              dominant-baseline="central"
+            >{{ segment.stat.percentage }}%</text>
+          }
+        }
+
+        <text class="center-label" [attr.x]="centerX" [attr.y]="centerY - 10" text-anchor="middle">
+          {{ hoveredStat() ? hoveredStat()!.merchant : 'Total' }}
+        </text>
+        <text class="center-value" [attr.x]="centerX" [attr.y]="centerY + 14" text-anchor="middle">
+          £{{ (hoveredStat() ? hoveredStat()!.total : total()) | number:'1.2-2' }}
+        </text>
+      </svg>
+    </div>
+
+    <!-- Legend doubles as the table view: every slice has its name, amount and share in text,
+         so identity never rests on colour alone. -->
+    <ul class="donut-legend">
+      @for (segment of segments(); track segment.stat.merchant; let i = $index) {
+        <li
+          class="legend-row"
+          [class.active]="hovered() === i"
+          (mouseenter)="onEnter(i)"
+          (mouseleave)="onLeave()"
+        >
+          <span class="legend-swatch" [style.background]="segment.color" aria-hidden="true"></span>
+
+          @if (!segment.stat.isOther) {
+            <app-merchant-logo
+              [merchant]="segment.stat.merchant"
+              [website]="segment.stat.website"
+            />
+          }
+
+          <span class="legend-name">{{ segment.stat.merchant }}</span>
+
+          <span class="legend-figures">
+            <span class="legend-amount">£{{ segment.stat.total | number:'1.2-2' }}</span>
+            <span class="legend-share">{{ segment.stat.percentage }}%</span>
+          </span>
+        </li>
+      }
+    </ul>
+  </div>
+}

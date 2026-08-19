@@ -8,7 +8,9 @@ export interface Expense {
   description: string;
   category: ExpenseCategory;
   date: string;
+  merchantId: number | null;
   merchant: string | null;
+  merchantWebsite: string | null;
   receiptId: number | null;
 }
 
@@ -37,6 +39,16 @@ export interface CategoryStat {
   percentage: number;
 }
 
+/** One slice of the merchant donut. `isOther` marks the rolled-up tail. */
+export interface MerchantStat {
+  merchant: string;
+  website: string | null;
+  total: number;
+  count: number;
+  percentage: number;
+  isOther: boolean;
+}
+
 export interface ExtractedExpense {
   unitPrice: number;
   category: ExpenseCategory;
@@ -44,6 +56,7 @@ export interface ExtractedExpense {
   date: string;
   quantity: number;
   merchant: string | null;
+  merchantWebsite: string | null;
 }
 
 export interface BatchItemError {

@@ -43,6 +43,7 @@ ExpenseTracker/
 │   │       │   │   └── expense-table.model.ts
 │   │       │   ├── services/
 │   │       │   │   ├── expense.service.ts
+│   │       │   │   ├── expense.service.spec.ts
 │   │       │   │   ├── expense-table.service.ts
 │   │       │   │   ├── add-expense-drawer.service.ts
 │   │       │   │   ├── upload-receipt-drawer.service.ts
@@ -101,10 +102,15 @@ ExpenseTracker/
 │   │           │       │   ├── summary-cards.component.ts
 │   │           │       │   ├── summary-cards.component.html
 │   │           │       │   └── summary-cards.component.css
-│   │           │       └── category-breakdown/
-│   │           │           ├── category-breakdown.component.ts
-│   │           │           ├── category-breakdown.component.html
-│   │           │           └── category-breakdown.component.css
+│   │           │       ├── category-breakdown/
+│   │           │       │   ├── category-breakdown.component.ts
+│   │           │       │   ├── category-breakdown.component.html
+│   │           │       │   └── category-breakdown.component.css
+│   │           │       └── merchant-donut/
+│   │           │           ├── merchant-donut.component.ts
+│   │           │           ├── merchant-donut.component.html
+│   │           │           ├── merchant-donut.component.css
+│   │           │           └── merchant-donut.component.spec.ts
 │   │           ├── expenses/
 │   │           │   ├── expense-list/
 │   │           │   │   ├── expense-list.component.ts

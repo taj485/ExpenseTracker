@@ -1,12 +1,54 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
 .page-header-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 18px;
+}
+
+/* Pushes the picker to the right even when the table has no name to show. */
+.month-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.month-picker-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.month-select {
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #d5d9e0);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.month-select:focus-visible {
+  outline: 2px solid var(--accent, #1565c0);
+  outline-offset: 1px;
 }
 
 .section-header {
   margin-bottom: 16px;
+}
+
+.section-header-spaced {
+  margin-top: 32px;
 }
 
 .section-title {

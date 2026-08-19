@@ -7,6 +7,8 @@
     loading="lazy"
     (error)="onLogoError()"
   />
+} @else if (initials(); as text) {
+  <span class="merchant-initials" [style.background]="initialsColor()" [title]="merchant() ?? ''">{{ text }}</span>
 } @else {
-  <span class="merchant-name">{{ merchant() || '—' }}</span>
+  <span class="merchant-name">—</span>
 }

@@ -54,7 +54,7 @@
     @if (!selectedMonth()) {
       <div class="stat-card">
         <div class="st-label">This Month</div>
-        <div class="st-value">£{{ store.thisMonthSpent() | number:'1.2-2' }}</div>
+        <div class="st-value">£{{ store.currentMonthSpent() | number:'1.2-2' }}</div>
       </div>
     }
     <div class="stat-card">
@@ -108,7 +108,7 @@
               (click)="viewExpense(row.expense.id)">
             @if (row.isGroupStart) {
               <td class="col-merchant" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">
-                <app-merchant-logo [merchant]="row.expense.merchant" />
+                <app-merchant-logo [merchant]="row.expense.merchant" [website]="row.expense.merchantWebsite" />
               </td>
               <td class="col-date" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.date | date:'dd/MM/yy' }}</td>
             }

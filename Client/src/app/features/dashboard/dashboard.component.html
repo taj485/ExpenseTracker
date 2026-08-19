@@ -3,19 +3,50 @@
 } @else if (store.error()) {
   <p class="status-msg error">{{ store.error() }}</p>
 } @else {
-  @if (currentTableName()) {
-    <h2 class="page-header-title">{{ currentTableName() }}</h2>
-  }
+  <div class="page-header">
+    @if (currentTableName()) {
+      <h2 class="page-header-title">{{ currentTableName() }}</h2>
+    }
+
+    <label class="month-picker">
+      <span class="month-picker-label">Month</span>
+      <select
+        class="month-select"
+        [value]="store.selectedMonth()"
+        (change)="onMonthChange($any($event.target).value)"
+      >
+        @for (month of store.availableMonths(); track month.key) {
+          <option [value]="month.key">{{ month.label }}</option>
+        }
+      </select>
+    </label>
+  </div>
 
   <app-summary-cards
-    [thisMonthSpent]="store.thisMonthSpent()"
+    [monthSpent]="store.selectedMonthSpent()"
     [transactionCount]="store.transactionCount()"
     [topCategory]="store.topCategory()"
+    [monthLabel]="selectedMonthLabel()"
   />
 
   <div class="section-header">
-    <h2 class="section-title">Spending by Category This Month</h2>
+    <h2 class="section-title">Spending by Merchant</h2>
   </div>
 
-  <app-category-breakdown [stats]="store.categoryBreakdown()" [tableId]="currentTableId()" />
+  <app-merchant-donut
+    [stats]="store.merchantBreakdown()"
+    [total]="store.selectedMonthSpent()"
+    [monthLabel]="selectedMonthLabel()"
+  />
+
+  <div class="section-header section-header-spaced">
+    <h2 class="section-title">Spending by Category</h2>
+  </div>
+
+  <app-category-breakdown
+    [stats]="store.categoryBreakdown()"
+    [tableId]="currentTableId()"
+    [month]="store.selectedMonth()"
+    [monthLabel]="selectedMonthLabel()"
+  />
 }

@@ -7,6 +7,21 @@
   border-radius: 4px;
 }
 
+/* Shown when the merchant has no usable logo domain — see merchantInitials(). */
+.merchant-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
 .merchant-name {
   display: block;
   overflow-wrap: anywhere;
