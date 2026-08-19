@@ -46,7 +46,9 @@ namespace ExpenseTracker.Application.Queries.GetExpenseById
                 Category = expense.Category.ToString(),
                 Description = expense.Description,
                 Date = expense.Date,
-                Merchant = expense.Merchant,
+                MerchantId = expense.MerchantId,
+                Merchant = expense.Merchant?.Name,
+                MerchantWebsite = expense.Merchant?.Website,
                 ReceiptId = expense.ReceiptId,
                 ExpenseTableId = expense.ExpenseTableId
             };

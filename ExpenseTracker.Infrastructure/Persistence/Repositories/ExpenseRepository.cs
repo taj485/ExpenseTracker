@@ -17,6 +17,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
         public async Task<Expense?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Expenses
+                .Include(e => e.Merchant)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
@@ -30,6 +31,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<Expense>> GetAllForTableAsync(int expenseTableId, CancellationToken cancellationToken = default)
         {
             return await _context.Expenses
+                .Include(e => e.Merchant)
                 .Where(e => e.ExpenseTableId == expenseTableId)
                 .ToListAsync(cancellationToken);
         }
@@ -37,6 +39,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<Expense>> GetByReceiptIdAsync(int receiptId, int expenseTableId, CancellationToken cancellationToken = default)
         {
             return await _context.Expenses
+                .Include(e => e.Merchant)
                 .Where(e => e.ReceiptId == receiptId && e.ExpenseTableId == expenseTableId)
                 .ToListAsync(cancellationToken);
         }

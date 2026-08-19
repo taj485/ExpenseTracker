@@ -14,6 +14,7 @@ namespace ExpenseTracker.Tests.Application.Commands
         private readonly Mock<IExpenseWriter> _mockExpenseWriter;
         private readonly Mock<IExpenseTableReader> _mockExpenseTableReader;
         private readonly Mock<ICurrentUserProvider> _mockCurrentUserProvider;
+        private readonly Mock<IMerchantResolver> _mockMerchantResolver;
         private readonly User _currentUser;
         private readonly AddExpenseCommandHandler _handler;
         private const int TableId = 1;
@@ -28,9 +29,10 @@ namespace ExpenseTracker.Tests.Application.Commands
                 .ReturnsAsync(_currentUser);
             _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
+            _mockMerchantResolver = new Mock<IMerchantResolver>();
             var validator = new AddExpenseValidator();
 
-            _handler = new AddExpenseCommandHandler(_mockExpenseWriter.Object, _mockExpenseTableReader.Object, validator, _mockCurrentUserProvider.Object);
+            _handler = new AddExpenseCommandHandler(_mockExpenseWriter.Object, _mockExpenseTableReader.Object, validator, _mockCurrentUserProvider.Object, _mockMerchantResolver.Object);
         }
 
         [Fact]

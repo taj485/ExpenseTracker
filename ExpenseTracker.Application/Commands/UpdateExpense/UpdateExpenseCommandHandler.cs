@@ -12,14 +12,16 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
         private readonly IExpenseTableReader _expenseTableReader;
         private readonly ICurrentUserProvider _currentUserProvider;
         private readonly IValidator<UpdateExpenseCommand> _validator;
+        private readonly IMerchantResolver _merchantResolver;
 
-        public UpdateExpenseCommandHandler(IExpenseReader expenseReader, IExpenseWriter expenseWriter, IExpenseTableReader expenseTableReader, ICurrentUserProvider currentUserProvider, IValidator<UpdateExpenseCommand> validator)
+        public UpdateExpenseCommandHandler(IExpenseReader expenseReader, IExpenseWriter expenseWriter, IExpenseTableReader expenseTableReader, ICurrentUserProvider currentUserProvider, IValidator<UpdateExpenseCommand> validator, IMerchantResolver merchantResolver)
         {
             _expenseReader = expenseReader;
             _expenseWriter = expenseWriter;
             _expenseTableReader = expenseTableReader;
             _currentUserProvider = currentUserProvider;
             _validator = validator;
+            _merchantResolver = merchantResolver;
         }
 
         public async Task<Unit> Handle(UpdateExpenseCommand request, CancellationToken cancellationToken)
@@ -42,7 +44,7 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
             expense.UpdateQuantity(request.Quantity);
             expense.UpdateCategory(request.Category);
             expense.UpdateDescription(request.Description);
-            expense.UpdateMerchant(request.Merchant);
+            expense.UpdateMerchant(await _merchantResolver.ResolveOrCreateAsync(request.Merchant, cancellationToken));
 
             await _expenseWriter.UpdateAsync(expense);
 

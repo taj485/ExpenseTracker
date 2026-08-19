@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.Application.Services;
+using ExpenseTracker.Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +14,8 @@ namespace ExpenseTracker.Application
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
             services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
+
+            services.AddScoped<IMerchantResolver, MerchantResolver>();
 
             return services;
         }

@@ -14,7 +14,8 @@ namespace ExpenseTracker.Domain.Entities
         public string Description { get; private set; }
         public DateTime Date { get; private set; }
         public bool IsDeleted { get; private set; }
-        public string? Merchant { get; private set; }
+        public int? MerchantId { get; private set; }
+        public Merchant? Merchant { get; private set; }
         public int? ReceiptId { get; private set; }
         public Receipt? Receipt { get; private set; }
         public int ExpenseTableId { get; private set; }
@@ -23,7 +24,7 @@ namespace ExpenseTracker.Domain.Entities
         private Expense() { }
 
         public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            string? merchant = null, int? receiptId = null, int quantity = 1)
+            int? merchantId = null, int? receiptId = null, int quantity = 1)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
@@ -39,7 +40,7 @@ namespace ExpenseTracker.Domain.Entities
                 Description = description,
                 Date = date,
                 IsDeleted = false,
-                Merchant = merchant,
+                MerchantId = merchantId,
                 ReceiptId = receiptId,
                 ExpenseTableId = expenseTableId
             };
@@ -71,9 +72,9 @@ namespace ExpenseTracker.Domain.Entities
             Category = category;
         }
 
-        public void UpdateMerchant(string? merchant)
+        public void UpdateMerchant(int? merchantId)
         {
-            Merchant = merchant;
+            MerchantId = merchantId;
         }
 
         public void Delete()

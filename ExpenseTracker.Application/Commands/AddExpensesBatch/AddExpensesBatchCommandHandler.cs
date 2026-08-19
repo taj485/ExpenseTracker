@@ -17,14 +17,16 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
         private readonly IExpenseTableReader _expenseTableReader;
         private readonly IValidator<AddExpenseCommand> _validator;
         private readonly ICurrentUserProvider _currentUserProvider;
+        private readonly IMerchantResolver _merchantResolver;
 
-        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider)
+        public AddExpensesBatchCommandHandler(IExpenseWriter expenseWriter, IReceiptWriter receiptWriter, IExpenseTableReader expenseTableReader, IValidator<AddExpenseCommand> validator, ICurrentUserProvider currentUserProvider, IMerchantResolver merchantResolver)
         {
             _expenseWriter = expenseWriter;
             _receiptWriter = receiptWriter;
             _expenseTableReader = expenseTableReader;
             _validator = validator;
             _currentUserProvider = currentUserProvider;
+            _merchantResolver = merchantResolver;
         }
 
         public async Task<AddExpensesBatchResult> Handle(AddExpensesBatchCommand request, CancellationToken cancellationToken)
@@ -33,6 +35,11 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
             if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
+
+            // Every line item on a receipt shares one merchant, so resolve it once rather than per item.
+            var merchantId = await _merchantResolver.ResolveOrCreateAsync(
+                request.Items.Select(i => i.Merchant).FirstOrDefault(m => !string.IsNullOrWhiteSpace(m)),
+                cancellationToken);
 
             var addedIds = new List<int>();
             var errors = new List<BatchItemError>();
@@ -55,7 +62,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
-                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, item.Merchant, receiptId, item.Quantity);
+                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, merchantId, receiptId, item.Quantity);
                 var id = await _expenseWriter.AddAsync(expense, cancellationToken);
                 addedIds.Add(id);
             }
