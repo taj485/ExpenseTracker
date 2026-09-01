@@ -1,5 +1,6 @@
 ExpenseTracker/
 ├── ExpenseTracker.sln
+├── docker-compose.yml
 ├── CLAUDE.md
 ├── README.md
 ├── .github/
@@ -222,7 +223,8 @@ ExpenseTracker/
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
-│   │   └── UserRepositoryTests.cs
+│   │   ├── UserRepositoryTests.cs
+│   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
 │       └── ExpenseControllerAuthTests.cs
 │
@@ -344,5 +346,7 @@ ExpenseTracker/
     │   └── GeminiReceiptExtractionService.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
-    │   └── AzureBlobReceiptImageStore.cs
+    │   ├── AzureBlobReceiptImageStore.cs
+    │   ├── MinioStorageOptions.cs
+    │   └── MinioReceiptImageStore.cs
     └── DependencyInjection.cs

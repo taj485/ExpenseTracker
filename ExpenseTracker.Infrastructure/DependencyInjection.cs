@@ -7,6 +7,7 @@ using ExpenseTracker.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Minio;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -48,11 +49,44 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddAuth0Authentication(configuration);
 
-            services.AddScoped<IReceiptImageStore, AzureBlobReceiptImageStore>();
+            services.AddReceiptImageStore(configuration);
 
             services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
 
-            services.Configure<AzureBlobStorageOptions>(configuration.GetSection("BlobStorage"));
+            return services;
+        }
+
+        private static IServiceCollection AddReceiptImageStore(this IServiceCollection services, IConfiguration configuration)
+        {
+            var provider = configuration["Storage:Provider"] ?? "AzureBlob";
+
+            if (string.Equals(provider, "Minio", StringComparison.OrdinalIgnoreCase))
+            {
+                var minioSection = configuration.GetSection("Minio");
+                services.Configure<MinioStorageOptions>(minioSection);
+
+                var minioOptions = minioSection.Get<MinioStorageOptions>() ?? new MinioStorageOptions();
+
+                services.AddSingleton<IMinioClient>(_ =>
+                {
+                    var client = new MinioClient()
+                        .WithEndpoint(new Uri(minioOptions.Endpoint))
+                        .WithCredentials(minioOptions.AccessKey, minioOptions.SecretKey)
+                        .WithSSL(minioOptions.UseSsl);
+
+                    if (!string.IsNullOrWhiteSpace(minioOptions.Region))
+                        client = client.WithRegion(minioOptions.Region);
+
+                    return client.Build();
+                });
+
+                services.AddScoped<IReceiptImageStore, MinioReceiptImageStore>();
+            }
+            else
+            {
+                services.Configure<AzureBlobStorageOptions>(configuration.GetSection("BlobStorage"));
+                services.AddScoped<IReceiptImageStore, AzureBlobReceiptImageStore>();
+            }
 
             return services;
         }
