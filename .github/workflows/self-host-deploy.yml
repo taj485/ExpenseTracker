@@ -1,0 +1,11 @@
+name: self-host-deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d --build
+      - run: docker image prune -f

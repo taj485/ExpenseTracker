@@ -4,7 +4,8 @@ ExpenseTracker/
 ├── README.md
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yml
+│       ├── ci-cd.yml
+│       └── self-host-deploy.yml
 ├── .claude/
 │   └── memory.md
 ├── Doc/
