@@ -231,7 +231,8 @@ ExpenseTracker/
 │   │   ├── UserRepositoryTests.cs
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
-│       └── ExpenseControllerAuthTests.cs
+│       ├── ExpenseControllerAuthTests.cs
+│       └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ExpenseTrackerAPI/
 │   ├── Dockerfile
