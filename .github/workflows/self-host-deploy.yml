@@ -1,7 +1,7 @@
 name: self-host-deploy
 on:
   push:
-    branches: [main]
+    branches: [self-host]
 jobs:
   deploy:
     runs-on: self-hosted
