@@ -1,6 +1,7 @@
 ExpenseTracker/
 ├── ExpenseTracker.sln
 ├── docker-compose.yml
+├── .dockerignore
 ├── CLAUDE.md
 ├── README.md
 ├── .github/
@@ -229,6 +230,7 @@ ExpenseTracker/
 │       └── ExpenseControllerAuthTests.cs
 │
 ├── ExpenseTrackerAPI/
+│   ├── Dockerfile
 │   ├── Controllers/
 │   │   ├── ExpenseController.cs
 │   │   └── ExpenseTableController.cs

@@ -1,8 +1,10 @@
 using ExpenseTracker.Application;
 using ExpenseTracker.Application.Commands.AddExpense;
 using ExpenseTracker.Infrastructure;
+using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTrackerAPI.Middleware;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 
@@ -29,6 +31,14 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+// Off by default so tests and tooling never reach for a database; the
+// container turns it on so a fresh volume comes up with schema and seed data.
+if (app.Configuration.GetValue<bool>("Database:AutoMigrate"))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<ExpenseTrackerDbContext>().Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

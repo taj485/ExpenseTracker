@@ -1,4 +1,25 @@
 services:
+  db:
+    image: postgres:17-alpine
+    container_name: expensetracker-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-expensetracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-expensetracker}
+    ports:
+      # 5433 on the host by default: a locally-installed Postgres usually
+      # already owns 5432. Inside the compose network the API still uses 5432.
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-expensetracker} -d $${POSTGRES_DB:-expensetracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
   minio:
     image: minio/minio:latest
     container_name: expensetracker-minio
@@ -7,8 +28,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - minio-data:/data
     healthcheck:
@@ -25,6 +46,9 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     entrypoint: >
       /bin/sh -c "
       mc alias set local http://minio:9000 $${MINIO_ROOT_USER:-minioadmin} $${MINIO_ROOT_PASSWORD:-minioadmin} &&
@@ -32,6 +56,37 @@ services:
       echo 'bucket ready'
       "
     restart: "no"
+  
+  api:
+    build:
+      context: .
+      dockerfile: ExpenseTrackerAPI/Dockerfile
+    container_name: expensetracker-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Applies pending migrations on boot. Safe for this single-instance setup;
+      # turn off and migrate separately if the API is ever scaled out.
+      Database__AutoMigrate: "true"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-expensetracker};Username=${POSTGRES_USER:-expensetracker};Password=${POSTGRES_PASSWORD:-devpassword}"
+      Storage__Provider: Minio
+      # Service names, not localhost — these resolve on the compose network.
+      Minio__Endpoint: http://minio:9000
+      Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      Minio__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      Minio__BucketName: ${MINIO_BUCKET:-receipt-images}
+      Cors__AllowedOrigin: ${CORS_ALLOWED_ORIGIN}
+      Auth0__Domain: ${AUTH0_DOMAIN}
+      Auth0__Audience: ${AUTH0_AUDIENCE}
+      Gemini__ApiKey: ${GEMINI_API_KEY}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      minio:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   minio-data:
+  pg-data:
