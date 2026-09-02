@@ -21,6 +21,9 @@ ExpenseTracker/
 │   ├── outputs.tf
 │   └── terraform.tfvars.example
 ├── Client/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── .dockerignore
 │   ├── mockups/
 │   │   ├── mockup-1.html
 │   │   ├── mockup-2.html
@@ -35,7 +38,8 @@ ExpenseTracker/
 │   │   │   └── heic2any.d.ts
 │   │   ├── environments/
 │   │   │   ├── environment.ts
-│   │   │   └── environment.prod.ts
+│   │   │   ├── environment.prod.ts
+│   │   │   └── environment.selfhost.ts
 │   │   └── app/
 │   │       ├── app.ts
 │   │       ├── app.routes.ts

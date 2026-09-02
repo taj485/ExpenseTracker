@@ -74,9 +74,12 @@ services:
       Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
       Minio__BucketName: ${MINIO_BUCKET:-receipt-images}
-      Cors__AllowedOrigin: ${CORS_ALLOWED_ORIGIN}
-      Auth0__Domain: ${AUTH0_DOMAIN}
-      Auth0__Audience: ${AUTH0_AUDIENCE}
+      # Defaults matter here: an unset variable is passed as an empty string,
+      # which overrides the good values in appsettings.json and breaks token
+      # validation with a confusing 401.
+      Cors__AllowedOrigin: ${CORS_ALLOWED_ORIGIN:-http://localhost:4200}
+      Auth0__Domain: ${AUTH0_DOMAIN:-dev-sizppb5m3zuup43h.us.auth0.com}
+      Auth0__Audience: ${AUTH0_AUDIENCE:-https://api.expensetracker}
       Gemini__ApiKey: ${GEMINI_API_KEY}
     ports:
       - "127.0.0.1:8080:8080"
@@ -85,6 +88,20 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  # nginx serving the built Angular app, proxying /api to the api service so
+  # the whole app is same-origin.
+  web:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    container_name: expensetracker-web
+    ports:
+      # 4200 to match the origin already registered with Auth0 for ng serve.
+      - "127.0.0.1:${WEB_HOST_PORT:-4200}:80"
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:

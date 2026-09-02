@@ -54,6 +54,27 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "selfhost": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.selfhost.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -69,7 +90,8 @@
             }
           },
           "options": {
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "allowedHosts": ["hypnosis-proximity-carpenter.ngrok-free.dev"]
           },
           "defaultConfiguration": "development"
         },
