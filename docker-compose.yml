@@ -104,6 +104,16 @@ services:
       - api
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: expensetracker-cloudflared
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    depends_on:
+      - web
+    restart: unless-stopped
+
 volumes:
   minio-data:
   pg-data:
