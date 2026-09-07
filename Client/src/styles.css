@@ -4,23 +4,137 @@
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   Recave design tokens
+   Names match the Figma variables' WEB code syntax (file 5CATVjILnTav2fDiyUOsfA)
+   and the mockups in Client/mockups/, so Dev Mode snippets paste straight in.
+   ========================================================================== */
 :root {
-  --teal:      #00897b;
-  --teal-dark: #00796b;
-  --teal-bg:   #e8f5f3;
-  --border:    #e9ecef;
-  --surface:   #fff;
-  --bg:        #f8f9fa;
-  --text:      #212529;
-  --muted:     #6c757d;
-  --faint:     #aaa;
+  /* --- Primitives: purple ramp --- */
+  --purple-50:  #F4F0FE;
+  --purple-100: #EDE6FD;
+  --purple-200: #DCCFFB;
+  --purple-300: #C0A9F7;
+  --purple-400: #9B7AF0;
+  --purple-500: #7C4DEA;
+  --purple-600: #6C3AE0;
+  --purple-700: #5628C4;
+  --purple-800: #431E9C;
+  --purple-900: #2E1470;
+
+  /* --- Primitives: neutral ramp (50 is lilac-tinted, not grey) --- */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #F7F5FD;
+  --neutral-100: #F1EFF7;
+  --neutral-200: #E7E4F0;
+  --neutral-300: #D5D1E0;
+  --neutral-400: #A8A3B8;
+  --neutral-500: #7C7790;
+  --neutral-600: #5C5773;
+  --neutral-700: #423E56;
+  --neutral-800: #2A2739;
+  --neutral-900: #171526;
+
+  /* --- Semantic: background --- */
+  --color-bg-page:        var(--neutral-50);
+  --color-bg-surface:     var(--neutral-0);
+  --color-bg-surface-alt: var(--neutral-100);
+  --color-bg-brand:       var(--purple-600);
+  --color-bg-brand-hover: var(--purple-700);
+  --color-bg-brand-soft:  var(--purple-50);
+  --color-bg-brand-deep:  var(--purple-900);
+  --color-bg-inverse:     var(--neutral-900);
+  --color-bg-accent:      #FF6B5B;
+
+  /* --- Semantic: text --- */
+  --color-text-primary:   var(--neutral-900);
+  --color-text-secondary: var(--neutral-500);
+  /* muted is 2.4:1 on white — disabled/placeholder only, never body text */
+  --color-text-muted:     var(--neutral-400);
+  --color-text-brand:     var(--purple-600);
+  --color-text-on-brand:  var(--neutral-0);
+  --color-text-positive:  #16A34A;
+  --color-text-negative:  #DC2626;
+
+  /* --- Semantic: status --- */
+  --color-status-positive: #16A34A;
+  --color-status-negative: #DC2626;
+  --color-status-warning:  #F59E0B;
+
+  /* --- Semantic: border & icon --- */
+  --color-border-default: var(--neutral-200);
+  --color-border-strong:  var(--neutral-300);
+  --color-border-brand:   var(--purple-600);
+  --color-border-focus:   var(--purple-400);
+  --color-icon-default:   var(--neutral-500);
+  --color-icon-brand:     var(--purple-600);
+
+  /* --- Semantic: expense categories (soft fill + ink text, contrast-checked) --- */
+  --color-category-food:                #F97316;
+  --color-category-food-soft:           #FFF0E6;
+  --color-category-food-ink:            #C2410C;
+  --color-category-transport:           #3B82F6;
+  --color-category-transport-soft:      #E8F1FE;
+  --color-category-transport-ink:       #1D4ED8;
+  --color-category-utilities:           #10B981;
+  --color-category-utilities-soft:      #E6F7F1;
+  --color-category-utilities-ink:       #047857;
+  --color-category-entertainment:       #A855F7;
+  --color-category-entertainment-soft:  #F5EAFE;
+  --color-category-entertainment-ink:   #7E22CE;
+  --color-category-health:              #EC4899;
+  --color-category-health-soft:         #FDECF4;
+  --color-category-health-ink:          #BE185D;
+
+  /* --- Spacing (4pt scale) --- */
+  --spacing-2xs: 2px;
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  12px;
+  --spacing-base:16px;
+  --spacing-lg:  20px;
+  --spacing-xl:  24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 40px;
+  --spacing-4xl: 48px;
+
+  /* --- Radius --- */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-full: 999px;
+
+  /* --- Typography --- */
+  --font-family-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* --- Elevation --- */
+  --shadow-card:    0 1px 3px rgba(23,21,38,0.05), 0 1px 2px rgba(23,21,38,0.04);
+  --shadow-raised:  0 4px 12px -2px rgba(23,21,38,0.08), 0 2px 4px -2px rgba(23,21,38,0.04);
+  --shadow-overlay: 0 12px 32px -4px rgba(23,21,38,0.14), 0 4px 8px -4px rgba(23,21,38,0.06);
+  --shadow-brand:   0 8px 20px -4px rgba(108,58,224,0.28);
+
+  /* --- Legacy aliases ---
+     The teal-era names, repointed at the Recave palette so the 16 component
+     stylesheets that still reference them re-theme without being edited.
+     Each one is deleted as its components are migrated. */
+  --teal:      var(--color-bg-brand);
+  --teal-dark: var(--color-bg-brand-hover);
+  --teal-bg:   var(--color-bg-brand-soft);
+  --border:    var(--color-border-default);
+  --surface:   var(--color-bg-surface);
+  --bg:        var(--color-bg-page);
+  --text:      var(--color-text-primary);
+  --muted:     var(--color-text-secondary);
+  --faint:     var(--color-text-muted);
 }
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: var(--font-family-sans);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
 }
@@ -29,22 +143,31 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
-  border-radius: 7px;
-  font-size: 0.85rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 0.875rem;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  border: 1.5px solid transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
 
-.btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+.btn-sm { padding: var(--spacing-sm) var(--spacing-base); font-size: 0.8125rem; }
 
-.btn-primary { background: var(--teal); color: #fff; }
-.btn-primary:hover { background: var(--teal-dark); }
+.btn-primary { background: var(--color-bg-brand); color: var(--color-text-on-brand); box-shadow: var(--shadow-brand); }
+.btn-primary:hover { background: var(--color-bg-brand-hover); }
 
-.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover { background: var(--bg); }
+.btn-secondary { background: var(--color-bg-surface); color: var(--color-text-primary); border-color: var(--color-border-default); }
+.btn-secondary:hover { background: var(--color-bg-surface-alt); }
 
-.btn-danger { background: #c0392b; color: #fff; }
-.btn-danger:hover { background: #a93226; }
+.btn-danger { background: var(--color-status-negative); color: var(--color-text-on-brand); }
+.btn-danger:hover { background: #B91C1C; }
+
+.btn-ghost { background: transparent; color: var(--color-text-brand); }
+.btn-ghost:hover { background: var(--color-bg-brand-soft); }
+
+.btn:disabled,
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; box-shadow: none; }

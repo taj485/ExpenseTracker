@@ -1,9 +1,90 @@
 @if (!checking()) {
   <div class="home">
-    <div class="home-card">
-      <div class="home-logo">Expense<span>Tracker</span></div>
-      <p class="home-tagline">Track your spending, simply.</p>
-      <button class="btn btn-primary" (click)="login()">Log In</button>
+    <div class="home-stars" aria-hidden="true">
+      <span class="star star-a"></span>
+      <span class="star star-b"></span>
+      <span class="star star-c"></span>
+      <span class="star star-d"></span>
+      <span class="star star-e"></span>
+    </div>
+
+    <div class="home-hero">
+      <svg class="mascot" viewBox="0 0 120 145" fill="none"
+           xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Recave mascot">
+        <ellipse cx="58" cy="134" rx="31" ry="5.5" fill="var(--purple-500)" opacity="0.55" />
+
+        <g fill="var(--purple-300)">
+          <path d="M0 -7.5 L2.2 -2.2 L7.5 0 L2.2 2.2 L0 7.5 L-2.2 2.2 L-7.5 0 L-2.2 -2.2 Z" transform="translate(15,50)" />
+          <path d="M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5 Z" transform="translate(105,38)" />
+          <path d="M0 -4 L1.2 -1.2 L4 0 L1.2 1.2 L0 4 L-1.2 1.2 L-4 0 L-1.2 -1.2 Z" transform="translate(103,92)" />
+        </g>
+
+        <path d="M26 30 L34 24 L42 30 L50 24 L58 30 L66 24 L74 30 L82 24 L90 30
+                 L90 122 L82 128 L74 122 L66 128 L58 122 L50 128 L42 122 L34 128 L26 122 Z"
+              fill="var(--color-bg-surface)" stroke="var(--purple-400)"
+              stroke-width="3" stroke-linejoin="round" />
+
+        <path d="M34 48 h13 M69 48 h13" stroke="var(--purple-400)" stroke-width="3" stroke-linecap="round" />
+
+        <rect x="32" y="54" width="24" height="17" rx="5" fill="var(--purple-900)" />
+        <rect x="60" y="54" width="24" height="17" rx="5" fill="var(--purple-900)" />
+        <path d="M56 60.5 h4" stroke="var(--purple-900)" stroke-width="3.5" />
+        <path d="M38 57 l5 0 -7 8 -1.5 -4 Z" fill="#FFFFFF" opacity="0.3" />
+        <path d="M66 57 l5 0 -7 8 -1.5 -4 Z" fill="#FFFFFF" opacity="0.3" />
+
+        <path d="M50 80 q8 8 16 0" stroke="var(--purple-900)" stroke-width="3" stroke-linecap="round" fill="none" />
+
+        <path d="M36 97 h25 M36 107 h19" stroke="var(--purple-600)" stroke-width="4" stroke-linecap="round" />
+        <text x="75" y="110" text-anchor="middle" font-family="Inter, sans-serif"
+              font-size="27" font-weight="700" fill="var(--purple-600)">£</text>
+      </svg>
+
+      <h1 class="home-wordmark">
+        <span class="wordmark-lead">Re</span><span class="wordmark-tail">cave</span>
+      </h1>
+      <p class="home-tagline">Receipts in. <strong>Insights out.</strong></p>
+    </div>
+
+    <ul class="home-features">
+      <li class="home-feature">
+        <span class="home-feature-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z" />
+            <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z" />
+            <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z" />
+            <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z" />
+          </svg>
+        </span>
+        <span>Snap a receipt &mdash; every line item read for you</span>
+      </li>
+      <li class="home-feature">
+        <span class="home-feature-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M3 7.2a3 3 0 0 1 3-3h3.1a2 2 0 0 1 1.5.7l1 1.1H18a3 3 0 0 1 3 3v.5H3z" />
+            <path d="M3 11h18v6.8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" />
+          </svg>
+        </span>
+        <span>Separate spaces for home, work and trips</span>
+      </li>
+      <li class="home-feature">
+        <span class="home-feature-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="3" y="3.4" width="2.3" height="17.2" rx="1.15" />
+            <rect x="3" y="18.3" width="18" height="2.3" rx="1.15" />
+            <rect x="7.4" y="12.6" width="2.6" height="5.7" rx="1.3" />
+            <rect x="11.7" y="8.4" width="2.6" height="9.9" rx="1.3" />
+            <rect x="16" y="10.4" width="2.6" height="7.9" rx="1.3" />
+          </svg>
+        </span>
+        <span>See where the month actually went</span>
+      </li>
+    </ul>
+
+    <div class="home-actions">
+      <button type="button" class="btn btn-on-brand btn-block" (click)="login()">Get started</button>
+      <button type="button" class="btn btn-ghost-on-brand btn-block" (click)="login()">I already have an account</button>
     </div>
   </div>
 }

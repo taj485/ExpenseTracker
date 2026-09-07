@@ -1,76 +1,126 @@
 .sidebar {
-  width: 230px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  width: 248px;
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   height: 100vh;
   z-index: 200;
+  padding: var(--spacing-xl) var(--spacing-base);
   transition: transform 0.25s ease;
 }
 
-.sidebar-logo {
-  display: block;
-  padding: 24px 20px 20px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--text);
+/* ---------- Brand ---------- */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-sm) var(--spacing-2xl);
   text-decoration: none;
   cursor: pointer;
-  border-bottom: 1px solid var(--border);
 }
 
-.sidebar-logo span { color: var(--teal); }
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-brand);
+  color: var(--color-text-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-brand);
+}
 
+.brand-name {
+  font-size: 1.1875rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.wordmark-lead { color: var(--color-text-primary); }
+.wordmark-tail { color: var(--color-text-brand); }
+
+/* ---------- Nav ---------- */
 .sidebar-nav {
-  padding: 12px 0;
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-2xs);
+  overflow-y: auto;
+}
+
+.nav-heading {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-base) var(--spacing-sm) var(--spacing-sm);
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 20px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  border-left: 3px solid transparent;
   transition: background 0.15s, color 0.15s;
 }
 
-.nav-item:hover { background: var(--teal-bg); color: var(--teal); }
-.nav-item.active { color: var(--teal); background: var(--teal-bg); border-left-color: var(--teal); font-weight: 600; }
+.nav-item:hover { background: var(--color-bg-surface-alt); color: var(--color-text-primary); }
 
-.nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+/* A soft-purple pill rather than a left border — reads as a selected surface
+   and matches the active state used in the mobile tab bar. */
+.nav-item.active {
+  background: var(--color-bg-brand-soft);
+  color: var(--color-text-brand);
+  font-weight: 600;
+}
 
-.btn-add-table {
-  display: block;
-  width: calc(100% - 40px);
-  margin: 10px 20px 0;
-  padding: 10px;
-  background: var(--teal);
-  border: none;
-  border-radius: 7px;
-  color: #fff;
-  font-size: 0.9rem;
+/* currentColor so the glyph follows the item's state automatically. */
+.nav-glyph { width: 20px; height: 20px; flex-shrink: 0; display: block; }
+
+.nav-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-add-space {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.btn-add-table:hover { background: var(--teal-dark); }
+.btn-add-space:hover {
+  border-color: var(--color-border-brand);
+  color: var(--color-text-brand);
+}
 
 .sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--faint);
+  margin-top: auto;
+  padding: var(--spacing-base) var(--spacing-sm) 0;
+  border-top: 1px solid var(--color-border-default);
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {
@@ -80,6 +130,7 @@
     left: 0;
     height: 100%;
     transform: translateX(-100%);
+    box-shadow: var(--shadow-overlay);
   }
   .sidebar.open { transform: translateX(0); }
 }

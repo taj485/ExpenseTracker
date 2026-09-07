@@ -1,7 +1,7 @@
 .topbar {
   height: 60px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,26 +27,27 @@
   border: none;
   cursor: pointer;
   font-size: 1.6rem;
-  color: var(--muted);
+  color: var(--color-icon-default);
   padding: 8px;
   line-height: 1;
 }
 
 .mobile-logo {
   display: none;
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 800;
-  color: var(--text);
+  letter-spacing: -0.4px;
   text-decoration: none;
   cursor: pointer;
 }
 
-.mobile-logo span { color: var(--teal); }
+.wordmark-lead { color: var(--color-text-primary); }
+.wordmark-tail { color: var(--color-text-brand); }
 
 .page-title {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 768px) {
