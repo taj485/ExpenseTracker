@@ -29,9 +29,8 @@ ExpenseTracker/
 │   │   ├── mockup-2.html
 │   │   ├── mockup-3.html
 │   │   ├── mockup-combined.html
-│   │   ├── mockup-quirky.html
-│   │   ├── mockup-professional.html
-│   │   └── mockup-genz.html
+│   │   ├── recave-mobile.html
+│   │   └── recave-desktop.html
 │   ├── src/
 │   │   ├── styles.css
 │   │   ├── types/
@@ -146,7 +145,16 @@ ExpenseTracker/
 │   │           └── expense-table/
 │   │               ├── create-expense-table-prompt.component.ts
 │   │               ├── create-expense-table-prompt.component.html
-│   │               └── create-expense-table-prompt.component.css
+│   │               ├── create-expense-table-prompt.component.css
+│   │               ├── expense-table-picker.component.ts
+│   │               ├── expense-table-picker.component.html
+│   │               ├── expense-table-picker.component.css
+│   │               ├── select-tables-prompt.component.ts
+│   │               ├── select-tables-prompt.component.html
+│   │               ├── select-tables-prompt.component.css
+│   │               ├── share-table-prompt.component.ts
+│   │               ├── share-table-prompt.component.html
+│   │               └── share-table-prompt.component.css
 │   ├── public/
 │   │   ├── favicon.ico
 │   │   └── staticwebapp.config.json

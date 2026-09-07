@@ -32,21 +32,40 @@
   color: gold;
 }
 
+/* Share sits beside settings rather than inside the menu: it is a routine,
+   non-destructive action, and the menu now holds only the destructive one. */
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.icon-action,
 .settings-btn {
   display: inline-flex;
   align-items: center;
-  background: none;
-  border: none;
-  font-size: 1.3rem;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  color: var(--color-icon-default);
+  font-size: 1.0625rem;
   line-height: 1;
   cursor: pointer;
-  color: #000;
   padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
+.icon-action:hover,
 .settings-btn:hover {
-  opacity: 0.7;
+  background: var(--color-bg-brand-soft);
+  border-color: var(--color-border-brand);
+  color: var(--color-icon-brand);
 }
+
+.icon-action svg { width: 18px; height: 18px; display: block; }
 
 .settings-menu-wrapper {
   position: relative;
@@ -63,11 +82,11 @@
   top: 100%;
   right: 0;
   margin-top: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  min-width: 220px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-overlay);
+  min-width: 200px;
   overflow: hidden;
   z-index: 999;
 }
@@ -76,11 +95,12 @@
   display: block;
   width: 100%;
   text-align: left;
-  padding: 14px 20px;
+  padding: var(--spacing-md) var(--spacing-base);
   background: none;
   border: none;
-  font-size: 1rem;
-  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -146,173 +166,205 @@
   color: var(--text);
 }
 
-.table-wrapper {
-  background: var(--surface);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 620px;
-}
-
-.col-unit-price {
-  width: 100px;
-}
-
-.col-quantity {
-  width: 56px;
-}
-
-.col-merchant {
-  width: 90px;
-}
-
-.col-merchant,
-.col-date {
-  border-left: 2px solid var(--border);
-  border-right: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
-}
-
-tr.group-start td {
-  border-top: 2px solid var(--border);
-}
-
-thead { background: var(--bg); }
-
-th {
-  padding: 12px 18px;
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-th.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
-th.sortable:hover { color: var(--text); }
-
-.sort-arrow {
-  margin-left: 4px;
-  font-size: 0.65rem;
-  color: var(--faint);
-}
-
-.sort-arrow.active {
-  color: var(--teal);
-}
-
-td {
-  padding: 14px 18px;
-  font-size: 0.875rem;
-  color: var(--text);
-  border-top: 1px solid var(--bg);
-}
-
-tr.group-hover td { background: var(--bg); }
-
-.amount-cell { font-weight: 600; color: var(--teal); }
-
-.clickable-row { cursor: pointer; }
-
-.actions-cell {
+/* ---------- Receipt groups ----------
+   One card per receipt: a merchant header carrying the receipt total, then the
+   line items that make it up. Replaces the old sortable table. */
+.receipt-list {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.receipt-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.receipt-card:hover { border-color: var(--color-border-strong); }
+
+.receipt-head {
+  display: flex;
   align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-bg-page);
+}
+
+.receipt-head.is-linked { cursor: pointer; }
+.receipt-head.is-linked:hover { background: var(--color-bg-brand-soft); }
+
+.receipt-ident { flex: 1; min-width: 0; }
+
+.receipt-merchant {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.receipt-date {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-2xs);
+}
+
+.receipt-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.receipt-total {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-items { border-top: 1px solid var(--color-border-default); }
+
+.receipt-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-default);
+  cursor: pointer;
+}
+
+.receipt-item:last-child { border-bottom: none; }
+.receipt-item:hover { background: var(--color-bg-page); }
+
+/* Wide screens put the badge inline with the description; narrow ones stack it
+   underneath (see the media query below). */
+.item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.item-name {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-figures {
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 110px;
+}
+
+.item-amount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-unit {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-2xs);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
+.item-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.icon-btn:hover { border-color: var(--color-border-brand); color: var(--color-text-brand); }
+.icon-btn.is-danger:hover { border-color: var(--color-status-negative); color: var(--color-status-negative); }
+
+.empty-state {
+  padding: var(--spacing-4xl) var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* ---------- Pagination ---------- */
 .pagination-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  margin-top: 16px;
+  gap: var(--spacing-base);
+  margin-top: var(--spacing-lg);
 }
 
 .pagination-status {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
 }
 
-@media (max-width: 768px) {
-  .filter-bar {
-    justify-content: center;
-  }
-
-  .stats-bar {
-    justify-content: center;
-  }
-
-  .stat-card {
-    flex: 1 1 calc(50% - 7px);
-    min-width: 0;
-    text-align: center;
-  }
-
-  .filter-select,
-  .filter-bar .btn {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-  }
-
-  .actions-header,
-  .actions-cell {
-    display: none;
-  }
-
-  th, td {
-    padding: 10px 6px;
-    font-size: 0.78rem;
-    white-space: nowrap;
-  }
-
-  .badge {
-    padding: 2px 6px;
-    font-size: 0.64rem;
-  }
-}
-
-/* Category badges */
+/* ---------- Category badges ---------- */
 .badge {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.badge-food          { background: #fff3e0; color: #e65100; }
-.badge-transport     { background: #e3f2fd; color: #1565c0; }
-.badge-utilities     { background: #e8f5e9; color: #2e7d32; }
-.badge-entertainment { background: #f3e5f5; color: #6a1b9a; }
-.badge-health        { background: #fce4ec; color: #880e4f; }
+.badge-food          { background: var(--color-category-food-soft);          color: var(--color-category-food-ink); }
+.badge-transport     { background: var(--color-category-transport-soft);     color: var(--color-category-transport-ink); }
+.badge-utilities     { background: var(--color-category-utilities-soft);     color: var(--color-category-utilities-ink); }
+.badge-entertainment { background: var(--color-category-entertainment-soft); color: var(--color-category-entertainment-ink); }
+.badge-health        { background: var(--color-category-health-soft);        color: var(--color-category-health-ink); }
 
+/* ---------- Status ---------- */
 .status-msg {
-  font-size: 0.875rem;
-  color: var(--muted);
-  padding: 40px 0;
+  padding: var(--spacing-2xl);
   text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
 }
 
-.status-msg.error { color: #c0392b; }
+.status-msg.error { color: var(--color-status-negative); }
 
-.empty-cell {
-  text-align: center;
-  color: var(--faint);
-  padding: 40px;
+@media (max-width: 768px) {
+  .receipt-head { padding: var(--spacing-md) var(--spacing-base); }
+  .receipt-item {
+    padding: var(--spacing-md) var(--spacing-base);
+    align-items: flex-start;
+  }
+
+  /* Not enough width to keep the badge beside the description. */
+  .item-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  .item-name { white-space: normal; }
+
+  .item-figures { min-width: 0; }
+  .receipt-count { display: none; }
+
+  /* Row actions are reachable from the expense detail screen on mobile. */
+  .item-actions { display: none; }
 }

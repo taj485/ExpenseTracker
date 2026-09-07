@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recave — Desktop UI</title>
+  <style>
+    /* ==========================================================================
+       Design tokens — identical set to recave-mobile.html and the Figma file
+       (Recave / 5CATVjILnTav2fDiyUOsfA). Names match each variable's WEB
+       code syntax, so Dev Mode snippets drop straight into the Angular app.
+       ========================================================================== */
+    :root {
+      --purple-50:  #F4F0FE;
+      --purple-100: #EDE6FD;
+      --purple-200: #DCCFFB;
+      --purple-300: #C0A9F7;
+      --purple-400: #9B7AF0;
+      --purple-500: #7C4DEA;
+      --purple-600: #6C3AE0;
+      --purple-700: #5628C4;
+      --purple-800: #431E9C;
+      --purple-900: #2E1470;
+
+      --neutral-0:   #FFFFFF;
+      --neutral-50:  #F7F5FD;
+      --neutral-100: #F1EFF7;
+      --neutral-200: #E7E4F0;
+      --neutral-300: #D5D1E0;
+      --neutral-400: #A8A3B8;
+      --neutral-500: #7C7790;
+      --neutral-600: #5C5773;
+      --neutral-700: #423E56;
+      --neutral-800: #2A2739;
+      --neutral-900: #171526;
+
+      --color-bg-page:        var(--neutral-50);
+      --color-bg-surface:     var(--neutral-0);
+      --color-bg-surface-alt: var(--neutral-100);
+      --color-bg-brand:       var(--purple-600);
+      --color-bg-brand-hover: var(--purple-700);
+      --color-bg-brand-soft:  var(--purple-50);
+      --color-bg-brand-deep:  var(--purple-900);
+      --color-bg-inverse:     var(--neutral-900);
+      --color-bg-accent:      #FF6B5B;
+
+      --color-text-primary:   var(--neutral-900);
+      --color-text-secondary: var(--neutral-500);
+      /* muted is 2.4:1 on white — disabled/placeholder states only, never body text */
+      --color-text-muted:     var(--neutral-400);
+      --color-text-brand:     var(--purple-600);
+      --color-text-on-brand:  var(--neutral-0);
+      --color-text-positive:  #16A34A;
+      --color-text-negative:  #DC2626;
+
+      /* Semantic — status */
+      --color-status-positive: #16A34A;
+      --color-status-negative: #DC2626;
+      --color-status-warning:  #F59E0B;
+
+      --color-border-default: var(--neutral-200);
+      --color-border-strong:  var(--neutral-300);
+      --color-border-brand:   var(--purple-600);
+      --color-border-focus:   var(--purple-400);
+      --color-icon-default:   var(--neutral-500);
+      --color-icon-brand:     var(--purple-600);
+
+      --color-category-food-soft:          #FFF0E6;
+      --color-category-food-ink:           #C2410C;
+      --color-category-transport-soft:     #E8F1FE;
+      --color-category-transport-ink:      #1D4ED8;
+      --color-category-utilities-soft:     #E6F7F1;
+      --color-category-utilities-ink:      #047857;
+      --color-category-entertainment-soft: #F5EAFE;
+      --color-category-entertainment-ink:  #7E22CE;
+      --color-category-health-soft:        #FDECF4;
+      --color-category-health-ink:         #BE185D;
+
+      --spacing-2xs: 2px;  --spacing-xs: 4px;   --spacing-sm: 8px;
+      --spacing-md: 12px;  --spacing-base: 16px; --spacing-lg: 20px;
+      --spacing-xl: 24px;  --spacing-2xl: 32px;  --spacing-3xl: 40px;
+      --spacing-4xl: 48px;
+
+      --radius-sm: 8px;  --radius-md: 12px; --radius-lg: 16px;
+      --radius-xl: 20px; --radius-2xl: 28px; --radius-full: 999px;
+
+      --font-family-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+      --shadow-card:    0 1px 3px rgba(23,21,38,0.05), 0 1px 2px rgba(23,21,38,0.04);
+      --shadow-raised:  0 4px 12px -2px rgba(23,21,38,0.08), 0 2px 4px -2px rgba(23,21,38,0.04);
+      --shadow-overlay: 0 12px 32px -4px rgba(23,21,38,0.14), 0 4px 8px -4px rgba(23,21,38,0.06);
+      --shadow-brand:   0 8px 20px -4px rgba(108,58,224,0.28);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family-sans);
+      background: #E9E5F5;
+      color: var(--color-text-primary);
+      padding: var(--spacing-4xl);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Mockup scaffold (not part of the product UI) ---------- */
+    .sheet-title { font-size: 28px; font-weight: 700; margin-bottom: var(--spacing-xs); }
+    .sheet-sub { font-size: 15px; color: var(--color-text-secondary); margin-bottom: var(--spacing-2xl); }
+    .screen-stack { display: flex; flex-direction: column; gap: var(--spacing-4xl); }
+    .screen-frame { display: flex; flex-direction: column; gap: var(--spacing-md); }
+    .screen-caption { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+
+    /* Fixed height so two screens can stack; each scrolls its own content. */
+    .app-shell {
+      display: flex;
+      height: 860px;
+      background: var(--color-bg-page);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-default);
+      box-shadow: var(--shadow-overlay);
+      overflow: hidden;
+    }
+
+    /* Space-scoped summary tiles above the receipt list. */
+    .space-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      width: 248px; flex-shrink: 0;
+      background: var(--color-bg-surface);
+      border-right: 1px solid var(--color-border-default);
+      display: flex; flex-direction: column;
+      padding: var(--spacing-xl) var(--spacing-base);
+    }
+    .brand {
+      display: flex; align-items: center; gap: var(--spacing-md);
+      padding: 0 var(--spacing-sm) var(--spacing-2xl);
+    }
+    .brand-mark {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      background: var(--color-bg-brand); color: var(--color-text-on-brand);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700;
+      box-shadow: var(--shadow-brand);
+    }
+    /* "Re" on ink, "cave" on brand purple — same two-tone split as mobile. */
+    .brand-name { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; }
+    .wordmark-lead { color: var(--color-text-primary); }
+    .wordmark-tail { color: var(--color-text-brand); }
+
+    .nav-group { display: flex; flex-direction: column; gap: var(--spacing-2xs); }
+    .nav-heading {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.7px; color: var(--color-text-secondary);
+      padding: var(--spacing-base) var(--spacing-sm) var(--spacing-sm);
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: var(--spacing-md);
+      padding: var(--spacing-md) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 500;
+      color: var(--color-text-secondary);
+      cursor: pointer; text-decoration: none;
+    }
+    .nav-item:hover { background: var(--color-bg-surface-alt); color: var(--color-text-primary); }
+    .nav-item.active {
+      background: var(--color-bg-brand-soft);
+      color: var(--color-text-brand); font-weight: 600;
+    }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-count {
+      margin-left: auto; font-size: 12px; font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    .btn-new-space {
+      margin-top: var(--spacing-base);
+      display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      border: 1.5px dashed var(--color-border-strong);
+      border-radius: var(--radius-md);
+      background: transparent; color: var(--color-text-secondary);
+      font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-new-space:hover { border-color: var(--color-border-brand); color: var(--color-text-brand); }
+
+    .sidebar-footer {
+      margin-top: auto; padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border-default);
+      display: flex; align-items: center; gap: var(--spacing-md);
+    }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      background: var(--color-bg-brand-soft); color: var(--color-text-brand);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+    }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-mail { font-size: 11px; color: var(--color-text-muted); }
+
+    /* ---------- Main column ---------- */
+    .main-column { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--spacing-lg) var(--spacing-2xl);
+      background: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .page-heading { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .page-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+    .top-actions { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    .search-box {
+      display: flex; align-items: center; gap: var(--spacing-sm);
+      background: var(--color-bg-page);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-full);
+      padding: var(--spacing-sm) var(--spacing-base);
+      width: 260px;
+      color: var(--color-text-secondary); font-size: 13px;
+    }
+
+    .content { flex: 1; padding: var(--spacing-2xl); overflow-y: auto; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm);
+      border: 1px solid transparent; border-radius: var(--radius-full);
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: var(--spacing-md) var(--spacing-xl); cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-sm { padding: var(--spacing-sm) var(--spacing-base); font-size: 13px; }
+    .btn-primary { background: var(--color-bg-brand); color: var(--color-text-on-brand); box-shadow: var(--shadow-brand); }
+    .btn-primary:hover { background: var(--color-bg-brand-hover); }
+    .btn-secondary { background: var(--color-bg-surface); color: var(--color-text-primary); border-color: var(--color-border-default); }
+    .btn-secondary:hover { background: var(--color-bg-surface-alt); }
+    .btn-danger { background: var(--color-text-negative); color: var(--color-text-on-brand); }
+    .btn-ghost { background: transparent; color: var(--color-text-brand); }
+
+    /* ---------- Hero + stat grid ---------- */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+    }
+    .hero-card {
+      background: linear-gradient(145deg, var(--purple-600) 0%, var(--purple-800) 100%);
+      border-radius: var(--radius-2xl);
+      padding: var(--spacing-xl);
+      color: var(--color-text-on-brand);
+      box-shadow: var(--shadow-brand);
+      position: relative; overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; top: -70px; right: -50px;
+      width: 220px; height: 220px; border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.10);
+    }
+    .hero-head {
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; margin-bottom: var(--spacing-base);
+    }
+    .hero-label { font-size: 13px; opacity: 0.85; }
+    .month-select {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: var(--radius-full);
+      padding: 6px 14px; font-size: 12px; font-weight: 600;
+      color: var(--color-text-on-brand); font-family: inherit;
+    }
+    .hero-amount { font-size: 42px; font-weight: 700; letter-spacing: -1.4px; position: relative; }
+    .hero-delta { font-size: 13px; opacity: 0.9; margin-top: var(--spacing-sm); position: relative; }
+
+    .stat-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-card);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .stat-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--color-text-secondary);
+    }
+    .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -0.8px; margin-top: var(--spacing-sm); }
+    .stat-value.brand { color: var(--color-text-brand); }
+    .stat-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--spacing-xs); }
+
+    /* ---------- Panels ---------- */
+    .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-2xl); }
+    .panel {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .panel-title { font-size: 15px; font-weight: 600; }
+    .panel-body { padding: var(--spacing-lg) var(--spacing-xl); }
+
+    /* ---------- Category breakdown ---------- */
+    .category-list { display: flex; flex-direction: column; gap: var(--spacing-base); }
+    .category-row { display: flex; align-items: center; gap: var(--spacing-base); }
+    .category-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; flex-shrink: 0;
+    }
+    .category-info { flex: 1; min-width: 0; }
+    .category-name { font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-sm); }
+    .category-track { height: 6px; background: var(--color-bg-surface-alt); border-radius: var(--radius-full); overflow: hidden; }
+    .category-fill { height: 100%; border-radius: var(--radius-full); }
+    .category-figures { text-align: right; flex-shrink: 0; min-width: 96px; }
+    .category-amount { font-size: 15px; font-weight: 700; }
+    .category-count { font-size: 11px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+
+    /* ---------- Donut ---------- */
+    .donut-layout { display: flex; align-items: center; gap: var(--spacing-base); flex-wrap: wrap; }
+    .donut-figure { flex-shrink: 0; width: 150px; height: 150px; }
+    .donut-legend { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-sm); list-style: none; }
+    .legend-row { display: flex; align-items: center; gap: var(--spacing-md); }
+    .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    /* The name yields space so the figures never truncate — a clipped amount
+       is unreadable, a clipped merchant name is still recognisable. */
+    .legend-name {
+      flex: 1; min-width: 0; font-size: 13px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .legend-amount { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .legend-share { font-size: 12px; color: var(--color-text-secondary); min-width: 36px; text-align: right; }
+
+    /* ---------- Expenses list ---------- */
+    /* Spacing is owned by .expenses-head, not the bar itself. */
+    .filter-bar { display: flex; align-items: center; gap: var(--spacing-md); }
+    .filter-select {
+      font-family: inherit; font-size: 13px;
+      padding: var(--spacing-sm) var(--spacing-base);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-full);
+      background: var(--color-bg-surface); color: var(--color-text-primary);
+    }
+
+    /* ---------- Receipt groups ----------
+       Same structure as the mobile expenses list: a merchant header carrying
+       the receipt total, then the line items beneath it. The extra desktop
+       width is spent putting the category badge inline with the description
+       rather than stacked under it. */
+    /* No wrapping panel — a bordered card inside a bordered panel doubles the
+       rules. The cards sit on the page ground, same as mobile. */
+    .expenses-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--spacing-base);
+      margin-bottom: var(--spacing-base);
+    }
+    .receipt-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+    .receipt-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .receipt-card:hover { border-color: var(--color-border-strong); }
+
+    .receipt-head {
+      display: flex; align-items: center; gap: var(--spacing-md);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: var(--color-bg-page);
+    }
+    .merchant-logo {
+      width: 40px; height: 40px; border-radius: var(--radius-full);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+    .receipt-ident { flex: 1; min-width: 0; }
+    .receipt-merchant {
+      font-size: 15px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .receipt-date { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+    .receipt-count { font-size: 12px; color: var(--color-text-secondary); flex-shrink: 0; }
+    .receipt-total {
+      font-size: 17px; font-weight: 700; flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .receipt-items { border-top: 1px solid var(--color-border-default); }
+    .receipt-item {
+      display: flex; align-items: center; gap: var(--spacing-base);
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .receipt-item:last-child { border-bottom: none; }
+    .receipt-item:hover { background: var(--color-bg-page); }
+    .item-info {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center; gap: var(--spacing-md);
+    }
+    .item-name {
+      font-size: 14px; color: var(--color-text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .item-figures {
+      text-align: right; flex-shrink: 0;
+      min-width: 110px;
+    }
+    .item-amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .item-unit {
+      font-size: 12px; color: var(--color-text-secondary);
+      margin-top: var(--spacing-2xs); font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .item-actions { display: flex; gap: var(--spacing-sm); flex-shrink: 0; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-food          { background: var(--color-category-food-soft);          color: var(--color-category-food-ink); }
+    .badge-transport     { background: var(--color-category-transport-soft);     color: var(--color-category-transport-ink); }
+    .badge-utilities     { background: var(--color-category-utilities-soft);     color: var(--color-category-utilities-ink); }
+    .badge-entertainment { background: var(--color-category-entertainment-soft); color: var(--color-category-entertainment-ink); }
+    .badge-health        { background: var(--color-category-health-soft);        color: var(--color-category-health-ink); }
+
+    .icon-btn {
+      width: 30px; height: 30px; border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-default);
+      background: var(--color-bg-surface); cursor: pointer;
+      font-size: 13px; color: var(--color-text-secondary);
+    }
+    .icon-btn:hover { border-color: var(--color-border-brand); color: var(--color-text-brand); }
+    .icon-btn.is-danger:hover { border-color: var(--color-text-negative); color: var(--color-text-negative); }
+
+    /* ---------- Right rail: add expense ---------- */
+    .add-rail {
+      width: 320px; flex-shrink: 0;
+      border-left: 1px solid var(--color-border-default);
+      background: var(--color-bg-surface);
+      padding: var(--spacing-xl);
+      display: flex; flex-direction: column; gap: var(--spacing-base);
+    }
+    .rail-title { font-size: 15px; font-weight: 600; }
+    .btn-scan {
+      display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm);
+      width: 100%; padding: var(--spacing-md);
+      border: 1.5px dashed var(--color-border-brand);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-brand-soft);
+      color: var(--color-text-brand);
+      font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-scan:hover { background: var(--purple-100); }
+    /* Same glyph as the mobile tab bar's scan button, so the action reads
+       identically on both surfaces. */
+    .scan-icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); }
+    .field-input {
+      width: 100%; font-family: inherit; font-size: 14px;
+      padding: var(--spacing-md) var(--spacing-base);
+      border: 1.5px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-surface); color: var(--color-text-primary);
+      outline: none;
+    }
+    .field-input:focus { border-color: var(--color-border-focus); }
+    .field-input.is-amount { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+    .field-pair { display: flex; gap: var(--spacing-md); }
+    .field-pair .field { flex: 1; }
+    .category-picker { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+    .category-option {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 12px; border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-border-default);
+      background: var(--color-bg-surface);
+      font-size: 12px; font-weight: 500; cursor: pointer;
+    }
+    .category-option.selected {
+      border-color: var(--color-border-brand);
+      background: var(--color-bg-brand-soft);
+      color: var(--color-text-brand); font-weight: 600;
+    }
+
+    /* ---------- Responsive ---------- */
+    /* Below this the two analysis panels can no longer sit side by side
+       without clipping their figures. */
+    @media (max-width: 1560px) {
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1280px) {
+      .add-rail { display: none; }
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .hero-card { grid-column: 1 / -1; }
+    }
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .content { padding: var(--spacing-base); }
+      .top-bar { padding: var(--spacing-base); }
+      .search-box { display: none; }
+      .overview-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ==========================================================================
+       Marketing landing page (pre-login)
+       ========================================================================== */
+    .landing {
+      display: flex; flex-direction: column;
+      background: var(--color-bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-default);
+      box-shadow: var(--shadow-overlay);
+      overflow: hidden;
+    }
+
+    .marketing-nav {
+      display: flex; align-items: center;
+      padding: var(--spacing-lg) var(--spacing-4xl);
+      background: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .marketing-links {
+      display: flex; align-items: center; gap: var(--spacing-xl);
+      margin-left: var(--spacing-2xl); flex: 1;
+    }
+    .marketing-link { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); cursor: pointer; }
+    .marketing-link:hover { color: var(--color-text-primary); }
+    .marketing-actions { display: flex; align-items: center; gap: var(--spacing-md); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-2xl); align-items: center;
+      padding: var(--spacing-4xl) var(--spacing-4xl) 0;
+      background:
+        radial-gradient(90% 70% at 15% 0%, var(--purple-700) 0%, transparent 62%),
+        linear-gradient(160deg, var(--purple-800) 0%, var(--purple-900) 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero-stars { position: absolute; inset: 0; pointer-events: none; }
+    .hero-copy { position: relative; padding-bottom: var(--spacing-4xl); }
+    .hero-headline {
+      /* balance keeps the second sentence from orphaning "out." onto its own
+         line when the hero column narrows. */
+      text-wrap: balance;
+      font-size: 50px; font-weight: 800; letter-spacing: -1.6px;
+      line-height: 1.08; color: var(--color-text-on-brand);
+      margin-bottom: var(--spacing-base);
+    }
+    .hero-headline em { font-style: normal; color: var(--purple-300); }
+    .hero-blurb {
+      font-size: 17px; line-height: 1.6; color: var(--purple-200);
+      margin-bottom: var(--spacing-xl); max-width: 44ch;
+    }
+    .hero-cta { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+    .hero-note { font-size: 13px; color: var(--purple-200); }
+
+    /* Phones bleed off the bottom edge of the hero band. */
+    .hero-shots {
+      position: relative; align-self: end;
+      display: flex; justify-content: center; align-items: flex-end;
+      gap: var(--spacing-base); padding-top: var(--spacing-2xl);
+    }
+    .hero-shots .mini-phone:first-child { transform: translateY(30px) rotate(-3deg); }
+    .hero-shots .mini-phone:last-child  { transform: translateY(-6px) rotate(3deg); }
+
+    /* ---------- Mini phone (marketing screenshot) ---------- */
+    .mini-phone {
+      width: 228px; height: 460px; flex-shrink: 0;
+      background: var(--color-bg-page);
+      border: 8px solid #1B1830;
+      border-radius: 34px;
+      box-shadow: var(--shadow-overlay);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .mini-status {
+      display: flex; justify-content: space-between;
+      padding: 8px 14px 4px; font-size: 9px; font-weight: 600;
+      color: var(--color-text-primary); flex-shrink: 0;
+    }
+    .mini-body { flex: 1; padding: 0 12px; overflow: hidden; background: var(--color-bg-page); }
+
+    .mini-greet { font-size: 9px; color: var(--color-text-secondary); }
+    .mini-name { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .mini-hero-card {
+      background: linear-gradient(145deg, var(--purple-600) 0%, var(--purple-800) 100%);
+      border-radius: var(--radius-lg); padding: 12px;
+      color: var(--color-text-on-brand); margin-bottom: 10px;
+    }
+    .mini-hero-label { font-size: 8px; opacity: 0.85; }
+    .mini-hero-amount { font-size: 22px; font-weight: 700; letter-spacing: -0.6px; }
+    .mini-hero-delta { font-size: 8px; opacity: 0.9; margin-top: 2px; }
+
+    .mini-section { font-size: 10px; font-weight: 600; margin: 10px 0 6px; }
+    .mini-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      padding: 8px; margin-bottom: 6px;
+    }
+    .mini-chip {
+      width: 24px; height: 24px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; flex-shrink: 0;
+    }
+    .mini-row-info { flex: 1; min-width: 0; }
+    .mini-row-name { font-size: 10px; font-weight: 600; }
+    .mini-row-amount { font-size: 10px; font-weight: 700; }
+    .mini-track { height: 4px; background: var(--color-bg-surface-alt); border-radius: var(--radius-full); margin-top: 4px; overflow: hidden; }
+    .mini-fill { height: 100%; border-radius: var(--radius-full); }
+
+    .mini-receipt {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px; overflow: hidden;
+    }
+    .mini-receipt-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px; background: var(--color-bg-page);
+    }
+    .mini-logo {
+      width: 22px; height: 22px; border-radius: var(--radius-full);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 700; color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+    .mini-merchant { flex: 1; font-size: 10px; font-weight: 600; }
+    .mini-total { font-size: 11px; font-weight: 700; }
+    .mini-item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 6px; padding: 7px 8px;
+      border-top: 1px solid var(--color-border-default);
+      font-size: 9px;
+    }
+    .mini-badge {
+      display: inline-block; padding: 1px 6px;
+      border-radius: var(--radius-full);
+      font-size: 8px; font-weight: 600;
+    }
+
+    .mini-tabs {
+      display: flex; align-items: flex-end; justify-content: space-around;
+      background: var(--color-bg-surface);
+      border-top: 1px solid var(--color-border-default);
+      padding: 6px 4px 10px; flex-shrink: 0;
+    }
+    .mini-tab {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 7px; font-weight: 500; color: var(--color-text-secondary);
+      padding: 3px 7px; border-radius: var(--radius-sm);
+    }
+    .mini-tab.active { background: var(--color-bg-brand-soft); color: var(--color-text-brand); font-weight: 600; }
+    .mini-tab svg { width: 13px; height: 13px; display: block; }
+    .mini-fab {
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      background: linear-gradient(145deg, var(--purple-500) 0%, var(--purple-700) 100%);
+      border: 3px solid var(--color-bg-surface);
+      color: var(--color-text-on-brand);
+      display: flex; align-items: center; justify-content: center;
+      margin-top: -16px; flex-shrink: 0;
+      box-shadow: var(--shadow-brand);
+    }
+    .mini-fab svg { width: 15px; height: 15px; display: block; }
+
+    /* ---------- Marketing bands ---------- */
+    .section-band { padding: var(--spacing-4xl); }
+    .section-band.is-tint { background: var(--color-bg-page); border-top: 1px solid var(--color-border-default); }
+    .band-head { text-align: center; max-width: 62ch; margin: 0 auto var(--spacing-2xl); }
+    .band-eyebrow {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--color-text-brand);
+      margin-bottom: var(--spacing-sm);
+    }
+    .band-title { font-size: 32px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: var(--spacing-md); }
+    .band-blurb { font-size: 16px; line-height: 1.6; color: var(--color-text-secondary); }
+
+    /* auto-fit so a fourth card joins the row at desktop width and reflows
+       to 3 or 2 columns as the band narrows. */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-xl); }
+    .feature-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-card);
+    }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-md);
+      background: var(--color-bg-brand-soft); color: var(--color-icon-brand);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: var(--spacing-base);
+    }
+    .feature-icon svg { width: 22px; height: 22px; display: block; }
+    .feature-title { font-size: 17px; font-weight: 600; margin-bottom: var(--spacing-sm); }
+    .feature-copy { font-size: 14px; line-height: 1.6; color: var(--color-text-secondary); }
+
+    .steps-layout { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4xl); align-items: center; }
+    .step-list { display: flex; flex-direction: column; gap: var(--spacing-xl); }
+    .step { display: flex; gap: var(--spacing-base); }
+    .step-num {
+      width: 34px; height: 34px; border-radius: var(--radius-full);
+      background: var(--color-bg-brand); color: var(--color-text-on-brand);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: var(--spacing-xs); }
+    .step-copy { font-size: 14px; line-height: 1.6; color: var(--color-text-secondary); }
+    .steps-shot { display: flex; justify-content: center; }
+
+    .final-cta {
+      margin: var(--spacing-4xl); padding: var(--spacing-4xl);
+      border-radius: var(--radius-2xl);
+      background:
+        radial-gradient(80% 120% at 80% 0%, var(--purple-600) 0%, transparent 60%),
+        linear-gradient(150deg, var(--purple-700) 0%, var(--purple-900) 100%);
+      text-align: center; color: var(--color-text-on-brand);
+      box-shadow: var(--shadow-brand);
+    }
+    .final-title { font-size: 34px; font-weight: 800; letter-spacing: -0.9px; margin-bottom: var(--spacing-md); }
+    .final-blurb { font-size: 16px; color: var(--purple-200); margin-bottom: var(--spacing-xl); }
+    .final-actions { display: flex; gap: var(--spacing-md); justify-content: center; }
+
+    .marketing-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--spacing-xl) var(--spacing-4xl);
+      border-top: 1px solid var(--color-border-default);
+      font-size: 13px; color: var(--color-text-secondary);
+    }
+
+    /* ---------- Insights band ---------- */
+    .insight-layout { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--spacing-xl); align-items: start; }
+    .chart-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-card);
+    }
+    .chart-head { margin-bottom: var(--spacing-base); }
+    .chart-title { font-size: 15px; font-weight: 600; }
+    .chart-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+    .chart-figure { width: 100%; height: auto; display: block; }
+
+    /* Recessive grid and axes; the data is the only assertive thing here. */
+    .grid-line { stroke: var(--color-border-default); stroke-width: 1; }
+    .axis-text { font-size: 11px; fill: var(--color-text-secondary); font-family: var(--font-family-sans); }
+    .series-line { stroke: var(--color-bg-brand); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .series-area { fill: var(--color-bg-brand); opacity: 0.10; }
+    /* 2px surface ring so markers stay legible where the line passes behind. */
+    .series-dot { fill: var(--color-bg-brand); stroke: var(--color-bg-surface); stroke-width: 2; }
+    .series-dot:hover { r: 7; }
+    .point-label { font-size: 12px; font-weight: 700; fill: var(--color-text-primary); font-family: var(--font-family-sans); }
+    .delta-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #FDECEC; color: var(--color-text-negative);
+      border-radius: var(--radius-full); padding: 4px 10px;
+      font-size: 12px; font-weight: 700;
+    }
+
+    .insight-side { display: flex; flex-direction: column; gap: var(--spacing-base); }
+    .insight-tile {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-base) var(--spacing-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .insight-figure { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; color: var(--color-text-brand); }
+    .insight-caption { font-size: 13px; line-height: 1.5; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+
+    .item-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+    .item-row-name {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--spacing-md); font-size: 13px; margin-bottom: 5px;
+    }
+    .item-row-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .item-row-track { height: 6px; background: var(--color-bg-surface-alt); border-radius: var(--radius-full); overflow: hidden; }
+    .item-row-fill { height: 100%; background: var(--color-bg-brand); border-radius: var(--radius-full); }
+    .item-row-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+
+    /* Inverted buttons for purple grounds. Must follow .btn, whose border
+       shorthand would otherwise reset border-color at equal specificity. */
+    .btn-on-brand {
+      background: var(--color-bg-surface); color: var(--color-text-brand);
+      box-shadow: var(--shadow-overlay);
+    }
+    .btn-ghost-on-brand {
+      background: transparent; color: var(--color-text-on-brand);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    /* ---------- Landing: responsive ----------
+       Placed last so these override the base marketing rules above. */
+    @media (max-width: 1080px) {
+      /* Stacked, the phones sit below the copy. The desktop bleed would just
+         guillotine them against the hero bottom edge, so drop the offsets,
+         centre them and give the hero a real bottom padding. */
+      .hero { grid-template-columns: 1fr; gap: var(--spacing-xl); padding-bottom: var(--spacing-2xl); }
+      .hero-blurb { max-width: none; }
+      .hero-shots { justify-content: center; align-self: center; padding-top: var(--spacing-xl); }
+      .hero-shots .mini-phone:first-child,
+      .hero-shots .mini-phone:last-child { transform: none; }
+      .steps-layout { grid-template-columns: 1fr; gap: var(--spacing-2xl); }
+      .insight-layout { grid-template-columns: 1fr; }
+    }
+
+    /* The link row wraps to three lines at a 768 tablet, so it goes first and
+       on its own breakpoint - the two buttons carry the nav from here down. */
+    @media (max-width: 860px) {
+      .marketing-links { display: none; }
+      .marketing-actions { margin-left: auto; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: var(--spacing-lg); }
+      .sheet-title { font-size: 22px; }
+      .sheet-sub { font-size: 14px; margin-bottom: var(--spacing-xl); }
+
+      .marketing-nav { padding: var(--spacing-base) var(--spacing-lg); }
+
+      .hero { padding: var(--spacing-2xl) var(--spacing-lg); }
+      .hero-copy { padding-bottom: var(--spacing-xl); }
+      .hero-headline { font-size: 34px; letter-spacing: -1px; }
+      .hero-blurb { font-size: 15px; }
+      .hero-cta { flex-direction: column; align-items: stretch; }
+      .hero-cta .btn { width: 100%; }
+
+      /* Two phones cannot fit a phone-width viewport, so show one, square-on. */
+      .hero-shots { justify-content: center; padding-top: var(--spacing-base); gap: 0; }
+      .hero-shots .mini-phone:last-child { display: none; }
+
+      .section-band { padding: var(--spacing-2xl) var(--spacing-lg); }
+      .band-title { font-size: 26px; letter-spacing: -0.5px; }
+      .band-blurb { font-size: 15px; }
+      .band-head { margin-bottom: var(--spacing-xl); }
+
+      .final-cta { margin: var(--spacing-lg); padding: var(--spacing-2xl) var(--spacing-lg); }
+      .final-title { font-size: 26px; letter-spacing: -0.5px; }
+      .final-blurb { font-size: 15px; }
+      .final-actions { flex-direction: column; }
+      .final-actions .btn { width: 100%; }
+
+      .marketing-foot {
+        flex-direction: column; gap: var(--spacing-sm);
+        text-align: center; padding: var(--spacing-lg);
+      }
+    }
+
+    @media (max-width: 420px) {
+      body { padding: var(--spacing-md); }
+      .hero-headline { font-size: 29px; }
+      /* Shrink the device frame rather than let it push the page sideways. */
+      .mini-phone { width: 200px; height: 404px; border-width: 7px; border-radius: 30px; }
+      .section-band { padding: var(--spacing-xl) var(--spacing-base); }
+      .marketing-nav { padding: var(--spacing-md) var(--spacing-base); }
+      .feature-card { padding: var(--spacing-base); }
+      .chart-card { padding: var(--spacing-base); }
+      /* Both nav buttons will not fit beside the wordmark here; Get started is
+         the primary action and Log in is still offered in the closing CTA. */
+      .marketing-actions .btn-secondary { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="sheet-title">Recave — Desktop</h1>
+  <p class="sheet-sub">1440 × 900 · Inter · tokens mirror the Figma file</p>
+
+  <div class="screen-stack">
+
+  <!-- ============================ LANDING (pre-login) ============================ -->
+  <div class="screen-frame">
+    <div class="landing">
+
+      <nav class="marketing-nav">
+        <div class="brand">
+          <div class="brand-mark">R</div>
+          <div class="brand-name"><span class="wordmark-lead">Receipt</span><span class="wordmark-tail">Cave</span></div>
+        </div>
+        <div class="marketing-links">
+          <span class="marketing-link">How it works</span>
+          <span class="marketing-link">Features</span>
+          <span class="marketing-link">Pricing</span>
+        </div>
+        <div class="marketing-actions">
+          <button class="btn btn-secondary btn-sm">Log in</button>
+          <button class="btn btn-primary btn-sm">Get started</button>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <section class="hero">
+        <svg class="hero-stars" viewBox="0 0 800 460" preserveAspectRatio="none" aria-hidden="true">
+          <g fill="#FFFFFF" opacity="0.3">
+            <circle cx="60" cy="70" r="2"/><circle cx="180" cy="150" r="1.4"/>
+            <circle cx="95" cy="300" r="1.6"/><circle cx="300" cy="60" r="1.5"/>
+            <circle cx="420" cy="220" r="1.3"/><circle cx="700" cy="120" r="1.8"/>
+            <circle cx="620" cy="330" r="1.4"/><circle cx="760" cy="250" r="1.5"/>
+          </g>
+        </svg>
+
+        <div class="hero-copy">
+          <h1 class="hero-headline">Never lose a receipt.<br><em>Receipts in. Insights out.</em></h1>
+          <p class="hero-blurb">
+            Receipts end up in coat pockets, car doors and the bottom of bags &mdash; and
+            nobody notices their usual milk quietly went up 24p. ReceiptCave scans each receipt,
+            keeps it for good, and tracks what you pay per item over time.
+          </p>
+          <div class="hero-cta">
+            <button class="btn btn-on-brand">Get started free</button>
+            <button class="btn btn-ghost-on-brand">See how it works</button>
+          </div>
+          <p class="hero-note">No card needed &middot; Free while you are getting set up</p>
+        </div>
+
+        <div class="hero-shots">
+          <!-- Screenshot: mobile dashboard -->
+          <div class="mini-phone">
+            <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+            <div class="mini-body">
+              <div class="mini-greet">Good morning</div>
+              <div class="mini-name">James</div>
+              <div class="mini-hero-card">
+                <div class="mini-hero-label">Spent this month</div>
+                <div class="mini-hero-amount">&pound;1,204.75</div>
+                <div class="mini-hero-delta">&uarr; 12% vs August</div>
+              </div>
+              <div class="mini-section">Spending by category</div>
+              <div class="mini-row">
+                <div class="mini-chip" style="background: var(--color-category-food-soft)">&#127828;</div>
+                <div class="mini-row-info">
+                  <div class="mini-row-name">Food</div>
+                  <div class="mini-track"><div class="mini-fill" style="width:78%; background: var(--color-category-food-ink)"></div></div>
+                </div>
+                <div class="mini-row-amount">&pound;428.90</div>
+              </div>
+              <div class="mini-row">
+                <div class="mini-chip" style="background: var(--color-category-transport-soft)">&#128652;</div>
+                <div class="mini-row-info">
+                  <div class="mini-row-name">Transport</div>
+                  <div class="mini-track"><div class="mini-fill" style="width:54%; background: var(--color-category-transport-ink)"></div></div>
+                </div>
+                <div class="mini-row-amount">&pound;296.40</div>
+              </div>
+              <div class="mini-row">
+                <div class="mini-chip" style="background: var(--color-category-utilities-soft)">&#9889;</div>
+                <div class="mini-row-info">
+                  <div class="mini-row-name">Utilities</div>
+                  <div class="mini-track"><div class="mini-fill" style="width:41%; background: var(--color-category-utilities-ink)"></div></div>
+                </div>
+                <div class="mini-row-amount">&pound;224.00</div>
+              </div>
+              <div class="mini-row">
+                <div class="mini-chip" style="background: var(--color-category-entertainment-soft)">&#127916;</div>
+                <div class="mini-row-info">
+                  <div class="mini-row-name">Entertainment</div>
+                  <div class="mini-track"><div class="mini-fill" style="width:28%; background: var(--color-category-entertainment-ink)"></div></div>
+                </div>
+                <div class="mini-row-amount">&pound;152.45</div>
+              </div>
+              <div class="mini-row">
+                <div class="mini-chip" style="background: var(--color-category-health-soft)">&#128138;</div>
+                <div class="mini-row-info">
+                  <div class="mini-row-name">Health</div>
+                  <div class="mini-track"><div class="mini-fill" style="width:19%; background: var(--color-category-health-ink)"></div></div>
+                </div>
+                <div class="mini-row-amount">&pound;103.00</div>
+              </div>
+            </div>
+            <div class="mini-tabs">
+              <div class="mini-tab active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.36 2.79a1 1 0 0 1 1.28 0l8.5 7.1a1 1 0 0 1 .36.77V20a2 2 0 0 1-2 2h-4.25v-5.7a1.25 1.25 0 0 0-1.25-1.25h-3.6a1.25 1.25 0 0 0-1.25 1.25V22H4.5a2 2 0 0 1-2-2v-9.34a1 1 0 0 1 .36-.77z"/></svg>
+                Home
+              </div>
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="4.7" cy="6.5" r="1.7"/><circle cx="4.7" cy="12" r="1.7"/><circle cx="4.7" cy="17.5" r="1.7"/><rect x="8.6" y="5.3" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="10.8" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="16.3" width="11.6" height="2.4" rx="1.2"/></svg>
+                Expenses
+              </div>
+              <div class="mini-fab">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+                  <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+                  <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+                  <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+                </svg>
+              </div>
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2m1.2 5.3a1.2 1.2 0 0 0-2.4 0v3.1H7.7a1.2 1.2 0 0 0 0 2.4h3.1v3.1a1.2 1.2 0 0 0 2.4 0v-3.1h3.1a1.2 1.2 0 0 0 0-2.4h-3.1z"/></svg>
+                Add
+              </div>
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.8" r="4.1"/><path d="M12 13.7c-4.1 0-7.4 2.7-7.4 6 0 .9.7 1.6 1.6 1.6h11.6c.9 0 1.6-.7 1.6-1.6 0-3.3-3.3-6-7.4-6"/></svg>
+                Profile
+              </div>
+            </div>
+          </div>
+
+          <!-- Screenshot: mobile expenses -->
+          <div class="mini-phone">
+            <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+            <div class="mini-body">
+              <div class="mini-greet">Space</div>
+              <div class="mini-name">Household expenses</div>
+
+              <div class="mini-receipt">
+                <div class="mini-receipt-head">
+                  <div class="mini-logo">TE</div>
+                  <div class="mini-merchant">Tesco Express</div>
+                  <div class="mini-total">&pound;42.18</div>
+                </div>
+                <div class="mini-item">
+                  <span>Broccoli 500g <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+                  <span>&pound;6.62</span>
+                </div>
+                <div class="mini-item">
+                  <span>Coffee Beans 200g <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+                  <span>&pound;18.00</span>
+                </div>
+                <div class="mini-item">
+                  <span>Milk 4pt <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+                  <span>&pound;17.56</span>
+                </div>
+              </div>
+
+              <div class="mini-receipt">
+                <div class="mini-receipt-head">
+                  <div class="mini-logo">BT</div>
+                  <div class="mini-merchant">Boots</div>
+                  <div class="mini-total">&pound;71.98</div>
+                </div>
+                <div class="mini-item">
+                  <span>Acuvue Oasys 6pk <span class="mini-badge" style="background: var(--color-category-health-soft); color: var(--color-category-health-ink)">Health</span></span>
+                  <span>&pound;35.99</span>
+                </div>
+                <div class="mini-item">
+                  <span>Acuvue Oasys 6pk <span class="mini-badge" style="background: var(--color-category-health-soft); color: var(--color-category-health-ink)">Health</span></span>
+                  <span>&pound;35.99</span>
+                </div>
+              </div>
+
+              <div class="mini-receipt">
+                <div class="mini-receipt-head">
+                  <div class="mini-logo">TF</div>
+                  <div class="mini-merchant">Transport for London</div>
+                  <div class="mini-total">&pound;30.00</div>
+                </div>
+                <div class="mini-item">
+                  <span>Oyster top-up <span class="mini-badge" style="background: var(--color-category-transport-soft); color: var(--color-category-transport-ink)">Transport</span></span>
+                  <span>&pound;30.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="mini-tabs">
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.36 2.79a1 1 0 0 1 1.28 0l8.5 7.1a1 1 0 0 1 .36.77V20a2 2 0 0 1-2 2h-4.25v-5.7a1.25 1.25 0 0 0-1.25-1.25h-3.6a1.25 1.25 0 0 0-1.25 1.25V22H4.5a2 2 0 0 1-2-2v-9.34a1 1 0 0 1 .36-.77z"/></svg>
+                Home
+              </div>
+              <div class="mini-tab active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="4.7" cy="6.5" r="1.7"/><circle cx="4.7" cy="12" r="1.7"/><circle cx="4.7" cy="17.5" r="1.7"/><rect x="8.6" y="5.3" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="10.8" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="16.3" width="11.6" height="2.4" rx="1.2"/></svg>
+                Expenses
+              </div>
+              <div class="mini-fab">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+                  <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+                  <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+                  <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+                </svg>
+              </div>
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2m1.2 5.3a1.2 1.2 0 0 0-2.4 0v3.1H7.7a1.2 1.2 0 0 0 0 2.4h3.1v3.1a1.2 1.2 0 0 0 2.4 0v-3.1h3.1a1.2 1.2 0 0 0 0-2.4h-3.1z"/></svg>
+                Add
+              </div>
+              <div class="mini-tab">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.8" r="4.1"/><path d="M12 13.7c-4.1 0-7.4 2.7-7.4 6 0 .9.7 1.6 1.6 1.6h11.6c.9 0 1.6-.7 1.6-1.6 0-3.3-3.3-6-7.4-6"/></svg>
+                Profile
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="section-band is-tint">
+        <div class="band-head">
+          <div class="band-eyebrow">What you get</div>
+          <h2 class="band-title">Know where the money actually goes</h2>
+          <p class="band-blurb">
+            ReceiptCave reads every receipt into structured data &mdash; items, prices,
+            quantities, categories &mdash; so your spending can be counted, compared
+            and charted instead of just filed away.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+                <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+                <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+                <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+              </svg>
+            </div>
+            <div class="feature-title">Line-item scanning</div>
+            <p class="feature-copy">
+              Every product, unit price and quantity is read off the receipt and
+              grouped under the merchant that issued it.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 7.2a3 3 0 0 1 3-3h3.1a2 2 0 0 1 1.5.7l1 1.1H18a3 3 0 0 1 3 3v.5H3z"/>
+                <path d="M3 11h18v6.8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/>
+              </svg>
+            </div>
+            <div class="feature-title">Separate spaces</div>
+            <p class="feature-copy">
+              Keep the household, the business and the holiday apart, so one
+              set of receipts never muddles another.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="9" cy="7.5" r="3.6"/>
+                <path d="M9 13c-3.7 0-6.7 2.4-6.7 5.4 0 .9.7 1.6 1.6 1.6h10.2c.9 0 1.6-.7 1.6-1.6C15.7 15.4 12.7 13 9 13"/>
+                <circle cx="17.2" cy="8.6" r="2.7"/>
+                <path d="M17.2 12.9c-.7 0-1.4.1-2 .3 1.4 1.3 2.2 3 2.2 4.8 0 .5-.1 1-.3 1.4h3.6c.8 0 1.5-.7 1.5-1.5 0-2.6-2.2-5-5-5"/>
+              </svg>
+            </div>
+            <div class="feature-title">Share it with your family</div>
+            <p class="feature-copy">
+              Invite your partner, your housemates or the whole family into a
+              space. Everyone adds receipts, everyone sees the same running total.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <rect x="3" y="3.4" width="2.3" height="17.2" rx="1.15"/>
+                <rect x="3" y="18.3" width="18" height="2.3" rx="1.15"/>
+                <rect x="7.4" y="12.6" width="2.6" height="5.7" rx="1.3"/>
+                <rect x="11.7" y="8.4" width="2.6" height="9.9" rx="1.3"/>
+                <rect x="16" y="10.4" width="2.6" height="7.9" rx="1.3"/>
+              </svg>
+            </div>
+            <div class="feature-title">Analysis and insights</div>
+            <p class="feature-copy">
+              Per-item price history, repeat-purchase totals and monthly
+              breakdowns by category and merchant.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insights -->
+      <section class="section-band">
+        <div class="band-head">
+          <div class="band-eyebrow">Analysis and insights</div>
+          <h2 class="band-title">The bit a bank statement cannot do</h2>
+          <p class="band-blurb">
+            Because ReceiptCave stores every line item, it can answer questions about
+            products rather than shops &mdash; what you buy repeatedly, what it adds
+            up to, and what has quietly got more expensive.
+          </p>
+        </div>
+
+        <div class="insight-layout">
+          <div class="chart-card">
+            <div class="chart-head">
+              <div class="chart-title">Semi Skimmed Milk 4pt &mdash; unit price</div>
+              <div class="chart-sub">
+                What you actually paid, April to September 2026
+                <span class="delta-chip" style="margin-left: 8px;">&uarr; 24p &middot; +17.8%</span>
+              </div>
+            </div>
+
+            <svg class="chart-figure" viewBox="0 0 520 210" role="img"
+                 aria-label="Unit price of Semi Skimmed Milk 4pt rising from 1 pound 35 in April to 1 pound 59 in September 2026">
+              <!-- gridlines -->
+              <line class="grid-line" x1="56" y1="41"  x2="500" y2="41"/>
+              <line class="grid-line" x1="56" y1="84"  x2="500" y2="84"/>
+              <line class="grid-line" x1="56" y1="127" x2="500" y2="127"/>
+              <line class="grid-line" x1="56" y1="170" x2="500" y2="170"/>
+
+              <!-- y axis -->
+              <text class="axis-text" x="48" y="45"  text-anchor="end">&pound;1.60</text>
+              <text class="axis-text" x="48" y="88"  text-anchor="end">&pound;1.50</text>
+              <text class="axis-text" x="48" y="131" text-anchor="end">&pound;1.40</text>
+              <text class="axis-text" x="48" y="174" text-anchor="end">&pound;1.30</text>
+
+              <!-- area + line -->
+              <path class="series-area" d="M56,148.6 L145,131.4 L234,105.7 L322,105.7 L411,75.7 L500,45.7 L500,170 L56,170 Z"/>
+              <path class="series-line" d="M56,148.6 L145,131.4 L234,105.7 L322,105.7 L411,75.7 L500,45.7"/>
+
+              <!-- markers, each with a native hover tooltip -->
+              <circle class="series-dot" cx="56"  cy="148.6" r="4.5"><title>April 2026 — £1.35</title></circle>
+              <circle class="series-dot" cx="145" cy="131.4" r="4.5"><title>May 2026 — £1.39</title></circle>
+              <circle class="series-dot" cx="234" cy="105.7" r="4.5"><title>June 2026 — £1.45</title></circle>
+              <circle class="series-dot" cx="322" cy="105.7" r="4.5"><title>July 2026 — £1.45</title></circle>
+              <circle class="series-dot" cx="411" cy="75.7"  r="4.5"><title>August 2026 — £1.52</title></circle>
+              <circle class="series-dot" cx="500" cy="45.7"  r="4.5"><title>September 2026 — £1.59</title></circle>
+
+              <!-- only the endpoints are labelled, never every point -->
+              <text class="point-label" x="62"  y="164" text-anchor="start">&pound;1.35</text>
+              <text class="point-label" x="494" y="34"  text-anchor="end">&pound;1.59</text>
+
+              <!-- x axis -->
+              <text class="axis-text" x="56"  y="193" text-anchor="middle">Apr</text>
+              <text class="axis-text" x="145" y="193" text-anchor="middle">May</text>
+              <text class="axis-text" x="234" y="193" text-anchor="middle">Jun</text>
+              <text class="axis-text" x="322" y="193" text-anchor="middle">Jul</text>
+              <text class="axis-text" x="411" y="193" text-anchor="middle">Aug</text>
+              <text class="axis-text" x="500" y="193" text-anchor="middle">Sep</text>
+            </svg>
+          </div>
+
+          <div class="insight-side">
+            <div class="insight-tile">
+              <div class="insight-figure">&pound;312.40</div>
+              <p class="insight-caption">
+                spent on coffee beans over twelve months &mdash; 18 bags, and a price
+                rise you would never have added up by hand.
+              </p>
+            </div>
+
+            <div class="insight-tile">
+              <div class="chart-title" style="margin-bottom: var(--spacing-base);">Most-bought items</div>
+              <div class="item-list">
+                <div>
+                  <div class="item-row-name"><span>Coffee Beans 200g</span><span class="item-row-total">&pound;312.40</span></div>
+                  <div class="item-row-track"><div class="item-row-fill" style="width: 100%"></div></div>
+                  <div class="item-row-meta">18 purchases &middot; avg &pound;17.36</div>
+                </div>
+                <div>
+                  <div class="item-row-name"><span>Acuvue Oasys 6pk</span><span class="item-row-total">&pound;215.94</span></div>
+                  <div class="item-row-track"><div class="item-row-fill" style="width: 69%"></div></div>
+                  <div class="item-row-meta">6 purchases &middot; avg &pound;35.99</div>
+                </div>
+                <div>
+                  <div class="item-row-name"><span>Broccoli 500g</span><span class="item-row-total">&pound;86.06</span></div>
+                  <div class="item-row-track"><div class="item-row-fill" style="width: 28%"></div></div>
+                  <div class="item-row-meta">26 purchases &middot; avg &pound;3.31</div>
+                </div>
+                <div>
+                  <div class="item-row-name"><span>Semi Skimmed Milk 4pt</span><span class="item-row-total">&pound;71.52</span></div>
+                  <div class="item-row-track"><div class="item-row-fill" style="width: 23%"></div></div>
+                  <div class="item-row-meta">48 purchases &middot; avg &pound;1.49</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="section-band is-tint">
+        <div class="steps-layout">
+          <div>
+            <div class="band-eyebrow">How it works</div>
+            <h2 class="band-title">Three steps, about ten seconds</h2>
+            <div class="step-list">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                  <div class="step-title">Photograph the receipt</div>
+                  <p class="step-copy">Line it up in the scanner. Crumpled and faded ones are fine.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                  <div class="step-title">Check what was read</div>
+                  <p class="step-copy">Items, prices and quantities come back filled in. Correct anything that looks off.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                  <div class="step-title">Save it to a space</div>
+                  <p class="step-copy">It lands under the right merchant and category, and the dashboard updates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="steps-shot">
+            <!-- Screenshot: mobile scan sheet -->
+            <div class="mini-phone">
+              <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+              <div class="mini-body">
+                <div class="mini-greet">Space</div>
+                <div class="mini-name">Household expenses</div>
+                <div style="background: var(--color-bg-inverse); border-radius: var(--radius-lg); height: 190px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                  <div style="width: 108px; height: 148px; border: 2px dashed rgba(255,255,255,0.5); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.7); font-size: 8px; text-align: center; padding: 8px;">
+                    Line the receipt up inside the frame
+                  </div>
+                </div>
+                <div style="background: var(--color-bg-brand-soft); border: 1px solid var(--color-border-brand); border-radius: var(--radius-md); padding: 8px; font-size: 8px; color: var(--color-text-brand); margin-bottom: 10px;">
+                  Items, merchant and totals are pulled out automatically.
+                </div>
+                <div style="width: 42px; height: 42px; border-radius: var(--radius-full); background: var(--color-bg-brand); border: 3px solid var(--color-bg-surface); box-shadow: var(--shadow-brand); margin: 0 auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="final-cta">
+        <h2 class="final-title">Start with your next receipt</h2>
+        <p class="final-blurb">Set up a space, scan one receipt, and see the whole thing filled in for you.</p>
+        <div class="final-actions">
+          <button class="btn btn-on-brand">Get started free</button>
+          <button class="btn btn-ghost-on-brand">Log in</button>
+        </div>
+      </section>
+
+      <footer class="marketing-foot">
+        <span>&copy; 2026 ReceiptCave</span>
+        <span>Privacy &middot; Terms &middot; Contact</span>
+      </footer>
+
+    </div>
+    <div class="screen-caption">Landing &mdash; before login</div>
+  </div>
+
+  <div class="screen-frame">
+    <div class="app-shell">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div class="brand-name"><span class="wordmark-lead">Re</span><span class="wordmark-tail">cave</span></div>
+      </div>
+
+      <nav class="nav-group">
+        <a class="nav-item active"><span class="nav-icon">📊</span> Dashboard</a>
+        <a class="nav-item"><span class="nav-icon">🧾</span> All expenses</a>
+        <a class="nav-item"><span class="nav-icon">📈</span> Reports</a>
+      </nav>
+
+      <div class="nav-heading">Spaces</div>
+      <nav class="nav-group">
+        <a class="nav-item"><span class="nav-icon">🏠</span> Household expenses <span class="nav-count">48</span></a>
+        <a class="nav-item"><span class="nav-icon">✈️</span> Travel <span class="nav-count">12</span></a>
+        <a class="nav-item"><span class="nav-icon">💼</span> Work <span class="nav-count">31</span></a>
+        <button class="btn-new-space">+ New space</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-avatar">J</div>
+        <div>
+          <div class="user-name">James</div>
+          <div class="user-mail">james@example.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="top-bar">
+        <div>
+          <div class="page-heading">Dashboard</div>
+          <div class="page-sub">Household expenses · September 2026</div>
+        </div>
+        <div class="top-actions">
+          <div class="search-box"><span>🔍</span><span>Search expenses…</span></div>
+          <button class="btn btn-secondary btn-sm">Log out</button>
+        </div>
+      </header>
+
+
+      <div class="content">
+
+        <section class="overview-grid">
+          <div class="hero-card">
+            <div class="hero-glow"></div>
+            <div class="hero-head">
+              <span class="hero-label">Spent this month</span>
+              <select class="month-select">
+                <option>Sep 2026</option>
+                <option>Aug 2026</option>
+                <option>Jul 2026</option>
+              </select>
+            </div>
+            <div class="hero-amount">£1,204.75</div>
+            <div class="hero-delta">↑ 12% vs August · £40.15 daily average</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Transactions</div>
+            <div class="stat-value">48</div>
+            <div class="stat-sub">September 2026</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Top category</div>
+            <div class="stat-value brand">Food</div>
+            <div class="stat-sub">£428.90 total</div>
+          </div>
+        </section>
+
+        <!-- Breakdowns -->
+        <section class="panel-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Spending by category</span>
+              <button class="btn btn-ghost btn-sm">See all</button>
+            </div>
+            <div class="panel-body">
+              <div class="category-list">
+                <div class="category-row">
+                  <div class="category-icon" style="background: var(--color-category-food-soft)">🍔</div>
+                  <div class="category-info">
+                    <div class="category-name">Food</div>
+                    <div class="category-track"><div class="category-fill" style="width:78%; background: var(--color-category-food-ink)"></div></div>
+                  </div>
+                  <div class="category-figures">
+                    <div class="category-amount">£428.90</div>
+                    <div class="category-count">18 transactions</div>
+                  </div>
+                </div>
+                <div class="category-row">
+                  <div class="category-icon" style="background: var(--color-category-transport-soft)">🚌</div>
+                  <div class="category-info">
+                    <div class="category-name">Transport</div>
+                    <div class="category-track"><div class="category-fill" style="width:54%; background: var(--color-category-transport-ink)"></div></div>
+                  </div>
+                  <div class="category-figures">
+                    <div class="category-amount">£296.40</div>
+                    <div class="category-count">11 transactions</div>
+                  </div>
+                </div>
+                <div class="category-row">
+                  <div class="category-icon" style="background: var(--color-category-utilities-soft)">⚡</div>
+                  <div class="category-info">
+                    <div class="category-name">Utilities</div>
+                    <div class="category-track"><div class="category-fill" style="width:41%; background: var(--color-category-utilities-ink)"></div></div>
+                  </div>
+                  <div class="category-figures">
+                    <div class="category-amount">£224.00</div>
+                    <div class="category-count">6 transactions</div>
+                  </div>
+                </div>
+                <div class="category-row">
+                  <div class="category-icon" style="background: var(--color-category-entertainment-soft)">🎬</div>
+                  <div class="category-info">
+                    <div class="category-name">Entertainment</div>
+                    <div class="category-track"><div class="category-fill" style="width:28%; background: var(--color-category-entertainment-ink)"></div></div>
+                  </div>
+                  <div class="category-figures">
+                    <div class="category-amount">£152.45</div>
+                    <div class="category-count">9 transactions</div>
+                  </div>
+                </div>
+                <div class="category-row">
+                  <div class="category-icon" style="background: var(--color-category-health-soft)">💊</div>
+                  <div class="category-info">
+                    <div class="category-name">Health</div>
+                    <div class="category-track"><div class="category-fill" style="width:19%; background: var(--color-category-health-ink)"></div></div>
+                  </div>
+                  <div class="category-figures">
+                    <div class="category-amount">£103.00</div>
+                    <div class="category-count">4 transactions</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Spending by merchant</span>
+              <button class="btn btn-ghost btn-sm">See all</button>
+            </div>
+            <div class="panel-body">
+              <div class="donut-layout">
+                <svg class="donut-figure" width="180" height="180" viewBox="0 0 42 42" role="img" aria-label="Spending split by merchant">
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--purple-600)" stroke-width="7" stroke-dasharray="34 66" stroke-dashoffset="0"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--purple-400)" stroke-width="7" stroke-dasharray="24 76" stroke-dashoffset="-34"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--purple-300)" stroke-width="7" stroke-dasharray="18 82" stroke-dashoffset="-58"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--purple-200)" stroke-width="7" stroke-dasharray="14 86" stroke-dashoffset="-76"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--neutral-200)" stroke-width="7" stroke-dasharray="10 90" stroke-dashoffset="-90"></circle>
+                  <text x="21" y="20" text-anchor="middle" font-size="3.4" fill="var(--color-text-secondary)">Sep 2026</text>
+                  <text x="21" y="25" text-anchor="middle" font-size="5" font-weight="700" fill="var(--color-text-primary)">£1,204</text>
+                </svg>
+
+                <ul class="donut-legend">
+                  <li class="legend-row">
+                    <span class="legend-swatch" style="background: var(--purple-600)"></span>
+                    <span class="legend-name">Tesco Express</span>
+                    <span class="legend-amount">£409.60</span>
+                    <span class="legend-share">34%</span>
+                  </li>
+                  <li class="legend-row">
+                    <span class="legend-swatch" style="background: var(--purple-400)"></span>
+                    <span class="legend-name">Transport for London</span>
+                    <span class="legend-amount">£289.14</span>
+                    <span class="legend-share">24%</span>
+                  </li>
+                  <li class="legend-row">
+                    <span class="legend-swatch" style="background: var(--purple-300)"></span>
+                    <span class="legend-name">Octopus Energy</span>
+                    <span class="legend-amount">£216.85</span>
+                    <span class="legend-share">18%</span>
+                  </li>
+                  <li class="legend-row">
+                    <span class="legend-swatch" style="background: var(--purple-200)"></span>
+                    <span class="legend-name">Pret A Manger</span>
+                    <span class="legend-amount">£168.67</span>
+                    <span class="legend-share">14%</span>
+                  </li>
+                  <li class="legend-row">
+                    <span class="legend-swatch" style="background: var(--neutral-200)"></span>
+                    <span class="legend-name">Other</span>
+                    <span class="legend-amount">£120.49</span>
+                    <span class="legend-share">10%</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    </div>
+    <div class="screen-caption">Dashboard — summary only</div>
+  </div>
+
+  <div class="screen-frame">
+    <div class="app-shell">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div class="brand-name"><span class="wordmark-lead">Re</span><span class="wordmark-tail">cave</span></div>
+      </div>
+
+      <nav class="nav-group">
+        <a class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+        <a class="nav-item"><span class="nav-icon">🧾</span> All expenses</a>
+        <a class="nav-item"><span class="nav-icon">📈</span> Reports</a>
+      </nav>
+
+      <div class="nav-heading">Spaces</div>
+      <nav class="nav-group">
+        <a class="nav-item active"><span class="nav-icon">🏠</span> Household expenses <span class="nav-count">48</span></a>
+        <a class="nav-item"><span class="nav-icon">✈️</span> Travel <span class="nav-count">12</span></a>
+        <a class="nav-item"><span class="nav-icon">💼</span> Work <span class="nav-count">31</span></a>
+        <button class="btn-new-space">+ New space</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-avatar">J</div>
+        <div>
+          <div class="user-name">James</div>
+          <div class="user-mail">james@example.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="top-bar">
+        <div>
+          <div class="page-heading">Household expenses</div>
+          <div class="page-sub">48 expenses · 12 receipts · September 2026</div>
+        </div>
+        <div class="top-actions">
+          <div class="search-box"><span>🔍</span><span>Search expenses…</span></div>
+          <button class="btn btn-secondary btn-sm">Log out</button>
+        </div>
+      </header>
+
+
+      <div class="content">
+
+        <section class="space-stats">
+          <div class="stat-card">
+            <div class="stat-label">Total</div>
+            <div class="stat-value brand">£1,204.75</div>
+            <div class="stat-sub">All months</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">This month</div>
+            <div class="stat-value">£428.90</div>
+            <div class="stat-sub">September 2026</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Entries</div>
+            <div class="stat-value">48</div>
+            <div class="stat-sub">Across 12 receipts</div>
+          </div>
+        </section>
+
+        <section class="expenses-section">
+          <div class="expenses-head">
+            <span class="panel-title">Expenses</span>
+            <div class="filter-bar">
+              <select class="filter-select">
+                <option>All months</option>
+                <option>September 2026</option>
+              </select>
+              <select class="filter-select">
+                <option>All categories</option>
+                <option>Food</option>
+              </select>
+              <button class="btn btn-secondary btn-sm">Reset</button>
+            </div>
+          </div>
+
+          <div class="receipt-list">
+
+            <div class="receipt-card">
+              <div class="receipt-head">
+                <div class="merchant-logo">TE</div>
+                <div class="receipt-ident">
+                  <div class="receipt-merchant">Tesco Express</div>
+                  <div class="receipt-date">04/09/26</div>
+                </div>
+                <span class="receipt-count">3 items</span>
+                <div class="receipt-total">£42.18</div>
+                <button class="icon-btn" aria-label="Receipt actions">⋯</button>
+              </div>
+              <div class="receipt-items">
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Tesco Large Broccoli 500g</span>
+                    <span class="badge badge-food">Food</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£6.62</div>
+                    <div class="item-unit">2 × £3.31</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Finest Rose &amp; Lily Bouquet</span>
+                    <span class="badge badge-entertainment">Entertainment</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£18.00</div>
+                    <div class="item-unit">1 × £18.00</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Semi Skimmed Milk 4pt</span>
+                    <span class="badge badge-food">Food</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£17.56</div>
+                    <div class="item-unit">4 × £4.39</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="receipt-card">
+              <div class="receipt-head">
+                <div class="merchant-logo">BT</div>
+                <div class="receipt-ident">
+                  <div class="receipt-merchant">Boots</div>
+                  <div class="receipt-date">03/09/26</div>
+                </div>
+                <span class="receipt-count">2 items</span>
+                <div class="receipt-total">£71.98</div>
+                <button class="icon-btn" aria-label="Receipt actions">⋯</button>
+              </div>
+              <div class="receipt-items">
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Acuvue Oasys 6pk</span>
+                    <span class="badge badge-health">Health</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£35.99</div>
+                    <div class="item-unit">2 × £17.99</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Acuvue Oasys 6pk</span>
+                    <span class="badge badge-health">Health</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£35.99</div>
+                    <div class="item-unit">2 × £17.99</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="receipt-card">
+              <div class="receipt-head">
+                <div class="merchant-logo">TF</div>
+                <div class="receipt-ident">
+                  <div class="receipt-merchant">Transport for London</div>
+                  <div class="receipt-date">03/09/26</div>
+                </div>
+                <span class="receipt-count">1 item</span>
+                <div class="receipt-total">£30.00</div>
+                <button class="icon-btn" aria-label="Receipt actions">⋯</button>
+              </div>
+              <div class="receipt-items">
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Oyster top-up</span>
+                    <span class="badge badge-transport">Transport</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£30.00</div>
+                    <div class="item-unit">1 × £30.00</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="receipt-card">
+              <div class="receipt-head">
+                <div class="merchant-logo">OE</div>
+                <div class="receipt-ident">
+                  <div class="receipt-merchant">Octopus Energy</div>
+                  <div class="receipt-date">02/09/26</div>
+                </div>
+                <span class="receipt-count">1 item</span>
+                <div class="receipt-total">£88.40</div>
+                <button class="icon-btn" aria-label="Receipt actions">⋯</button>
+              </div>
+              <div class="receipt-items">
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">September bill</span>
+                    <span class="badge badge-utilities">Utilities</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£88.40</div>
+                    <div class="item-unit">1 × £88.40</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="receipt-card">
+              <div class="receipt-head">
+                <div class="merchant-logo">NF</div>
+                <div class="receipt-ident">
+                  <div class="receipt-merchant">Netflix</div>
+                  <div class="receipt-date">01/09/26</div>
+                </div>
+                <span class="receipt-count">1 item</span>
+                <div class="receipt-total">£15.99</div>
+                <button class="icon-btn" aria-label="Receipt actions">⋯</button>
+              </div>
+              <div class="receipt-items">
+                <div class="receipt-item">
+                  <div class="item-info">
+                    <span class="item-name">Monthly plan</span>
+                    <span class="badge badge-entertainment">Entertainment</span>
+                  </div>
+                  <div class="item-figures">
+                    <div class="item-amount">£15.99</div>
+                    <div class="item-unit">1 × £15.99</div>
+                  </div>
+                  <div class="item-actions">
+                    <button class="icon-btn" aria-label="Edit">✎</button>
+                    <button class="icon-btn is-danger" aria-label="Delete">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <aside class="add-rail">
+      <div class="rail-title">Add expense</div>
+
+      <button class="btn-scan">
+        <svg class="scan-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+          <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+          <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+          <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+        </svg>
+        Scan a receipt
+      </button>
+
+      <div class="field">
+        <label class="field-label">Amount</label>
+        <input class="field-input is-amount" value="£42.18" readonly>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Merchant</label>
+        <input class="field-input" value="Tesco Express" readonly>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Description</label>
+        <input class="field-input" value="Weekly shop" readonly>
+      </div>
+
+      <div class="field-pair">
+        <div class="field">
+          <label class="field-label">Date</label>
+          <input class="field-input" value="04/09/2026" readonly>
+        </div>
+        <div class="field">
+          <label class="field-label">Qty</label>
+          <input class="field-input" value="1" readonly>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Category</label>
+        <div class="category-picker">
+          <span class="category-option selected">🍔 Food</span>
+          <span class="category-option">🚌 Transport</span>
+          <span class="category-option">⚡ Utilities</span>
+          <span class="category-option">🎬 Entertainment</span>
+          <span class="category-option">💊 Health</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%">Save expense</button>
+    </aside>
+
+    </div>
+    <div class="screen-caption">Household expenses — list</div>
+  </div>
+
+  </div>
+
+</body>
+</html>

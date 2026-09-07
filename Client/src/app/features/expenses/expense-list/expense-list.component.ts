@@ -20,11 +20,15 @@ interface ExpenseGroup {
   expenses: Expense[];
 }
 
-interface ExpenseRow {
-  expense: Expense;
-  isGroupStart: boolean;
-  groupSize: number;
-  groupKey: string;
+/** One receipt card: a merchant header carrying the receipt total, over its line items. */
+interface ReceiptCard {
+  key: string;
+  merchant: string | null;
+  merchantWebsite: string | null;
+  date: string;
+  receiptId: number | null;
+  total: number;
+  expenses: Expense[];
 }
 
 @Component({
@@ -55,8 +59,10 @@ export class ExpenseListComponent implements OnInit {
 
   readonly deletingId  = signal<number | null>(null);
   readonly actionError = signal<string | null>(null);
-  readonly hoveredGroupKey = signal<string | null>(null);
 
+  // Cards drop the sortable column headers, so ordering is fixed at newest-first.
+  // Kept as signals so a sort control can be reintroduced without reworking
+  // compareExpenses / groupedExpenses.
   readonly sortColumn    = signal<SortColumn>('date');
   readonly sortDirection = signal<SortDirection>('desc');
 
@@ -129,32 +135,39 @@ export class ExpenseListComponent implements OnInit {
     return groups;
   });
 
-  private readonly PAGE_SIZE = 100;
+  /** Header data for each group, so the template does not compute totals inline. */
+  readonly receiptCards = computed<ReceiptCard[]>(() =>
+    this.groupedExpenses().map((group) => {
+      const first = group.expenses[0];
+      return {
+        key: group.key,
+        merchant: first.merchant ?? null,
+        merchantWebsite: first.merchantWebsite ?? null,
+        date: first.date,
+        receiptId: first.receiptId ?? null,
+        total: group.expenses.reduce((sum, e) => sum + expenseTotal(e), 0),
+        expenses: group.expenses,
+      };
+    })
+  );
+
+  // Cards are far taller than table rows, so page by receipt rather than by line.
+  private readonly PAGE_SIZE = 25;
   readonly currentPage = signal(1);
 
-  readonly pages = computed<ExpenseRow[][]>(() => {
-    const groups = this.groupedExpenses();
-    const pages: ExpenseRow[][] = [];
-    let current: ExpenseRow[] = [];
+  readonly pages = computed<ReceiptCard[][]>(() => {
+    const cards = this.receiptCards();
+    const pages: ReceiptCard[][] = [];
 
-    for (const group of groups) {
-      const rows: ExpenseRow[] = group.expenses.map((expense, idx) => ({
-        expense, isGroupStart: idx === 0, groupSize: group.expenses.length, groupKey: group.key,
-      }));
-
-      if (current.length > 0 && current.length + rows.length > this.PAGE_SIZE) {
-        pages.push(current);
-        current = [];
-      }
-      current.push(...rows);
+    for (let i = 0; i < cards.length; i += this.PAGE_SIZE) {
+      pages.push(cards.slice(i, i + this.PAGE_SIZE));
     }
-    if (current.length > 0) pages.push(current);
     return pages.length > 0 ? pages : [[]];
   });
 
   readonly totalPages = computed(() => this.pages().length);
   readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
-  readonly pagedRows = computed<ExpenseRow[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
+  readonly pagedReceipts = computed<ReceiptCard[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -192,21 +205,6 @@ export class ExpenseListComponent implements OnInit {
     });
   }
 
-  toggleSort(column: SortColumn): void {
-    this.currentPage.set(1);
-    if (this.sortColumn() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortColumn.set(column);
-      this.sortDirection.set('asc');
-    }
-  }
-
-  sortIcon(column: SortColumn): string {
-    if (this.sortColumn() !== column) return '▲';
-    return this.sortDirection() === 'asc' ? '▲' : '▼';
-  }
-
   goToPage(page: number): void {
     this.currentPage.set(Math.min(Math.max(1, page), this.totalPages()));
   }
@@ -223,15 +221,8 @@ export class ExpenseListComponent implements OnInit {
     this.router.navigate(['/expenses/table', this.tableId(), id]);
   }
 
-  onMerchantCellClick(event: MouseEvent, expense: Expense): void {
-    if (expense.receiptId != null) {
-      event.stopPropagation();
-      this.router.navigate(['/expenses/table', this.tableId(), 'receipt', expense.receiptId]);
-    }
-  }
-
-  editExpense(id: number): void {
-    this.router.navigate(['/expenses/table', this.tableId(), id, 'edit']);
+  viewReceipt(receiptId: number): void {
+    this.router.navigate(['/expenses/table', this.tableId(), 'receipt', receiptId]);
   }
 
   confirmDelete(id: number): void {
