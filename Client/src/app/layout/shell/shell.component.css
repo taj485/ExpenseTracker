@@ -120,6 +120,14 @@
              calc(var(--spacing-lg) + env(safe-area-inset-bottom, 0px));
     background: var(--color-bg-surface);
     border-top: 1px solid var(--color-border-default);
+    /* The scan button overhangs above this bar, and the scrolling cards below
+       are position:relative — positioned elements paint after non-positioned
+       ones whatever the DOM order, so without a stacking context of its own the
+       bar loses the raised half of the button to whatever scrolls past.
+       100 sits above the content but below the sidebar (200) and drawers (300),
+       which should still cover the bar. */
+    position: relative;
+    z-index: 100;
   }
 
   .tab-item {
