@@ -98,7 +98,29 @@ ExpenseTracker/
 │   │           ├── home/
 │   │           │   ├── home.component.ts
 │   │           │   ├── home.component.html
-│   │           │   └── home.component.css
+│   │           │   ├── home.component.css
+│   │           │   └── components/
+│   │           │       ├── landing-shared.css
+│   │           │       ├── landing-hero/
+│   │           │       │   ├── landing-hero.component.ts
+│   │           │       │   ├── landing-hero.component.html
+│   │           │       │   └── landing-hero.component.css
+│   │           │       ├── landing-phone/
+│   │           │       │   ├── landing-phone.component.ts
+│   │           │       │   ├── landing-phone.component.html
+│   │           │       │   └── landing-phone.component.css
+│   │           │       ├── landing-features/
+│   │           │       │   ├── landing-features.component.ts
+│   │           │       │   ├── landing-features.component.html
+│   │           │       │   └── landing-features.component.css
+│   │           │       ├── landing-insights/
+│   │           │       │   ├── landing-insights.component.ts
+│   │           │       │   ├── landing-insights.component.html
+│   │           │       │   └── landing-insights.component.css
+│   │           │       └── landing-steps/
+│   │           │           ├── landing-steps.component.ts
+│   │           │           ├── landing-steps.component.html
+│   │           │           └── landing-steps.component.css
 │   │           ├── dashboard/
 │   │           │   ├── dashboard.component.ts
 │   │           │   ├── dashboard.component.html
