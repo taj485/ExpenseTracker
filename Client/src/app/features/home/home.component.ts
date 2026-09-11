@@ -3,12 +3,17 @@ import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { combineLatest } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { LandingHeroComponent } from './components/landing-hero/landing-hero.component';
+import { LandingFeaturesComponent } from './components/landing-features/landing-features.component';
+import { LandingInsightsComponent } from './components/landing-insights/landing-insights.component';
+import { LandingStepsComponent } from './components/landing-steps/landing-steps.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  imports: [LandingHeroComponent, LandingFeaturesComponent, LandingInsightsComponent, LandingStepsComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  styleUrls: ['./components/landing-shared.css', './home.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {

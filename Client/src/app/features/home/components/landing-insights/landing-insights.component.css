@@ -1,0 +1,73 @@
+/* ---------- Insights band ---------- */
+.insight-layout { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--spacing-xl); align-items: start; }
+.chart-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-card);
+}
+.chart-head { margin-bottom: var(--spacing-base); }
+.chart-title { font-size: 15px; font-weight: 600; }
+.chart-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+/* SVG text is sized in user units, so letting the 520-unit viewBox stretch to
+   fill a wide card scaled the axis labels up with it - at a 1100px card they
+   rendered at roughly twice their intended size. Capping the figure at its
+   natural width keeps 1 unit = 1px, so the 11/12px labels sit correctly
+   against the 13px body copy around them. */
+.chart-figure {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Recessive grid and axes; the data is the only assertive thing here. */
+.grid-line { stroke: var(--color-border-default); stroke-width: 1; }
+.axis-text { font-size: 11px; fill: var(--color-text-secondary); font-family: var(--font-family-sans); }
+.series-line { stroke: var(--color-bg-brand); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.series-area { fill: var(--color-bg-brand); opacity: 0.10; }
+/* 2px surface ring so markers stay legible where the line passes behind. */
+.series-dot { fill: var(--color-bg-brand); stroke: var(--color-bg-surface); stroke-width: 2; }
+.series-dot:hover { r: 7; }
+.point-label { font-size: 12px; font-weight: 700; fill: var(--color-text-primary); font-family: var(--font-family-sans); }
+.delta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #FDECEC; color: var(--color-text-negative);
+  border-radius: var(--radius-full); padding: 4px 10px;
+  font-size: 12px; font-weight: 700;
+}
+
+.insight-side { display: flex; flex-direction: column; gap: var(--spacing-base); }
+.insight-tile {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-base) var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+}
+.insight-figure { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; color: var(--color-text-brand); }
+.insight-caption { font-size: 13px; line-height: 1.5; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+
+.item-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+.item-row-name {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--spacing-md); font-size: 13px; margin-bottom: 5px;
+}
+.item-row-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+.item-row-track { height: 6px; background: var(--color-bg-surface-alt); border-radius: var(--radius-full); overflow: hidden; }
+.item-row-fill { height: 100%; background: var(--color-bg-brand); border-radius: var(--radius-full); }
+.item-row-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
+
+@media (max-width: 1080px) {
+  .insight-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .chart-card { padding: var(--spacing-base); }
+  /* The figure is scaled to roughly 0.6 here, so raise the user-unit sizes to
+     keep the rendered labels legible. */
+  .axis-text { font-size: 15px; }
+  .point-label { font-size: 16px; }
+}

@@ -1,0 +1,23 @@
+/* auto-fit so a fourth card joins the row at desktop width and reflows
+   to 3 or 2 columns as the band narrows. */
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-xl); }
+.feature-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-card);
+}
+.feature-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-md);
+  background: var(--color-bg-brand-soft); color: var(--color-icon-brand);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--spacing-base);
+}
+.feature-icon svg { width: 22px; height: 22px; display: block; }
+.feature-title { font-size: 17px; font-weight: 600; margin-bottom: var(--spacing-sm); }
+.feature-copy { font-size: 14px; line-height: 1.6; color: var(--color-text-secondary); }
+
+@media (max-width: 420px) {
+  .feature-card { padding: var(--spacing-base); }
+}

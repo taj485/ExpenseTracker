@@ -1,0 +1,98 @@
+<section class="section-band">
+  <div class="band-head">
+    <div class="band-eyebrow">Analysis and insights</div>
+    <h2 class="band-title">The bit a bank statement cannot do</h2>
+    <p class="band-blurb">
+      Because ReceiptCave stores every line item, it can answer questions about
+      products rather than shops &mdash; what you buy repeatedly, what it adds
+      up to, and what has quietly got more expensive.
+    </p>
+  </div>
+
+  <div class="insight-layout">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Semi Skimmed Milk 4pt &mdash; unit price</div>
+        <div class="chart-sub">
+          What you actually paid, April to September 2026
+          <span class="delta-chip" style="margin-left: 8px;">&uarr; 24p &middot; +17.8%</span>
+        </div>
+      </div>
+
+      <svg class="chart-figure" viewBox="0 0 520 210" role="img"
+           aria-label="Unit price of Semi Skimmed Milk 4pt rising from 1 pound 35 in April to 1 pound 59 in September 2026">
+        <!-- gridlines -->
+        <line class="grid-line" x1="56" y1="41"  x2="500" y2="41"/>
+        <line class="grid-line" x1="56" y1="84"  x2="500" y2="84"/>
+        <line class="grid-line" x1="56" y1="127" x2="500" y2="127"/>
+        <line class="grid-line" x1="56" y1="170" x2="500" y2="170"/>
+
+        <!-- y axis -->
+        <text class="axis-text" x="48" y="45"  text-anchor="end">&pound;1.60</text>
+        <text class="axis-text" x="48" y="88"  text-anchor="end">&pound;1.50</text>
+        <text class="axis-text" x="48" y="131" text-anchor="end">&pound;1.40</text>
+        <text class="axis-text" x="48" y="174" text-anchor="end">&pound;1.30</text>
+
+        <!-- area + line -->
+        <path class="series-area" d="M56,148.6 L145,131.4 L234,105.7 L322,105.7 L411,75.7 L500,45.7 L500,170 L56,170 Z"/>
+        <path class="series-line" d="M56,148.6 L145,131.4 L234,105.7 L322,105.7 L411,75.7 L500,45.7"/>
+
+        <!-- markers, each with a native hover tooltip -->
+        <circle class="series-dot" cx="56"  cy="148.6" r="4.5"><title>April 2026 — £1.35</title></circle>
+        <circle class="series-dot" cx="145" cy="131.4" r="4.5"><title>May 2026 — £1.39</title></circle>
+        <circle class="series-dot" cx="234" cy="105.7" r="4.5"><title>June 2026 — £1.45</title></circle>
+        <circle class="series-dot" cx="322" cy="105.7" r="4.5"><title>July 2026 — £1.45</title></circle>
+        <circle class="series-dot" cx="411" cy="75.7"  r="4.5"><title>August 2026 — £1.52</title></circle>
+        <circle class="series-dot" cx="500" cy="45.7"  r="4.5"><title>September 2026 — £1.59</title></circle>
+
+        <!-- only the endpoints are labelled, never every point -->
+        <text class="point-label" x="62"  y="164" text-anchor="start">&pound;1.35</text>
+        <text class="point-label" x="494" y="34"  text-anchor="end">&pound;1.59</text>
+
+        <!-- x axis -->
+        <text class="axis-text" x="56"  y="193" text-anchor="middle">Apr</text>
+        <text class="axis-text" x="145" y="193" text-anchor="middle">May</text>
+        <text class="axis-text" x="234" y="193" text-anchor="middle">Jun</text>
+        <text class="axis-text" x="322" y="193" text-anchor="middle">Jul</text>
+        <text class="axis-text" x="411" y="193" text-anchor="middle">Aug</text>
+        <text class="axis-text" x="500" y="193" text-anchor="middle">Sep</text>
+      </svg>
+    </div>
+
+    <div class="insight-side">
+      <div class="insight-tile">
+        <div class="insight-figure">&pound;312.40</div>
+        <p class="insight-caption">
+          spent on coffee beans over twelve months &mdash; 18 bags, and a price
+          rise you would never have added up by hand.
+        </p>
+      </div>
+
+      <div class="insight-tile">
+        <div class="chart-title" style="margin-bottom: var(--spacing-base);">Most-bought items</div>
+        <div class="item-list">
+          <div>
+            <div class="item-row-name"><span>Coffee Beans 200g</span><span class="item-row-total">&pound;312.40</span></div>
+            <div class="item-row-track"><div class="item-row-fill" style="width: 100%"></div></div>
+            <div class="item-row-meta">18 purchases &middot; avg &pound;17.36</div>
+          </div>
+          <div>
+            <div class="item-row-name"><span>Acuvue Oasys 6pk</span><span class="item-row-total">&pound;215.94</span></div>
+            <div class="item-row-track"><div class="item-row-fill" style="width: 69%"></div></div>
+            <div class="item-row-meta">6 purchases &middot; avg &pound;35.99</div>
+          </div>
+          <div>
+            <div class="item-row-name"><span>Broccoli 500g</span><span class="item-row-total">&pound;86.06</span></div>
+            <div class="item-row-track"><div class="item-row-fill" style="width: 28%"></div></div>
+            <div class="item-row-meta">26 purchases &middot; avg &pound;3.31</div>
+          </div>
+          <div>
+            <div class="item-row-name"><span>Semi Skimmed Milk 4pt</span><span class="item-row-total">&pound;71.52</span></div>
+            <div class="item-row-track"><div class="item-row-fill" style="width: 23%"></div></div>
+            <div class="item-row-meta">48 purchases &middot; avg &pound;1.49</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

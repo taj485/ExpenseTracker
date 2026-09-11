@@ -1,0 +1,110 @@
+/* ---------- Mini phone (marketing screenshot) ---------- */
+/* The frame lives on the host so a parent can transform or hide the phone;
+   a .mini-phone class here would sit inside this component's view and be
+   unreachable from the hero's stylesheet. */
+:host {
+  width: 228px; height: 460px; flex-shrink: 0;
+  background: var(--color-bg-page);
+  border: 8px solid #1B1830;
+  border-radius: 34px;
+  box-shadow: var(--shadow-overlay);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.mini-status {
+  display: flex; justify-content: space-between;
+  padding: 8px 14px 4px; font-size: 9px; font-weight: 600;
+  color: var(--color-text-primary); flex-shrink: 0;
+}
+.mini-body { flex: 1; padding: 0 12px; overflow: hidden; background: var(--color-bg-page); }
+
+.mini-greet { font-size: 9px; color: var(--color-text-secondary); }
+.mini-name { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.mini-hero-card {
+  background: linear-gradient(145deg, var(--purple-600) 0%, var(--purple-800) 100%);
+  border-radius: var(--radius-lg); padding: 12px;
+  color: var(--color-text-on-brand); margin-bottom: 10px;
+}
+.mini-hero-label { font-size: 8px; opacity: 0.85; }
+.mini-hero-amount { font-size: 22px; font-weight: 700; letter-spacing: -0.6px; }
+.mini-hero-delta { font-size: 8px; opacity: 0.9; margin-top: 2px; }
+
+.mini-section { font-size: 10px; font-weight: 600; margin: 10px 0 6px; }
+.mini-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 8px; margin-bottom: 6px;
+}
+.mini-chip {
+  width: 24px; height: 24px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0;
+}
+.mini-row-info { flex: 1; min-width: 0; }
+.mini-row-name { font-size: 10px; font-weight: 600; }
+.mini-row-amount { font-size: 10px; font-weight: 700; }
+.mini-track { height: 4px; background: var(--color-bg-surface-alt); border-radius: var(--radius-full); margin-top: 4px; overflow: hidden; }
+.mini-fill { height: 100%; border-radius: var(--radius-full); }
+
+.mini-receipt {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px; overflow: hidden;
+}
+.mini-receipt-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px; background: var(--color-bg-page);
+}
+.mini-logo {
+  width: 22px; height: 22px; border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+.mini-merchant { flex: 1; font-size: 10px; font-weight: 600; }
+.mini-total { font-size: 11px; font-weight: 700; }
+.mini-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px; padding: 7px 8px;
+  border-top: 1px solid var(--color-border-default);
+  font-size: 9px;
+}
+.mini-badge {
+  display: inline-block; padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 8px; font-weight: 600;
+}
+
+.mini-tabs {
+  display: flex; align-items: flex-end; justify-content: space-around;
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border-default);
+  padding: 6px 4px 10px; flex-shrink: 0;
+}
+.mini-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 7px; font-weight: 500; color: var(--color-text-secondary);
+  padding: 3px 7px; border-radius: var(--radius-sm);
+}
+.mini-tab.active { background: var(--color-bg-brand-soft); color: var(--color-text-brand); font-weight: 600; }
+.mini-tab svg { width: 13px; height: 13px; display: block; }
+.mini-fab {
+  width: 32px; height: 32px; border-radius: var(--radius-full);
+  background: linear-gradient(145deg, var(--purple-500) 0%, var(--purple-700) 100%);
+  border: 3px solid var(--color-bg-surface);
+  color: var(--color-text-on-brand);
+  display: flex; align-items: center; justify-content: center;
+  margin-top: -16px; flex-shrink: 0;
+  box-shadow: var(--shadow-brand);
+}
+.mini-fab svg { width: 15px; height: 15px; display: block; }
+
+@media (max-width: 420px) {
+  /* Shrink the frame rather than let it push the page sideways. */
+  :host { width: 200px; height: 404px; border-width: 7px; border-radius: 30px; }
+}
