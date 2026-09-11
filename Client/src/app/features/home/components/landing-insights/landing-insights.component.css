@@ -10,7 +10,18 @@
 .chart-head { margin-bottom: var(--spacing-base); }
 .chart-title { font-size: 15px; font-weight: 600; }
 .chart-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--spacing-2xs); }
-.chart-figure { width: 100%; height: auto; display: block; }
+/* SVG text is sized in user units, so letting the 520-unit viewBox stretch to
+   fill a wide card scaled the axis labels up with it - at a 1100px card they
+   rendered at roughly twice their intended size. Capping the figure at its
+   natural width keeps 1 unit = 1px, so the 11/12px labels sit correctly
+   against the 13px body copy around them. */
+.chart-figure {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto;
+}
 
 /* Recessive grid and axes; the data is the only assertive thing here. */
 .grid-line { stroke: var(--color-border-default); stroke-width: 1; }
@@ -55,4 +66,8 @@
 
 @media (max-width: 420px) {
   .chart-card { padding: var(--spacing-base); }
+  /* The figure is scaled to roughly 0.6 here, so raise the user-unit sizes to
+     keep the rendered labels legible. */
+  .axis-text { font-size: 15px; }
+  .point-label { font-size: 16px; }
 }
