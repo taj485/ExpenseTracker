@@ -95,6 +95,46 @@
   text-overflow: ellipsis;
 }
 
+/* ---------- Space rows: link + star side by side ---------- */
+.nav-space-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+.nav-space-link {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Pushes the count to the end of the link, after the (ellipsised) name. */
+.nav-space-link .nav-name { flex: 1; }
+
+.nav-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.nav-star {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-star:hover:not(:disabled) { background: var(--color-bg-surface-alt); color: var(--color-status-warning); }
+.nav-star.is-starred { color: var(--color-status-warning); }
+.nav-star:disabled { cursor: default; }
+
 .btn-add-space {
   margin-top: var(--spacing-md);
   padding: var(--spacing-md);

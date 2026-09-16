@@ -29,6 +29,8 @@ function expense(partial: Partial<Expense> & { date: string }): Expense {
     merchant: null,
     merchantWebsite: null,
     receiptId: null,
+    createdByEmail: null,
+    createdByCurrentUser: false,
     ...partial,
   };
 }

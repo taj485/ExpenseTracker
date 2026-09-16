@@ -12,6 +12,27 @@
   border: 1px solid var(--border);
 }
 
+/* Cards that open the filtered expense list: reset button defaults so they match the plain cards. */
+.summary-link {
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.summary-link:hover:not(:disabled) {
+  border-color: var(--color-border-brand);
+  box-shadow: var(--shadow-raised);
+}
+
+.summary-link:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.summary-link:disabled { cursor: default; }
+
 .s-label {
   font-size: 0.72rem;
   font-weight: 700;

@@ -31,6 +31,8 @@ export class ExpenseService {
 
   // ── State ────────────────────────────────────────────────────────────────
   readonly expenses = signal<Expense[]>([]);
+  /** The table `expenses` currently holds, once loaded — lets the sidebar show that table's count. */
+  readonly loadedTableId = signal<number | null>(null);
   readonly loading  = signal(false);
   readonly error    = signal<string | null>(null);
 
@@ -186,9 +188,11 @@ export class ExpenseService {
     this.http.get<Expense[]>(this.tableUrl(tableId)).subscribe({
       next: expenses => {
         this.expenses.set(expenses);
+        this.loadedTableId.set(tableId);
         this.loading.set(false);
       },
       error: () => {
+        this.loadedTableId.set(null);
         this.error.set('Failed to load expenses. Please try again.');
         this.loading.set(false);
       },

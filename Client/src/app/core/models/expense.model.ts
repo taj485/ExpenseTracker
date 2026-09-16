@@ -12,6 +12,10 @@ export interface Expense {
   merchant: string | null;
   merchantWebsite: string | null;
   receiptId: number | null;
+  /** Email of whoever added it; null for expenses added before uploaders were recorded. */
+  createdByEmail: string | null;
+  /** True when the signed-in user added it. */
+  createdByCurrentUser: boolean;
 }
 
 export interface AddExpenseCommand {

@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
+import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
+import { uploaderLabel } from '../../../core/utils/uploader.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -21,8 +23,18 @@ export class ExpenseDetailComponent implements OnInit {
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly expenseService = inject(ExpenseService);
+  private readonly expenseTableService = inject(ExpenseTableService);
 
   readonly expense = signal<Expense | null>(null);
+  private readonly tableIdSignal = signal<number | null>(null);
+
+  /** "You" or the uploader's email — only in shared spaces, where it isn't always you. */
+  readonly addedBy = computed(() => {
+    const e = this.expense();
+    const table = this.expenseTableService.tables().find(t => t.id === this.tableIdSignal());
+    if (!e || !table || table.memberCount <= 1) return null;
+    return uploaderLabel(e, 'full');
+  });
   readonly loading = signal(true);
   readonly error   = signal<string | null>(null);
 
@@ -36,6 +48,7 @@ export class ExpenseDetailComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.tableId = Number(params.get('tableId'));
+      this.tableIdSignal.set(this.tableId);
       this.loadExpense(Number(params.get('id')));
     });
   }

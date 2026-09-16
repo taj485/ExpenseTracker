@@ -9,6 +9,9 @@
       <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this space' : 'Star this space'">
         {{ isStarred() ? '★' : '☆' }}
       </button>
+      <button type="button" class="members-link" (click)="showMembersDialog.set(true)" aria-haspopup="dialog">
+        {{ memberCount() }} member{{ memberCount() === 1 ? '' : 's' }}
+      </button>
     </div>
     @if (isAdmin()) {
       <div class="page-header-actions">
@@ -46,14 +49,24 @@
       }
     </select>
 
-    <select class="filter-select" [ngModel]="selectedCategory() ?? ''" (ngModelChange)="onCategoryChange($event)">
-      <option value="">All Categories</option>
-      @for (cat of categories; track cat) {
-        <option [value]="cat">{{ cat }}</option>
-      }
-    </select>
-
     <button class="btn btn-secondary" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <!-- Multi-select: selected chips move to the front, most recently picked first. -->
+  <div class="category-chips" role="group" aria-label="Filter by category">
+    <button type="button" class="category-chip"
+            [class.is-selected]="selectedCategories().length === 0"
+            [attr.aria-pressed]="selectedCategories().length === 0"
+            (click)="clearCategories()">All categories</button>
+    @for (cat of categoryChips(); track cat) {
+      <!-- Selected chips take their category's soft fill and ink (the badge-* classes); the rest stay neutral. -->
+      <button type="button"
+              [class]="selectedCategories().includes(cat) ? 'category-chip is-selected ' + getCategoryMeta(cat).badgeClass : 'category-chip'"
+              [attr.aria-pressed]="selectedCategories().includes(cat)"
+              (click)="toggleCategoryFilter(cat)">
+        {{ getCategoryMeta(cat).icon }} {{ cat }}
+      </button>
+    }
   </div>
 
   <div class="stats-bar">
@@ -87,7 +100,12 @@
 
           <div class="receipt-ident">
             <div class="receipt-merchant">{{ receipt.merchant || 'Uncategorised' }}</div>
-            <div class="receipt-date">{{ receipt.date | date:'dd/MM/yy' }}</div>
+            <div class="receipt-date">
+              {{ receipt.date | date:'dd/MM/yy' }}
+              @if (isSharedTable() && receipt.uploader) {
+                · Added by <span class="receipt-uploader" [class.is-you]="receipt.uploadedByCurrentUser">{{ receipt.uploader }}</span>
+              }
+            </div>
           </div>
 
           <span class="receipt-count">
@@ -123,7 +141,7 @@
 
     @empty {
       <p class="empty-state">
-        @if (selectedMonth() || selectedCategory()) {
+        @if (selectedMonth() || selectedCategories().length > 0) {
           No expenses match this filter.
         } @else {
           No expenses yet. Add one on the right, or scan a receipt.
@@ -147,6 +165,16 @@
       confirmLabel="Delete"
       (confirmed)="confirmDelete(id)"
       (cancelled)="deletingId.set(null)"
+    />
+  }
+
+  @if (showMembersDialog()) {
+    <app-members-dialog
+      [tableId]="tableId()"
+      [tableName]="pageTitle()"
+      [canInvite]="isAdmin()"
+      (invite)="openShareFromMembers()"
+      (closed)="showMembersDialog.set(false)"
     />
   }
 
