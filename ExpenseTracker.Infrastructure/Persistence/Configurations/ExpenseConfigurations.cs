@@ -68,6 +68,14 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                    .HasForeignKey(e => e.ExpenseTableId)
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Restrict);
+
+            // Nullable: expenses added before creators were recorded have none, and removing a
+            // user keeps their expenses (just without an uploader) rather than deleting them.
+            builder.HasOne(e => e.CreatedByUser)
+                   .WithMany()
+                   .HasForeignKey(e => e.CreatedByUserId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

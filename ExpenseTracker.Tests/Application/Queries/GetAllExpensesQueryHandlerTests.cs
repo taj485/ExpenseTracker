@@ -54,6 +54,42 @@ namespace ExpenseTracker.Tests.Application.Queries
         }
 
         [Fact]
+        public async Task Handle_MapsCreatorEmail_AndFlagsExpensesAddedByCurrentUser()
+        {
+            //Arrange
+            var otherUser = User.Create("auth0|other-user", "sarah@example.com");
+            otherUser.Id = 2;
+            _currentUser.UpdateEmail("me@example.com");
+
+            var mine = Expense.Create(10, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TableId, createdByUserId: _currentUser.Id);
+            mine.CreatedByUser = _currentUser;
+            var theirs = Expense.Create(20, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, TableId, createdByUserId: otherUser.Id);
+            theirs.CreatedByUser = otherUser;
+            var unknown = Expense.Create(30, ExpenseCategory.Health, "Pharmacy", DateTime.UtcNow, TableId);
+
+            _mockExpenseTableReader.Setup(x => x.GetByIdAsync(TableId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ExpenseTable.Create("My Table", _currentUser.Id));
+            _mockReader.Setup(x => x.GetAllForTableAsync(TableId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Expense> { mine, theirs, unknown });
+
+            //Act
+            var result = await _handler.Handle(new GetAllExpensesQuery { ExpenseTableId = TableId }, CancellationToken.None);
+
+            //Assert
+            var lunch = result.Single(e => e.Description == "Lunch");
+            lunch.CreatedByEmail.Should().Be("me@example.com");
+            lunch.CreatedByCurrentUser.Should().BeTrue();
+
+            var taxi = result.Single(e => e.Description == "Taxi");
+            taxi.CreatedByEmail.Should().Be("sarah@example.com");
+            taxi.CreatedByCurrentUser.Should().BeFalse();
+
+            var pharmacy = result.Single(e => e.Description == "Pharmacy");
+            pharmacy.CreatedByEmail.Should().BeNull();
+            pharmacy.CreatedByCurrentUser.Should().BeFalse();
+        }
+
+        [Fact]
         public async Task Handle_ThrowsNotFoundException_WhenCurrentUserNotAMember()
         {
             //Arrange

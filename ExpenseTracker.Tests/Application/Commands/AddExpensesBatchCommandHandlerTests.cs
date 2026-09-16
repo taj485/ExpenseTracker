@@ -85,6 +85,26 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_RecordsCurrentUserAsCreatorOfEveryItem()
+        {
+            _currentUser.Id = 42;
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 10m, ExpenseCategory.Food, "Coffee", DateTime.UtcNow),
+                new(TableId, 20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow),
+            });
+
+            var capturedCreators = new List<int?>();
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .Callback<Expense, CancellationToken>((e, _) => capturedCreators.Add(e.CreatedByUserId))
+                .ReturnsAsync(() => capturedCreators.Count);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            capturedCreators.Should().Equal(42, 42);
+        }
+
+        [Fact]
         public async Task Handle_WithOneInvalidItem_AddsValidOnesAndReportsFailedIndex()
         {
             var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>

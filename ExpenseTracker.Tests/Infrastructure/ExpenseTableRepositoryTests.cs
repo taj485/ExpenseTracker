@@ -32,9 +32,9 @@ namespace ExpenseTracker.Tests.Infrastructure
             return new ExpenseTrackerDbContext(options);
         }
 
-        private async Task<User> SeedUserAsync(string subject)
+        private async Task<User> SeedUserAsync(string subject, string? email = null)
         {
-            var user = User.Create(subject);
+            var user = User.Create(subject, email);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return user;
@@ -99,6 +99,42 @@ namespace ExpenseTracker.Tests.Infrastructure
 
             Assert.Single(results);
             Assert.Equal("User 1 Table", results.Single().Name);
+        }
+
+        [Fact]
+        public async Task GetMembersAsync_ReturnsEachMemberWithEmailAndAdminFlag()
+        {
+            var admin = await SeedUserAsync("auth0|admin", "admin@example.com");
+            var member = await SeedUserAsync("auth0|member", "member@example.com");
+            await SeedUserAsync("auth0|outsider", "outsider@example.com");
+            var table = ExpenseTable.Create("Household", admin.Id);
+            table.AddMember(member.Id, isAdmin: false);
+            var id = await _repository.AddAsync(table, CancellationToken.None);
+
+            using var verifyContext = CreateContext();
+            var verifyRepository = new ExpenseTableRepository(verifyContext);
+            var result = await verifyRepository.GetMembersAsync(id, CancellationToken.None);
+
+            Assert.Equal(2, result.Count);
+            var adminResult = result.Single(m => m.UserId == admin.Id);
+            Assert.Equal("admin@example.com", adminResult.Email);
+            Assert.True(adminResult.IsAdmin);
+            var memberResult = result.Single(m => m.UserId == member.Id);
+            Assert.Equal("member@example.com", memberResult.Email);
+            Assert.False(memberResult.IsAdmin);
+        }
+
+        [Fact]
+        public async Task GetMembersAsync_ReturnsEmpty_WhenTableIsSoftDeleted()
+        {
+            var user = await SeedUserAsync("auth0|user-1", "user@example.com");
+            var table = ExpenseTable.Create("Household", user.Id);
+            var id = await _repository.AddAsync(table, CancellationToken.None);
+            await _repository.DeleteAsync(id);
+
+            var result = await _repository.GetMembersAsync(id, CancellationToken.None);
+
+            Assert.Empty(result);
         }
 
         [Fact]

@@ -21,10 +21,17 @@ namespace ExpenseTracker.Domain.Entities
         public int ExpenseTableId { get; private set; }
         public ExpenseTable? ExpenseTable { get; private set; }
 
+        /// <summary>
+        /// The user who added the expense. Null for expenses added before this was recorded.
+        /// </summary>
+        public int? CreatedByUserId { get; private set; }
+        // internal set so tests can attach the user without a database, like User.Id.
+        public User? CreatedByUser { get; internal set; }
+
         private Expense() { }
 
         public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            int? merchantId = null, int? receiptId = null, int quantity = 1)
+            int? merchantId = null, int? receiptId = null, int quantity = 1, int? createdByUserId = null)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
@@ -42,7 +49,8 @@ namespace ExpenseTracker.Domain.Entities
                 IsDeleted = false,
                 MerchantId = merchantId,
                 ReceiptId = receiptId,
-                ExpenseTableId = expenseTableId
+                ExpenseTableId = expenseTableId,
+                CreatedByUserId = createdByUserId
             };
         }
 
