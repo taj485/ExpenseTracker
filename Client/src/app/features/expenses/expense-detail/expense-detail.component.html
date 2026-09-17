@@ -45,6 +45,12 @@
           <div class="field-label">Date</div>
           <div class="field-value">{{ e.date | date:'dd MMMM yyyy' }}</div>
         </div>
+        @if (addedBy(); as by) {
+          <div class="field">
+            <div class="field-label">Added by</div>
+            <div class="field-value">{{ by }}</div>
+          </div>
+        }
         <div class="field">
           <div class="field-label">ID</div>
           <div class="field-value">#{{ e.id }}</div>

@@ -56,6 +56,23 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_RecordsCurrentUserAsCreator()
+        {
+            // Arrange
+            _currentUser.Id = 42;
+            var command = new AddExpenseCommand(TableId, 12m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow);
+
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            // Act
+            await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e => e.CreatedByUserId == 42), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
         public async Task Handle_WithQuantity_PassesQuantityToExpense()
         {
             // Arrange

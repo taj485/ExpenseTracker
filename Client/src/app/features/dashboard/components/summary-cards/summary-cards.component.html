@@ -4,26 +4,35 @@
     <div class="s-value teal">{{ monthLabel }}</div>
   </div>
 
-  <div class="summary-card">
+  <button type="button" class="summary-card summary-link" [disabled]="tableId === null"
+          [attr.aria-label]="'Spent £' + (monthSpent | number:'1.2-2') + ' in ' + monthLabel + '. View these expenses'"
+          (click)="viewExpenses()">
     <div class="s-label">Spent</div>
     <div class="s-value">£{{ monthSpent | number:'1.2-2' }}</div>
     <div class="s-sub">{{ monthLabel }}</div>
-  </div>
+  </button>
 
-  <div class="summary-card">
+  <button type="button" class="summary-card summary-link" [disabled]="tableId === null"
+          [attr.aria-label]="transactionCount + ' transactions in ' + monthLabel + '. View these expenses'"
+          (click)="viewExpenses()">
     <div class="s-label">Transactions</div>
     <div class="s-value">{{ transactionCount }}</div>
     <div class="s-sub">{{ monthLabel }}</div>
-  </div>
+  </button>
 
-  <div class="summary-card">
-    <div class="s-label">Top Category</div>
-    @if (topCategory) {
+  @if (topCategory) {
+    <button type="button" class="summary-card summary-link" [disabled]="tableId === null"
+            [attr.aria-label]="'Top category ' + topCategory.name + '. View ' + topCategory.name + ' expenses in ' + monthLabel"
+            (click)="viewExpenses(topCategory.name)">
+      <div class="s-label">Top Category</div>
       <div class="s-value top-cat">{{ topCategory.name }}</div>
       <div class="s-sub">£{{ topCategory.total | number:'1.2-2' }} total</div>
-    } @else {
+    </button>
+  } @else {
+    <div class="summary-card">
+      <div class="s-label">Top Category</div>
       <div class="s-value top-cat">—</div>
       <div class="s-sub">No data yet</div>
-    }
-  </div>
+    </div>
+  }
 </div>

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CreateExpenseTableCommand, ExpenseTable, InviteUserToTableCommand } from '../models/expense-table.model';
+import { CreateExpenseTableCommand, ExpenseTable, ExpenseTableMember, InviteUserToTableCommand } from '../models/expense-table.model';
+import { apiErrorMessage } from '../utils/api-error.utils';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -42,7 +43,7 @@ export class ExpenseTableService {
         this.getTables();
         onSuccess();
       },
-      error: (err) => onError(err?.error?.error ?? 'Failed to create expense table. Please try again.'),
+      error: (err) => onError(apiErrorMessage(err, 'Failed to create expense table. Please try again.')),
     });
   }
 
@@ -68,6 +69,14 @@ export class ExpenseTableService {
     });
   }
 
+  // API CALL: GET /api/expensetable/{id}/members — lists the table's members (admins first, then by email)
+  getMembers(tableId: number, onSuccess: (members: ExpenseTableMember[]) => void, onError: (msg: string) => void): void {
+    this.http.get<ExpenseTableMember[]>(`${this.apiUrl}/${tableId}/members`).subscribe({
+      next: onSuccess,
+      error: (err) => onError(apiErrorMessage(err, "Couldn't load members. Please try again.")),
+    });
+  }
+
   // API CALL: POST /api/expensetable/{id}/members — invites an existing user (by email) onto the table
   inviteUser(command: InviteUserToTableCommand, onSuccess: () => void, onError: (msg: string) => void): void {
     this.http.post<void>(`${this.apiUrl}/${command.expenseTableId}/members`, command).subscribe({
@@ -75,7 +84,7 @@ export class ExpenseTableService {
         this.getTables();
         onSuccess();
       },
-      error: (err) => onError(err?.error?.error ?? 'Failed to invite user. Please try again.'),
+      error: (err) => onError(apiErrorMessage(err, 'Failed to invite user. Please try again.')),
     });
   }
 
@@ -86,7 +95,7 @@ export class ExpenseTableService {
         this.getTables();
         onSuccess();
       },
-      error: (err) => onError(err?.error?.error ?? 'Failed to delete table. Please try again.'),
+      error: (err) => onError(apiErrorMessage(err, 'Failed to delete table. Please try again.')),
     });
   }
 }

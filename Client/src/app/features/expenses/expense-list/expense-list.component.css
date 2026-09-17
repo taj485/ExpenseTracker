@@ -136,6 +136,57 @@
   text-align-last: center;
 }
 
+/* ---------- Member count link (opens the members dialog) ---------- */
+.members-link {
+  background: none;
+  border: none;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-brand);
+  cursor: pointer;
+}
+
+.members-link:hover { background: var(--color-bg-brand-soft); }
+
+/* ---------- Category chips (multi-select filter) ---------- */
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-base);
+}
+
+.category-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.category-chip:hover { border-color: var(--color-border-strong); color: var(--color-text-primary); }
+
+/* Background and text colour come from the badge-* class; the border follows the ink colour. */
+.category-chip.is-selected {
+  border-color: currentColor;
+  font-weight: 600;
+}
+
+/* "All categories" has no badge class, so it takes the brand fill when selected. */
+.category-chip.is-selected:not([class*="badge-"]) {
+  background: var(--color-bg-brand);
+  border-color: var(--color-bg-brand);
+  color: var(--color-text-on-brand);
+}
+
 .stats-bar {
   display: flex;
   gap: 14px;
@@ -212,6 +263,9 @@
   color: var(--color-text-secondary);
   margin-top: var(--spacing-2xs);
 }
+
+.receipt-uploader { font-weight: 600; }
+.receipt-uploader.is-you { color: var(--color-text-brand); }
 
 .receipt-count {
   font-size: 0.75rem;

@@ -1,0 +1,34 @@
+<div class="overlay" (click)="closed.emit()">
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="members-title" (click)="$event.stopPropagation()">
+    <h3 id="members-title" class="title">Members</h3>
+    <p class="subtitle">Everyone who can see and add expenses in "{{ tableName }}".</p>
+
+    @if (loading()) {
+      <p class="status-msg">Loading members…</p>
+    } @else if (error()) {
+      <p class="status-msg is-error" role="alert">{{ error() }}</p>
+    } @else {
+      <ul class="member-list">
+        @for (member of members(); track member.userId) {
+          <li class="member-row">
+            <span class="member-avatar" aria-hidden="true">{{ initial(member) }}</span>
+            <span class="member-text">
+              <span class="member-email">{{ member.email ?? 'Recave user' }}</span>
+              @if (member.isCurrentUser) {
+                <span class="member-you">You</span>
+              }
+            </span>
+            <span class="role-badge" [class.is-admin]="member.isAdmin">{{ member.isAdmin ? 'Admin' : 'Member' }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="actions">
+      @if (canInvite) {
+        <button type="button" class="btn-cancel" (click)="invite.emit()">Invite someone</button>
+      }
+      <button type="button" class="btn-submit" (click)="closed.emit()">Done</button>
+    </div>
+  </div>
+</div>
