@@ -1,0 +1,10 @@
+# node_modules is reinstalled from the lockfile inside the image; copying the
+# host's would be slow and can carry platform-specific binaries.
+node_modules
+dist
+.angular
+.vscode
+mockups
+*.md
+Dockerfile
+.dockerignore

@@ -1,0 +1,66 @@
+/* ---------- Hero ---------- */
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-2xl); align-items: center;
+  padding: var(--spacing-4xl) var(--spacing-4xl) 0;
+  background:
+    radial-gradient(90% 70% at 15% 0%, var(--purple-700) 0%, transparent 62%),
+    linear-gradient(160deg, var(--purple-800) 0%, var(--purple-900) 100%);
+  position: relative; overflow: hidden;
+}
+.hero-stars { position: absolute; inset: 0; pointer-events: none; }
+.hero-copy { position: relative; padding-bottom: var(--spacing-4xl); }
+.hero-headline {
+  /* balance keeps the second sentence from orphaning "out." onto its own
+     line when the hero column narrows. */
+  text-wrap: balance;
+  font-size: 50px; font-weight: 800; letter-spacing: -1.6px;
+  line-height: 1.08; color: var(--color-text-on-brand);
+  margin-bottom: var(--spacing-base);
+}
+.hero-headline em { font-style: normal; color: var(--purple-300); }
+.hero-blurb {
+  font-size: 17px; line-height: 1.6; color: var(--purple-200);
+  margin-bottom: var(--spacing-xl); max-width: 44ch;
+}
+.hero-cta { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+.hero-note { font-size: 13px; color: var(--purple-200); }
+
+/* Phones bleed off the bottom edge of the hero band. */
+.hero-shots {
+  position: relative; align-self: end;
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: var(--spacing-base); padding-top: var(--spacing-2xl);
+}
+.hero-shots app-landing-phone:first-child { transform: translateY(30px) rotate(-3deg); }
+.hero-shots app-landing-phone:last-child  { transform: translateY(-6px) rotate(3deg); }
+
+@media (max-width: 1080px) {
+  /* Stacked, the phones sit below the copy. The desktop bleed would just
+     guillotine them against the hero bottom edge, so drop the offsets,
+     centre them and give the hero a real bottom padding. */
+  .hero { grid-template-columns: 1fr; gap: var(--spacing-xl); padding-bottom: var(--spacing-2xl); }
+  .hero-blurb { max-width: none; }
+  .hero-shots { justify-content: center; align-self: center; padding-top: var(--spacing-xl); }
+  /* Must match the base rules' specificity - a bare selector loses to
+     :first-child / :last-child and the phones stay rotated and cropped. */
+  .hero-shots app-landing-phone:first-child,
+  .hero-shots app-landing-phone:last-child { transform: none; }
+}
+
+@media (max-width: 600px) {
+  .hero { padding: var(--spacing-2xl) var(--spacing-lg); }
+  .hero-copy { padding-bottom: var(--spacing-xl); }
+  .hero-headline { font-size: 34px; letter-spacing: -1px; }
+  .hero-blurb { font-size: 15px; }
+  .hero-cta { flex-direction: column; align-items: stretch; }
+  .hero-cta .btn { width: 100%; }
+
+  /* Two phones cannot fit a phone-width viewport, so show one, square-on. */
+  .hero-shots { justify-content: center; padding-top: var(--spacing-base); gap: 0; }
+  .hero-shots app-landing-phone:last-child { display: none; }
+}
+
+@media (max-width: 420px) {
+  .hero-headline { font-size: 29px; }
+}

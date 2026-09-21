@@ -41,7 +41,9 @@ namespace ExpenseTracker.Application.Queries.GetExpensesByReceiptId
                 Merchant = expense.Merchant?.Name,
                 MerchantWebsite = expense.Merchant?.Website,
                 ReceiptId = expense.ReceiptId,
-                ExpenseTableId = expense.ExpenseTableId
+                ExpenseTableId = expense.ExpenseTableId,
+                CreatedByEmail = expense.CreatedByUser?.Email,
+                CreatedByCurrentUser = expense.CreatedByUserId == currentUser.Id
             }).ToList();
         }
     }

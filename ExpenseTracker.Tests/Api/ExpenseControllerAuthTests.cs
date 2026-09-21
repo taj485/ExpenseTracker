@@ -1,15 +1,28 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace ExpenseTracker.Tests.Api
 {
-    public class ExpenseControllerAuthTests : IClassFixture<WebApplicationFactory<Program>>
+    /// <summary>
+    /// Hosts the real Program, so it pins Database:AutoMigrate off — these tests
+    /// assert on authentication and must never reach for a database.
+    /// </summary>
+    public class AuthTestApplicationFactory : WebApplicationFactory<Program>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseSetting("Database:AutoMigrate", "false");
+        }
+    }
+
+    public class ExpenseControllerAuthTests : IClassFixture<AuthTestApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public ExpenseControllerAuthTests(WebApplicationFactory<Program> factory)
+        public ExpenseControllerAuthTests(AuthTestApplicationFactory factory)
         {
             _client = factory.CreateClient();
         }

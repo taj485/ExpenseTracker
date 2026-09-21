@@ -36,6 +36,9 @@ namespace ExpenseTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
@@ -77,6 +80,8 @@ namespace ExpenseTracker.Infrastructure.Migrations
                         });
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("ExpenseTableId");
 
@@ -8300,6 +8305,11 @@ namespace ExpenseTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("ExpenseTracker.Domain.Entities.Expense", b =>
                 {
+                    b.HasOne("ExpenseTracker.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("ExpenseTracker.Domain.Entities.ExpenseTable", "ExpenseTable")
                         .WithMany()
                         .HasForeignKey("ExpenseTableId")
@@ -8315,6 +8325,8 @@ namespace ExpenseTracker.Infrastructure.Migrations
                         .WithMany("Expenses")
                         .HasForeignKey("ReceiptId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("ExpenseTable");
 

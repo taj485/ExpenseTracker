@@ -1,5 +1,6 @@
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Interfaces;
+using ExpenseTracker.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Infrastructure.Persistence.Repositories
@@ -25,6 +26,21 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             return await _context.ExpenseTables
                 .Include(t => t.Members)
                 .Where(t => t.Members.Any(m => m.UserId == userId))
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<ExpenseTableMember>> GetMembersAsync(int expenseTableId, CancellationToken cancellationToken = default)
+        {
+            // Projects straight to the read model so only the needed columns are loaded, and skips
+            // soft-deleted tables explicitly rather than relying on the ExpenseTable query filter.
+            return await _context.UserExpenseTables
+                .Where(m => m.ExpenseTableId == expenseTableId && !m.ExpenseTable.IsDeleted)
+                .Select(m => new ExpenseTableMember
+                {
+                    UserId = m.UserId,
+                    Email = m.User.Email,
+                    IsAdmin = m.IsAdmin
+                })
                 .ToListAsync(cancellationToken);
         }
 

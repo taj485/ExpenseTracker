@@ -4,6 +4,7 @@ using ExpenseTracker.Application.Commands.InviteUserToTable;
 using ExpenseTracker.Application.Commands.RemoveUserFromTable;
 using ExpenseTracker.Application.Commands.StarExpenseTable;
 using ExpenseTracker.Application.Commands.UnstarExpenseTable;
+using ExpenseTracker.Application.Queries.GetExpenseTableMembers;
 using ExpenseTracker.Application.Queries.GetExpenseTablesForUser;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -37,6 +38,14 @@ namespace ExpenseTrackerAPI.Controllers
         {
             int id = await _mediator.Send(command, cancellationToken);
             return Ok(new { id });
+        }
+
+        // GET api/expensetable/5/members
+        [HttpGet("{id}/members")]
+        public async Task<IActionResult> GetMembers(int id, CancellationToken cancellationToken)
+        {
+            var members = await _mediator.Send(new GetExpenseTableMembersQuery(id), cancellationToken);
+            return Ok(members);
         }
 
         // POST api/expensetable/5/members

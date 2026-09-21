@@ -6,13 +6,26 @@
   <div class="page-header">
     <div class="page-header-title-group">
       <h2 class="page-header-title">{{ pageTitle() }}</h2>
-      <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this table' : 'Star this table'">
+      <button type="button" class="star-btn" [class.starred]="isStarred()" (click)="toggleStar()" [attr.aria-label]="isStarred() ? 'Unstar this space' : 'Star this space'">
         {{ isStarred() ? '★' : '☆' }}
+      </button>
+      <button type="button" class="members-link" (click)="showMembersDialog.set(true)" aria-haspopup="dialog">
+        {{ memberCount() }} member{{ memberCount() === 1 ? '' : 's' }}
       </button>
     </div>
     @if (isAdmin()) {
+      <div class="page-header-actions">
+        <button type="button" class="icon-action" (click)="showShareDialog.set(true)" aria-label="Share this space">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="18" cy="5" r="3.2"/>
+            <circle cx="6" cy="12" r="3.2"/>
+            <circle cx="18" cy="19" r="3.2"/>
+            <path d="M8.6 10.7 15.5 6.9l1.2 2.1-6.9 3.8zM9.8 11.9l6.9 3.8-1.2 2.1-6.9-3.8z"/>
+          </svg>
+        </button>
+
       <div class="settings-menu-wrapper">
-        <button type="button" class="settings-btn" (click)="showSettingsMenu.set(!showSettingsMenu())" aria-label="Table settings">
+        <button type="button" class="settings-btn" (click)="showSettingsMenu.set(!showSettingsMenu())" aria-label="Space settings">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor">
             <path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/>
           </svg>
@@ -20,10 +33,10 @@
         @if (showSettingsMenu()) {
           <div class="settings-menu-backdrop" (click)="showSettingsMenu.set(false)"></div>
           <div class="settings-menu">
-            <button type="button" class="settings-menu-item" (click)="showSettingsMenu.set(false); showShareDialog.set(true)">Share table</button>
-            <button type="button" class="settings-menu-item danger" (click)="showSettingsMenu.set(false); confirmingDeleteTable.set(true)">Delete table</button>
+            <button type="button" class="settings-menu-item danger" (click)="showSettingsMenu.set(false); confirmingDeleteTable.set(true)">Delete space</button>
           </div>
         }
+      </div>
       </div>
     }
   </div>
@@ -36,14 +49,24 @@
       }
     </select>
 
-    <select class="filter-select" [ngModel]="selectedCategory() ?? ''" (ngModelChange)="onCategoryChange($event)">
-      <option value="">All Categories</option>
-      @for (cat of categories; track cat) {
-        <option [value]="cat">{{ cat }}</option>
-      }
-    </select>
-
     <button class="btn btn-secondary" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <!-- Multi-select: selected chips move to the front, most recently picked first. -->
+  <div class="category-chips" role="group" aria-label="Filter by category">
+    <button type="button" class="category-chip"
+            [class.is-selected]="selectedCategories().length === 0"
+            [attr.aria-pressed]="selectedCategories().length === 0"
+            (click)="clearCategories()">All categories</button>
+    @for (cat of categoryChips(); track cat) {
+      <!-- Selected chips take their category's soft fill and ink (the badge-* classes); the rest stay neutral. -->
+      <button type="button"
+              [class]="selectedCategories().includes(cat) ? 'category-chip is-selected ' + getCategoryMeta(cat).badgeClass : 'category-chip'"
+              [attr.aria-pressed]="selectedCategories().includes(cat)"
+              (click)="toggleCategoryFilter(cat)">
+        {{ getCategoryMeta(cat).icon }} {{ cat }}
+      </button>
+    }
   </div>
 
   <div class="stats-bar">
@@ -67,79 +90,64 @@
     <p class="status-msg error">{{ actionError() }}</p>
   }
 
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th class="sortable col-merchant" (click)="toggleSort('merchant')">
-            Merchant
-            <span class="sort-arrow" [class.active]="sortColumn() === 'merchant'">{{ sortIcon('merchant') }}</span>
-          </th>
-          <th class="sortable col-date" (click)="toggleSort('date')">
-            Date
-            <span class="sort-arrow" [class.active]="sortColumn() === 'date'">{{ sortIcon('date') }}</span>
-          </th>
-          <th class="sortable col-description" (click)="toggleSort('description')">
-            Description
-            <span class="sort-arrow" [class.active]="sortColumn() === 'description'">{{ sortIcon('description') }}</span>
-          </th>
-          <th class="sortable col-unit-price" (click)="toggleSort('unitPrice')">
-            Unit Price
-            <span class="sort-arrow" [class.active]="sortColumn() === 'unitPrice'">{{ sortIcon('unitPrice') }}</span>
-          </th>
-          <th class="sortable col-quantity" (click)="toggleSort('quantity')">
-            Qty
-            <span class="sort-arrow" [class.active]="sortColumn() === 'quantity'">{{ sortIcon('quantity') }}</span>
-          </th>
-          <th class="sortable col-category" (click)="toggleSort('category')">
-            Category
-            <span class="sort-arrow" [class.active]="sortColumn() === 'category'">{{ sortIcon('category') }}</span>
-          </th>
-          <th class="actions-header"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of pagedRows(); track row.expense.id) {
-          <tr class="clickable-row"
-              [class.group-start]="row.isGroupStart"
-              [class.group-hover]="hoveredGroupKey() === row.groupKey"
-              (mouseenter)="hoveredGroupKey.set(row.groupKey)"
-              (mouseleave)="hoveredGroupKey.set(null)"
-              (click)="viewExpense(row.expense.id)">
-            @if (row.isGroupStart) {
-              <td class="col-merchant" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">
-                <app-merchant-logo [merchant]="row.expense.merchant" [website]="row.expense.merchantWebsite" />
-              </td>
-              <td class="col-date" [attr.rowspan]="row.groupSize" (click)="onMerchantCellClick($event, row.expense)">{{ row.expense.date | date:'dd/MM/yy' }}</td>
-            }
-            <td class="col-description">{{ row.expense.description }}</td>
-            <td class="col-unit-price amount-cell">£{{ row.expense.unitPrice | number:'1.2-2' }}</td>
-            <td class="col-quantity">{{ row.expense.quantity }}</td>
-            <td class="col-category">
-              <span class="badge" [class]="getCategoryMeta(row.expense.category).badgeClass">
-                {{ row.expense.category }}
-              </span>
-            </td>
-            <td class="actions-cell">
-              <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); editExpense(row.expense.id)">Edit</button>
-              <button class="btn btn-sm btn-danger" (click)="$event.stopPropagation(); deletingId.set(row.expense.id)">Delete</button>
-            </td>
-          </tr>
-        }
+  <div class="receipt-list">
+    @for (receipt of pagedReceipts(); track receipt.key) {
+      <div class="receipt-card">
+        <div class="receipt-head"
+             [class.is-linked]="receipt.receiptId !== null"
+             (click)="receipt.receiptId !== null && viewReceipt(receipt.receiptId)">
+          <app-merchant-logo [merchant]="receipt.merchant" [website]="receipt.merchantWebsite" />
 
-        @empty {
-          <tr>
-            <td colspan="7" class="empty-cell">
-              @if (selectedMonth() || selectedCategory()) {
-                No expenses match this filter.
-              } @else {
-                No expenses found.
+          <div class="receipt-ident">
+            <div class="receipt-merchant">{{ receipt.merchant || 'Uncategorised' }}</div>
+            <div class="receipt-date">
+              {{ receipt.date | date:'dd/MM/yy' }}
+              @if (isSharedTable() && receipt.uploader) {
+                · Added by <span class="receipt-uploader" [class.is-you]="receipt.uploadedByCurrentUser">{{ receipt.uploader }}</span>
               }
-            </td>
-          </tr>
+            </div>
+          </div>
+
+          <span class="receipt-count">
+            {{ receipt.expenses.length }} item{{ receipt.expenses.length === 1 ? '' : 's' }}
+          </span>
+          <div class="receipt-total">£{{ receipt.total | number:'1.2-2' }}</div>
+        </div>
+
+        <div class="receipt-items">
+          @for (expense of receipt.expenses; track expense.id) {
+            <div class="receipt-item" (click)="viewExpense(expense.id)">
+              <div class="item-info">
+                <span class="item-name">{{ expense.description }}</span>
+                <span class="badge" [class]="getCategoryMeta(expense.category).badgeClass">
+                  {{ expense.category }}
+                </span>
+              </div>
+
+              <div class="item-figures">
+                <div class="item-amount">£{{ expense.unitPrice * expense.quantity | number:'1.2-2' }}</div>
+                <div class="item-unit">{{ expense.quantity }} × £{{ expense.unitPrice | number:'1.2-2' }}</div>
+              </div>
+
+              <div class="item-actions">
+                <button type="button" class="icon-btn is-danger" aria-label="Delete expense"
+                        (click)="$event.stopPropagation(); deletingId.set(expense.id)">✕</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @empty {
+      <p class="empty-state">
+        @if (selectedMonth() || selectedCategories().length > 0) {
+          No expenses match this filter.
+        } @else {
+          No expenses yet. Add one on the right, or scan a receipt.
         }
-      </tbody>
-    </table>
+      </p>
+    }
   </div>
 
   @if (totalPages() > 1) {
@@ -160,6 +168,16 @@
     />
   }
 
+  @if (showMembersDialog()) {
+    <app-members-dialog
+      [tableId]="tableId()"
+      [tableName]="pageTitle()"
+      [canInvite]="isAdmin()"
+      (invite)="openShareFromMembers()"
+      (closed)="showMembersDialog.set(false)"
+    />
+  }
+
   @if (showShareDialog()) {
     <app-share-table-prompt
       [tableId]="tableId()"
@@ -170,8 +188,8 @@
 
   @if (confirmingDeleteTable()) {
     <app-confirm-dialog
-      title="Delete Table"
-      message="Are you sure you want to delete this table? This cannot be undone."
+      title="Delete space"
+      message="Are you sure you want to delete this space? Every expense in it goes too. This cannot be undone."
       confirmLabel="Delete"
       (confirmed)="confirmDeleteTable()"
       (cancelled)="confirmingDeleteTable.set(false)"

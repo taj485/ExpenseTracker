@@ -126,6 +126,32 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
+        public async Task GetAllForTableAsync_IncludesCreatorWithEmail()
+        {
+            var table = await SeedExpenseTableAsync("auth0|user-1");
+            var creator = User.Create("auth0|creator", "creator@example.com");
+            _context.Users.Add(creator);
+            await _context.SaveChangesAsync();
+
+            await _repository.AddAsync(
+                Expense.Create(10m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, table.Id, createdByUserId: creator.Id),
+                CancellationToken.None);
+            await _repository.AddAsync(Expense.Create(20m, ExpenseCategory.Transport, "Taxi", DateTime.UtcNow, table.Id), CancellationToken.None);
+
+            using var verifyContext = CreateContext();
+            var verifyRepository = new ExpenseRepository(verifyContext);
+            var results = (await verifyRepository.GetAllForTableAsync(table.Id, CancellationToken.None)).ToList();
+
+            var lunch = results.Single(e => e.Description == "Lunch");
+            Assert.Equal(creator.Id, lunch.CreatedByUserId);
+            Assert.Equal("creator@example.com", lunch.CreatedByUser?.Email);
+
+            var taxi = results.Single(e => e.Description == "Taxi");
+            Assert.Null(taxi.CreatedByUserId);
+            Assert.Null(taxi.CreatedByUser);
+        }
+
+        [Fact]
         public async Task GetAllForTableAsync_ExcludesSoftDeletedExpenses()
         {
             var table = await SeedExpenseTableAsync("auth0|user-1");

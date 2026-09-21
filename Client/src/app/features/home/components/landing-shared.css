@@ -1,0 +1,41 @@
+/* Primitives shared by more than one landing child. Listed first in each
+   child's styleUrls, so Angular scopes it per component rather than globally. */
+
+.section-band { padding: var(--spacing-4xl); }
+.section-band.is-tint {
+  background: var(--color-bg-page);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.band-head { text-align: center; max-width: 62ch; margin: 0 auto var(--spacing-2xl); }
+.band-eyebrow {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--color-text-brand);
+  margin-bottom: var(--spacing-sm);
+}
+.band-title { font-size: 32px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: var(--spacing-md); }
+.band-blurb { font-size: 16px; line-height: 1.6; color: var(--color-text-secondary); }
+
+/* Inverted buttons for the purple grounds. Must follow the global .btn, whose
+   border shorthand would otherwise reset border-color at equal specificity. */
+.btn-on-brand {
+  background: var(--color-bg-surface); color: var(--color-text-brand);
+  box-shadow: var(--shadow-overlay);
+}
+.btn-ghost-on-brand {
+  background: transparent; color: var(--color-text-on-brand);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+/* Anchors styled as buttons still carry an underline the global rule misses. */
+a.btn { text-decoration: none; }
+
+@media (max-width: 600px) {
+  .section-band { padding: var(--spacing-2xl) var(--spacing-lg); }
+  .band-title { font-size: 26px; letter-spacing: -0.5px; }
+  .band-blurb { font-size: 15px; }
+  .band-head { margin-bottom: var(--spacing-xl); }
+}
+
+@media (max-width: 420px) {
+  .section-band { padding: var(--spacing-xl) var(--spacing-base); }
+}

@@ -5,12 +5,15 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
-import { getCategoryMeta, ALL_CATEGORIES } from '../../../core/utils/category.utils';
+import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { MerchantLogoComponent } from '../../../shared/merchant-logo/merchant-logo.component';
+import { MembersDialogComponent } from '../../expense-table/members-dialog.component';
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
+import { orderCategoryChips, parseCategoryParam, toggleCategory } from '../../../core/utils/expense-filter.utils';
+import { uploaderLabel } from '../../../core/utils/uploader.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -20,17 +23,24 @@ interface ExpenseGroup {
   expenses: Expense[];
 }
 
-interface ExpenseRow {
-  expense: Expense;
-  isGroupStart: boolean;
-  groupSize: number;
-  groupKey: string;
+/** One receipt card: a merchant header carrying the receipt total, over its line items. */
+interface ReceiptCard {
+  key: string;
+  merchant: string | null;
+  merchantWebsite: string | null;
+  date: string;
+  receiptId: number | null;
+  total: number;
+  /** "you" / "emma.carter", or null when the uploader wasn't recorded. */
+  uploader: string | null;
+  uploadedByCurrentUser: boolean;
+  expenses: Expense[];
 }
 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent, MerchantLogoComponent],
+  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent, MembersDialogComponent, MerchantLogoComponent],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,24 +56,31 @@ export class ExpenseListComponent implements OnInit {
   readonly pageTitle = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.name ?? 'Expenses');
   readonly isAdmin = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isCurrentUserAdmin ?? false);
   readonly isOnlyTable = computed(() => this.expenseTableService.tables().length === 1);
+  readonly memberCount = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.memberCount ?? 1);
+  /** "Added by" is only worth showing when someone else could have added the expense. */
+  readonly isSharedTable = computed(() => this.memberCount() > 1);
   readonly showShareDialog = signal(false);
+  readonly showMembersDialog = signal(false);
   readonly showSettingsMenu = signal(false);
   readonly confirmingDeleteTable = signal(false);
 
   getCategoryMeta = getCategoryMeta;
-  readonly categories = ALL_CATEGORIES;
 
   readonly deletingId  = signal<number | null>(null);
   readonly actionError = signal<string | null>(null);
-  readonly hoveredGroupKey = signal<string | null>(null);
 
+  // Cards drop the sortable column headers, so ordering is fixed at newest-first.
+  // Kept as signals so a sort control can be reintroduced without reworking
+  // compareExpenses / groupedExpenses.
   readonly sortColumn    = signal<SortColumn>('date');
   readonly sortDirection = signal<SortDirection>('desc');
 
   private readonly queryParams = toSignal(this.route.queryParamMap);
 
-  readonly selectedMonth    = computed(() => this.queryParams()?.get('month') ?? null);
-  readonly selectedCategory = computed(() => this.queryParams()?.get('category') as ExpenseCategory | null ?? null);
+  readonly selectedMonth = computed(() => this.queryParams()?.get('month') ?? null);
+  /** One or more categories (?category=Food,Health), most recently selected first. */
+  readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
+  readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
 
   readonly availableMonths = computed(() => {
     const now = new Date();
@@ -84,8 +101,8 @@ export class ExpenseListComponent implements OnInit {
     const month = this.selectedMonth();
     if (month) list = list.filter(e => e.date.slice(0, 7) === month);
 
-    const category = this.selectedCategory();
-    if (category) list = list.filter(e => e.category === category);
+    const categories = this.selectedCategories();
+    if (categories.length > 0) list = list.filter(e => categories.includes(e.category));
 
     return list;
   });
@@ -129,32 +146,42 @@ export class ExpenseListComponent implements OnInit {
     return groups;
   });
 
-  private readonly PAGE_SIZE = 100;
+  /** Header data for each group, so the template does not compute totals inline. */
+  readonly receiptCards = computed<ReceiptCard[]>(() =>
+    this.groupedExpenses().map((group) => {
+      const first = group.expenses[0];
+      return {
+        key: group.key,
+        merchant: first.merchant ?? null,
+        merchantWebsite: first.merchantWebsite ?? null,
+        date: first.date,
+        receiptId: first.receiptId ?? null,
+        total: group.expenses.reduce((sum, e) => sum + expenseTotal(e), 0),
+        // Every line of a receipt is added together, so the first line's uploader covers the card.
+        uploader: uploaderLabel(first, 'short'),
+        uploadedByCurrentUser: first.createdByCurrentUser === true,
+        expenses: group.expenses,
+      };
+    })
+  );
+
+  // Cards are far taller than table rows, so page by receipt rather than by line.
+  private readonly PAGE_SIZE = 25;
   readonly currentPage = signal(1);
 
-  readonly pages = computed<ExpenseRow[][]>(() => {
-    const groups = this.groupedExpenses();
-    const pages: ExpenseRow[][] = [];
-    let current: ExpenseRow[] = [];
+  readonly pages = computed<ReceiptCard[][]>(() => {
+    const cards = this.receiptCards();
+    const pages: ReceiptCard[][] = [];
 
-    for (const group of groups) {
-      const rows: ExpenseRow[] = group.expenses.map((expense, idx) => ({
-        expense, isGroupStart: idx === 0, groupSize: group.expenses.length, groupKey: group.key,
-      }));
-
-      if (current.length > 0 && current.length + rows.length > this.PAGE_SIZE) {
-        pages.push(current);
-        current = [];
-      }
-      current.push(...rows);
+    for (let i = 0; i < cards.length; i += this.PAGE_SIZE) {
+      pages.push(cards.slice(i, i + this.PAGE_SIZE));
     }
-    if (current.length > 0) pages.push(current);
     return pages.length > 0 ? pages : [[]];
   });
 
   readonly totalPages = computed(() => this.pages().length);
   readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
-  readonly pagedRows = computed<ExpenseRow[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
+  readonly pagedReceipts = computed<ReceiptCard[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -174,9 +201,20 @@ export class ExpenseListComponent implements OnInit {
     this.updateQueryParams({ month: value || null });
   }
 
-  onCategoryChange(value: string): void {
+  toggleCategoryFilter(category: ExpenseCategory): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ category: value || null });
+    const next = toggleCategory(this.selectedCategories(), category);
+    this.updateQueryParams({ category: next.length > 0 ? next.join(',') : null });
+  }
+
+  clearCategories(): void {
+    this.currentPage.set(1);
+    this.updateQueryParams({ category: null });
+  }
+
+  openShareFromMembers(): void {
+    this.showMembersDialog.set(false);
+    this.showShareDialog.set(true);
   }
 
   resetFilters(): void {
@@ -190,21 +228,6 @@ export class ExpenseListComponent implements OnInit {
       queryParams: params,
       queryParamsHandling: 'merge',
     });
-  }
-
-  toggleSort(column: SortColumn): void {
-    this.currentPage.set(1);
-    if (this.sortColumn() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortColumn.set(column);
-      this.sortDirection.set('asc');
-    }
-  }
-
-  sortIcon(column: SortColumn): string {
-    if (this.sortColumn() !== column) return '▲';
-    return this.sortDirection() === 'asc' ? '▲' : '▼';
   }
 
   goToPage(page: number): void {
@@ -223,15 +246,8 @@ export class ExpenseListComponent implements OnInit {
     this.router.navigate(['/expenses/table', this.tableId(), id]);
   }
 
-  onMerchantCellClick(event: MouseEvent, expense: Expense): void {
-    if (expense.receiptId != null) {
-      event.stopPropagation();
-      this.router.navigate(['/expenses/table', this.tableId(), 'receipt', expense.receiptId]);
-    }
-  }
-
-  editExpense(id: number): void {
-    this.router.navigate(['/expenses/table', this.tableId(), id, 'edit']);
+  viewReceipt(receiptId: number): void {
+    this.router.navigate(['/expenses/table', this.tableId(), 'receipt', receiptId]);
   }
 
   confirmDelete(id: number): void {

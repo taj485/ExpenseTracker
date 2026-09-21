@@ -7,6 +7,14 @@ export interface ExpenseTable {
   memberCount: number;
 }
 
+/** GET /api/expensetable/{id}/members — admins first, then by email. */
+export interface ExpenseTableMember {
+  userId: number;
+  email: string | null;
+  isAdmin: boolean;
+  isCurrentUser: boolean;
+}
+
 export interface CreateExpenseTableCommand {
   name: string;
 }

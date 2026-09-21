@@ -1,5 +1,7 @@
 ExpenseTracker/
 ├── ExpenseTracker.sln
+├── docker-compose.yml
+├── .dockerignore
 ├── CLAUDE.md
 ├── README.md
 ├── .github/
@@ -19,21 +21,24 @@ ExpenseTracker/
 │   ├── outputs.tf
 │   └── terraform.tfvars.example
 ├── Client/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── .dockerignore
 │   ├── mockups/
 │   │   ├── mockup-1.html
 │   │   ├── mockup-2.html
 │   │   ├── mockup-3.html
 │   │   ├── mockup-combined.html
-│   │   ├── mockup-quirky.html
-│   │   ├── mockup-professional.html
-│   │   └── mockup-genz.html
+│   │   ├── recave-mobile.html
+│   │   └── recave-desktop.html
 │   ├── src/
 │   │   ├── styles.css
 │   │   ├── types/
 │   │   │   └── heic2any.d.ts
 │   │   ├── environments/
 │   │   │   ├── environment.ts
-│   │   │   └── environment.prod.ts
+│   │   │   ├── environment.prod.ts
+│   │   │   └── environment.selfhost.ts
 │   │   └── app/
 │   │       ├── app.ts
 │   │       ├── app.routes.ts
@@ -51,16 +56,22 @@ ExpenseTracker/
 │   │       │   │   ├── image-resize.service.ts
 │   │       │   │   └── image-resize.service.spec.ts
 │   │       │   ├── utils/
+│   │       │   │   ├── api-error.utils.ts
+│   │       │   │   ├── api-error.utils.spec.ts
 │   │       │   │   ├── category.utils.ts
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
 │   │       │   │   ├── download.utils.ts
+│   │       │   │   ├── expense-filter.utils.ts
+│   │       │   │   ├── expense-filter.utils.spec.ts
 │   │       │   │   ├── expense.utils.ts
 │   │       │   │   ├── expense.utils.spec.ts
 │   │       │   │   ├── heic-converter.ts
 │   │       │   │   ├── heic-converter.spec.ts
 │   │       │   │   ├── merchant.utils.ts
-│   │       │   │   └── merchant.utils.spec.ts
+│   │       │   │   ├── merchant.utils.spec.ts
+│   │       │   │   ├── uploader.utils.ts
+│   │       │   │   └── uploader.utils.spec.ts
 │   │       │   └── auth/
 │   │       │       ├── auth.guard.ts
 │   │       │       ├── auth.guard.spec.ts
@@ -93,7 +104,29 @@ ExpenseTracker/
 │   │           ├── home/
 │   │           │   ├── home.component.ts
 │   │           │   ├── home.component.html
-│   │           │   └── home.component.css
+│   │           │   ├── home.component.css
+│   │           │   └── components/
+│   │           │       ├── landing-shared.css
+│   │           │       ├── landing-hero/
+│   │           │       │   ├── landing-hero.component.ts
+│   │           │       │   ├── landing-hero.component.html
+│   │           │       │   └── landing-hero.component.css
+│   │           │       ├── landing-phone/
+│   │           │       │   ├── landing-phone.component.ts
+│   │           │       │   ├── landing-phone.component.html
+│   │           │       │   └── landing-phone.component.css
+│   │           │       ├── landing-features/
+│   │           │       │   ├── landing-features.component.ts
+│   │           │       │   ├── landing-features.component.html
+│   │           │       │   └── landing-features.component.css
+│   │           │       ├── landing-insights/
+│   │           │       │   ├── landing-insights.component.ts
+│   │           │       │   ├── landing-insights.component.html
+│   │           │       │   └── landing-insights.component.css
+│   │           │       └── landing-steps/
+│   │           │           ├── landing-steps.component.ts
+│   │           │           ├── landing-steps.component.html
+│   │           │           └── landing-steps.component.css
 │   │           ├── dashboard/
 │   │           │   ├── dashboard.component.ts
 │   │           │   ├── dashboard.component.html
@@ -140,7 +173,19 @@ ExpenseTracker/
 │   │           └── expense-table/
 │   │               ├── create-expense-table-prompt.component.ts
 │   │               ├── create-expense-table-prompt.component.html
-│   │               └── create-expense-table-prompt.component.css
+│   │               ├── create-expense-table-prompt.component.css
+│   │               ├── expense-table-picker.component.ts
+│   │               ├── expense-table-picker.component.html
+│   │               ├── expense-table-picker.component.css
+│   │               ├── members-dialog.component.ts
+│   │               ├── members-dialog.component.html
+│   │               ├── members-dialog.component.css
+│   │               ├── select-tables-prompt.component.ts
+│   │               ├── select-tables-prompt.component.html
+│   │               ├── select-tables-prompt.component.css
+│   │               ├── share-table-prompt.component.ts
+│   │               ├── share-table-prompt.component.html
+│   │               └── share-table-prompt.component.css
 │   ├── public/
 │   │   ├── favicon.ico
 │   │   └── staticwebapp.config.json
@@ -160,6 +205,7 @@ ExpenseTracker/
 │   ├── ValueObjects/
 │   │   ├── Money.cs
 │   │   ├── ExtractedReceiptItem.cs
+│   │   ├── ExpenseTableMember.cs
 │   │   └── ReceiptImage.cs
 │   ├── Enums/
 │   │   └── ExpenseCategory.cs
@@ -213,6 +259,7 @@ ExpenseTracker/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
+│   │   │   ├── GetExpenseTableMembersQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
 │   │   └── Services/
 │   │       ├── CurrentUserProviderTests.cs
@@ -222,11 +269,14 @@ ExpenseTracker/
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
-│   │   └── UserRepositoryTests.cs
+│   │   ├── UserRepositoryTests.cs
+│   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
-│       └── ExpenseControllerAuthTests.cs
+│       ├── ExpenseControllerAuthTests.cs
+│       └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ExpenseTrackerAPI/
+│   ├── Dockerfile
 │   ├── Controllers/
 │   │   ├── ExpenseController.cs
 │   │   └── ExpenseTableController.cs
@@ -300,12 +350,17 @@ ExpenseTracker/
 │   │   ├── GetExpenseTablesForUser/
 │   │   │   ├── GetExpenseTablesForUserQuery.cs
 │   │   │   └── GetExpenseTablesForUserQueryHandler.cs
+│   │   ├── GetExpenseTableMembers/
+│   │   │   ├── GetExpenseTableMembersQuery.cs
+│   │   │   ├── GetExpenseTableMembersQueryHandler.cs
+│   │   │   └── GetExpenseTableMembersValidator.cs
 │   │   └── GetReceiptImage/
 │   │       ├── GetReceiptImageQuery.cs
 │   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
 │   │   ├── ExpenseDto.cs
 │   │   ├── ExpenseTableDto.cs
+│   │   ├── ExpenseTableMemberDto.cs
 │   │   ├── MonthlySummaryDto.cs
 │   │   ├── ExtractedExpenseDto.cs
 │   │   └── ReceiptImageDto.cs
@@ -344,5 +399,7 @@ ExpenseTracker/
     │   └── GeminiReceiptExtractionService.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
-    │   └── AzureBlobReceiptImageStore.cs
+    │   ├── AzureBlobReceiptImageStore.cs
+    │   ├── MinioStorageOptions.cs
+    │   └── MinioReceiptImageStore.cs
     └── DependencyInjection.cs

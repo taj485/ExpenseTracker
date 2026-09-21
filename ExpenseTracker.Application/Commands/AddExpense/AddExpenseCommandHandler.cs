@@ -37,7 +37,7 @@ namespace ExpenseTracker.Application.Commands.AddExpense
 
             var merchantId = await _merchantResolver.ResolveOrCreateAsync(request.Merchant, cancellationToken);
 
-            var expense = Expense.Create(request.UnitPrice, request.Category, request.Description, request.Date, request.ExpenseTableId, merchantId, quantity: request.Quantity);
+            var expense = Expense.Create(request.UnitPrice, request.Category, request.Description, request.Date, request.ExpenseTableId, merchantId, quantity: request.Quantity, createdByUserId: currentUser.Id);
             int id = await _expenseWriter.AddAsync(expense, cancellationToken);
             return id;
         }

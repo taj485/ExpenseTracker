@@ -1,0 +1,180 @@
+@switch (screen) {
+  @case ('dashboard') {
+    <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+    <div class="mini-body">
+      <div class="mini-greet">Good morning</div>
+      <div class="mini-name">James</div>
+      <div class="mini-hero-card">
+        <div class="mini-hero-label">Spent this month</div>
+        <div class="mini-hero-amount">&pound;1,204.75</div>
+        <div class="mini-hero-delta">&uarr; 12% vs August</div>
+      </div>
+      <div class="mini-section">Spending by category</div>
+      <div class="mini-row">
+        <div class="mini-chip" style="background: var(--color-category-food-soft)">&#127828;</div>
+        <div class="mini-row-info">
+          <div class="mini-row-name">Food</div>
+          <div class="mini-track"><div class="mini-fill" style="width:78%; background: var(--color-category-food-ink)"></div></div>
+        </div>
+        <div class="mini-row-amount">&pound;428.90</div>
+      </div>
+      <div class="mini-row">
+        <div class="mini-chip" style="background: var(--color-category-transport-soft)">&#128652;</div>
+        <div class="mini-row-info">
+          <div class="mini-row-name">Transport</div>
+          <div class="mini-track"><div class="mini-fill" style="width:54%; background: var(--color-category-transport-ink)"></div></div>
+        </div>
+        <div class="mini-row-amount">&pound;296.40</div>
+      </div>
+      <div class="mini-row">
+        <div class="mini-chip" style="background: var(--color-category-utilities-soft)">&#9889;</div>
+        <div class="mini-row-info">
+          <div class="mini-row-name">Utilities</div>
+          <div class="mini-track"><div class="mini-fill" style="width:41%; background: var(--color-category-utilities-ink)"></div></div>
+        </div>
+        <div class="mini-row-amount">&pound;224.00</div>
+      </div>
+      <div class="mini-row">
+        <div class="mini-chip" style="background: var(--color-category-entertainment-soft)">&#127916;</div>
+        <div class="mini-row-info">
+          <div class="mini-row-name">Entertainment</div>
+          <div class="mini-track"><div class="mini-fill" style="width:28%; background: var(--color-category-entertainment-ink)"></div></div>
+        </div>
+        <div class="mini-row-amount">&pound;152.45</div>
+      </div>
+      <div class="mini-row">
+        <div class="mini-chip" style="background: var(--color-category-health-soft)">&#128138;</div>
+        <div class="mini-row-info">
+          <div class="mini-row-name">Health</div>
+          <div class="mini-track"><div class="mini-fill" style="width:19%; background: var(--color-category-health-ink)"></div></div>
+        </div>
+        <div class="mini-row-amount">&pound;103.00</div>
+      </div>
+    </div>
+    <div class="mini-tabs">
+      <div class="mini-tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.36 2.79a1 1 0 0 1 1.28 0l8.5 7.1a1 1 0 0 1 .36.77V20a2 2 0 0 1-2 2h-4.25v-5.7a1.25 1.25 0 0 0-1.25-1.25h-3.6a1.25 1.25 0 0 0-1.25 1.25V22H4.5a2 2 0 0 1-2-2v-9.34a1 1 0 0 1 .36-.77z"/></svg>
+        Home
+      </div>
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="4.7" cy="6.5" r="1.7"/><circle cx="4.7" cy="12" r="1.7"/><circle cx="4.7" cy="17.5" r="1.7"/><rect x="8.6" y="5.3" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="10.8" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="16.3" width="11.6" height="2.4" rx="1.2"/></svg>
+        Expenses
+      </div>
+      <div class="mini-fab">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+          <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+          <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+          <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+        </svg>
+      </div>
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2m1.2 5.3a1.2 1.2 0 0 0-2.4 0v3.1H7.7a1.2 1.2 0 0 0 0 2.4h3.1v3.1a1.2 1.2 0 0 0 2.4 0v-3.1h3.1a1.2 1.2 0 0 0 0-2.4h-3.1z"/></svg>
+        Add
+      </div>
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.8" r="4.1"/><path d="M12 13.7c-4.1 0-7.4 2.7-7.4 6 0 .9.7 1.6 1.6 1.6h11.6c.9 0 1.6-.7 1.6-1.6 0-3.3-3.3-6-7.4-6"/></svg>
+        Profile
+      </div>
+    </div>
+  }
+  @case ('expenses') {
+    <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+    <div class="mini-body">
+      <div class="mini-greet">Space</div>
+      <div class="mini-name">Household expenses</div>
+
+      <div class="mini-receipt">
+        <div class="mini-receipt-head">
+          <div class="mini-logo">TE</div>
+          <div class="mini-merchant">Tesco Express</div>
+          <div class="mini-total">&pound;42.18</div>
+        </div>
+        <div class="mini-item">
+          <span>Broccoli 500g <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+          <span>&pound;6.62</span>
+        </div>
+        <div class="mini-item">
+          <span>Coffee Beans 200g <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+          <span>&pound;18.00</span>
+        </div>
+        <div class="mini-item">
+          <span>Milk 4pt <span class="mini-badge" style="background: var(--color-category-food-soft); color: var(--color-category-food-ink)">Food</span></span>
+          <span>&pound;17.56</span>
+        </div>
+      </div>
+
+      <div class="mini-receipt">
+        <div class="mini-receipt-head">
+          <div class="mini-logo">BT</div>
+          <div class="mini-merchant">Boots</div>
+          <div class="mini-total">&pound;71.98</div>
+        </div>
+        <div class="mini-item">
+          <span>Acuvue Oasys 6pk <span class="mini-badge" style="background: var(--color-category-health-soft); color: var(--color-category-health-ink)">Health</span></span>
+          <span>&pound;35.99</span>
+        </div>
+        <div class="mini-item">
+          <span>Acuvue Oasys 6pk <span class="mini-badge" style="background: var(--color-category-health-soft); color: var(--color-category-health-ink)">Health</span></span>
+          <span>&pound;35.99</span>
+        </div>
+      </div>
+
+      <div class="mini-receipt">
+        <div class="mini-receipt-head">
+          <div class="mini-logo">TF</div>
+          <div class="mini-merchant">Transport for London</div>
+          <div class="mini-total">&pound;30.00</div>
+        </div>
+        <div class="mini-item">
+          <span>Oyster top-up <span class="mini-badge" style="background: var(--color-category-transport-soft); color: var(--color-category-transport-ink)">Transport</span></span>
+          <span>&pound;30.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="mini-tabs">
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.36 2.79a1 1 0 0 1 1.28 0l8.5 7.1a1 1 0 0 1 .36.77V20a2 2 0 0 1-2 2h-4.25v-5.7a1.25 1.25 0 0 0-1.25-1.25h-3.6a1.25 1.25 0 0 0-1.25 1.25V22H4.5a2 2 0 0 1-2-2v-9.34a1 1 0 0 1 .36-.77z"/></svg>
+        Home
+      </div>
+      <div class="mini-tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="4.7" cy="6.5" r="1.7"/><circle cx="4.7" cy="12" r="1.7"/><circle cx="4.7" cy="17.5" r="1.7"/><rect x="8.6" y="5.3" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="10.8" width="11.6" height="2.4" rx="1.2"/><rect x="8.6" y="16.3" width="11.6" height="2.4" rx="1.2"/></svg>
+        Expenses
+      </div>
+      <div class="mini-fab">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.8 10V6.2A3.4 3.4 0 0 1 6.2 2.8H10v2.5H6.2a.9.9 0 0 0-.9.9V10z"/>
+          <path d="M21.2 10V6.2a3.4 3.4 0 0 0-3.4-3.4H14v2.5h3.8a.9.9 0 0 1 .9.9V10z"/>
+          <path d="M21.2 14v3.8a3.4 3.4 0 0 1-3.4 3.4H14v-2.5h3.8a.9.9 0 0 0 .9-.9V14z"/>
+          <path d="M2.8 14v3.8a3.4 3.4 0 0 0 3.4 3.4H10v-2.5H6.2a.9.9 0 0 1-.9-.9V14z"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 7.3h7v9.4l-1.75-1.2-1.75 1.2-1.75-1.2L8.5 16.7zm1.7 2.5h3.6v1.3h-3.6zm0 2.4h2.4v1.3h-2.4z"/>
+        </svg>
+      </div>
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2m1.2 5.3a1.2 1.2 0 0 0-2.4 0v3.1H7.7a1.2 1.2 0 0 0 0 2.4h3.1v3.1a1.2 1.2 0 0 0 2.4 0v-3.1h3.1a1.2 1.2 0 0 0 0-2.4h-3.1z"/></svg>
+        Add
+      </div>
+      <div class="mini-tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.8" r="4.1"/><path d="M12 13.7c-4.1 0-7.4 2.7-7.4 6 0 .9.7 1.6 1.6 1.6h11.6c.9 0 1.6-.7 1.6-1.6 0-3.3-3.3-6-7.4-6"/></svg>
+        Profile
+      </div>
+    </div>
+  }
+  @case ('scan') {
+    <div class="mini-status"><span>9:41</span><span>&#9642; &#9642; &#9642; &#9223;</span></div>
+    <div class="mini-body">
+      <div class="mini-greet">Space</div>
+      <div class="mini-name">Household expenses</div>
+      <div style="background: var(--color-bg-inverse); border-radius: var(--radius-lg); height: 190px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+        <div style="width: 108px; height: 148px; border: 2px dashed rgba(255,255,255,0.5); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.7); font-size: 8px; text-align: center; padding: 8px;">
+          Line the receipt up inside the frame
+        </div>
+      </div>
+      <div style="background: var(--color-bg-brand-soft); border: 1px solid var(--color-border-brand); border-radius: var(--radius-md); padding: 8px; font-size: 8px; color: var(--color-text-brand); margin-bottom: 10px;">
+        Items, merchant and totals are pulled out automatically.
+      </div>
+      <div style="width: 42px; height: 42px; border-radius: var(--radius-full); background: var(--color-bg-brand); border: 3px solid var(--color-bg-surface); box-shadow: var(--shadow-brand); margin: 0 auto;"></div>
+    </div>
+  }
+}

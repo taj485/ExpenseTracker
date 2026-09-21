@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main-not-in-use]
   pull_request:
-    branches: [main]
+    branches: [main-not-in-use]
 
 permissions:
   id-token: write

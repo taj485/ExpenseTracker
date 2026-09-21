@@ -16,5 +16,9 @@ namespace ExpenseTracker.Application.DTO
         public string? MerchantWebsite { get; set; }
         public int? ReceiptId { get; set; }
         public int ExpenseTableId { get; set; }
+        /// <summary>Email of the user who added the expense; null when not recorded.</summary>
+        public string? CreatedByEmail { get; set; }
+        /// <summary>True when the requesting user added this expense.</summary>
+        public bool CreatedByCurrentUser { get; set; }
     }
 }

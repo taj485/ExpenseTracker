@@ -1,0 +1,16 @@
+.steps-layout { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4xl); align-items: center; }
+.step-list { display: flex; flex-direction: column; gap: var(--spacing-xl); }
+.step { display: flex; gap: var(--spacing-base); }
+.step-num {
+  width: 34px; height: 34px; border-radius: var(--radius-full);
+  background: var(--color-bg-brand); color: var(--color-text-on-brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+}
+.step-title { font-size: 16px; font-weight: 600; margin-bottom: var(--spacing-xs); }
+.step-copy { font-size: 14px; line-height: 1.6; color: var(--color-text-secondary); }
+.steps-shot { display: flex; justify-content: center; }
+
+@media (max-width: 1080px) {
+  .steps-layout { grid-template-columns: 1fr; gap: var(--spacing-2xl); }
+}

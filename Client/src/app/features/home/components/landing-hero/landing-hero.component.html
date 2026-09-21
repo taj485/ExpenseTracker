@@ -1,0 +1,30 @@
+<section class="hero">
+  <svg class="hero-stars" viewBox="0 0 800 460" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="#FFFFFF" opacity="0.3">
+      <circle cx="60" cy="70" r="2"/><circle cx="180" cy="150" r="1.4"/>
+      <circle cx="95" cy="300" r="1.6"/><circle cx="300" cy="60" r="1.5"/>
+      <circle cx="420" cy="220" r="1.3"/><circle cx="700" cy="120" r="1.8"/>
+      <circle cx="620" cy="330" r="1.4"/><circle cx="760" cy="250" r="1.5"/>
+    </g>
+  </svg>
+
+  <div class="hero-copy">
+    <h1 class="hero-headline">Never lose a receipt.<br><em>Receipts in. Insights out.</em></h1>
+    <p class="hero-blurb">
+      Receipts end up in coat pockets, car doors and the bottom of bags &mdash; and
+      nobody notices their usual milk quietly went up 24p. ReceiptCave scans each receipt,
+      keeps it for good, and tracks what you pay per item over time.
+    </p>
+    <div class="hero-cta">
+      <button type="button" class="btn btn-on-brand" (click)="getStarted.emit()">Get started free</button>
+      <a class="btn btn-ghost-on-brand" href="#how-it-works">See how it works</a>
+    </div>
+    <p class="hero-note">No card needed &middot; Free while you are getting set up</p>
+  </div>
+
+  <div class="hero-shots">
+    <app-landing-phone screen="dashboard" />
+
+    <app-landing-phone screen="expenses" />
+  </div>
+</section>
