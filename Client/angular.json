@@ -55,6 +55,14 @@
               "extractLicenses": false,
               "sourceMap": true
             },
+            "ai": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/auth/auth-overrides.ts",
+                  "with": "src/app/core/auth/auth-overrides.ai.ts"
+                }
+              ]
+            },
             "selfhost": {
               "budgets": [
                 {
@@ -87,6 +95,9 @@
             },
             "development": {
               "buildTarget": "expense-tracker:build:development"
+            },
+            "ai": {
+              "buildTarget": "expense-tracker:build:development,ai"
             }
           },
           "options": {

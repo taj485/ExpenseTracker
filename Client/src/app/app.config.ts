@@ -7,6 +7,7 @@ import { catchError, firstValueFrom, of } from 'rxjs';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { authOverrides } from './core/auth/auth-overrides';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +25,8 @@ export const appConfig: ApplicationConfig = {
         audience: environment.auth0.audience,
       },
     }),
+    // Empty except in AI dev mode, where it swaps AuthService for DevAuthService.
+    ...authOverrides,
     // Restores the session on a fresh page load by silently checking Auth0
     // (via SSO cookie) before routing/guards run, since the in-memory token
     // cache is always empty at that point.
