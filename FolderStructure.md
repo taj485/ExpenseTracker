@@ -9,7 +9,8 @@ ExpenseTracker/
 │       ├── ci-cd.yml
 │       └── self-host-deploy.yml
 ├── .claude/
-│   └── memory.md
+│   ├── memory.md
+│   └── settings.json
 ├── Doc/
 │   └── azure-hosting-and-cicd.md
 ├── infra/
@@ -21,6 +22,7 @@ ExpenseTracker/
 │   ├── outputs.tf
 │   └── terraform.tfvars.example
 ├── Client/
+│   ├── CLAUDE.md
 │   ├── Dockerfile
 │   ├── nginx.conf
 │   ├── .dockerignore
@@ -76,7 +78,11 @@ ExpenseTracker/
 │   │       │       ├── auth.guard.ts
 │   │       │       ├── auth.guard.spec.ts
 │   │       │       ├── auth.interceptor.ts
-│   │       │       └── auth.interceptor.spec.ts
+│   │       │       ├── auth.interceptor.spec.ts
+│   │       │       ├── auth-overrides.ts
+│   │       │       ├── auth-overrides.ai.ts
+│   │       │       ├── dev-auth.service.ts
+│   │       │       └── dev-auth.service.spec.ts
 │   │       ├── layout/
 │   │       │   ├── shell/
 │   │       │   │   ├── shell.component.ts
@@ -265,6 +271,7 @@ ExpenseTracker/
 │   │       ├── CurrentUserProviderTests.cs
 │   │       └── MerchantResolverTests.cs
 │   ├── Infrastructure/
+│   │   ├── AuthenticationRegistrationTests.cs
 │   │   ├── ExpenseRepositoryTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
@@ -286,6 +293,7 @@ ExpenseTracker/
 │   └── appsettings.json
 │
 ├── ExpenseTracker.Application/
+│   ├── CLAUDE.md
 │   ├── Behaviours/
 │   │   └── ValidationBehaviour.cs
 │   ├── Commands/
@@ -393,7 +401,8 @@ ExpenseTracker/
     ├── Migrations/
     ├── Auth/
     │   ├── AuthenticationServiceCollectionExtensions.cs
-    │   └── CurrentUserService.cs
+    │   ├── CurrentUserService.cs
+    │   └── DevBypassAuthenticationHandler.cs
     ├── AI/
     │   ├── GeminiOptions.cs
     │   └── GeminiReceiptExtractionService.cs

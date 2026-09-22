@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:ai": "ng serve --configuration ai",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
