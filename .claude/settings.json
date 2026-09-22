@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./**/dist/**)",
+      "Read(./**/bin/**)",
+      "Read(./**/obj/**)",
+      "Read(./**/.angular/**)",
+      "Read(./**/package-lock.json)",
+      "Read(./**/Migrations/*.Designer.cs)",
+      "Read(./hs_err_pid*.log)"
+    ]
+  }
+}

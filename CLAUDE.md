@@ -1,9 +1,10 @@
 @.claude/memory.md
-@FolderStructure.md
 
-
-## CSS conventions
-- Never use `nth-child` selectors to target columns/elements — add a human-readable class name instead (e.g., `.col-date` rather than `td:nth-child(1)`), so styles stay readable and don't break silently if ordering changes.
+## Repo map
+- `Client/`: Angular SPA. Conventions in `Client/CLAUDE.md`.
+- `ExpenseTrackerAPI/`, `ExpenseTracker.Application/`, `.Domain/`, `.Infrastructure/`, `.Tests/`: .NET API (Clean Architecture). Conventions in `ExpenseTracker.Application/CLAUDE.md`.
+- Full file map: `FolderStructure.md`. Don't read it up front; use the `folder-structure` skill when you need to find something.
+- To run locally without Auth0, use AI dev mode (see README).
 
 ## Git conventions
 - Branch naming: feat/short-description, fix/issue-number-description

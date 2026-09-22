@@ -8,9 +8,10 @@ Only follow this 3-step process when making changes to the project (creating, ed
 
 For read-only tasks (builds, searches, analysis, running tests) — just do it directly.
 
+Exception: the `developer` agent implementing a spec with `status: ready` in `recave-specs`. The ready spec is the approved plan and the branch diff is the "show" step, so it works without stopping for approval.
+
 ## Scope
-- Only read files inside `c:\Users\Main\Documents\Projects\ExpenseTracker`
-- Only edit files inside `c:\Users\Main\Documents\Projects\ExpenseTracker`
+- Only read and edit files inside the Recave folders under `c:\Users\Main\Documents\Projects\`: `ExpenseTracker`, `expensetracker-mobile`, `recave-specs`
 - All memory is written to `.claude\memory.md` in this project — never to `C:\Users\Main\.claude\projects`
 
 ## Folder Structure

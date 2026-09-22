@@ -9,7 +9,8 @@ ExpenseTracker/
 │       ├── ci-cd.yml
 │       └── self-host-deploy.yml
 ├── .claude/
-│   └── memory.md
+│   ├── memory.md
+│   └── settings.json
 ├── Doc/
 │   └── azure-hosting-and-cicd.md
 ├── infra/
@@ -21,6 +22,7 @@ ExpenseTracker/
 │   ├── outputs.tf
 │   └── terraform.tfvars.example
 ├── Client/
+│   ├── CLAUDE.md
 │   ├── Dockerfile
 │   ├── nginx.conf
 │   ├── .dockerignore
@@ -291,6 +293,7 @@ ExpenseTracker/
 │   └── appsettings.json
 │
 ├── ExpenseTracker.Application/
+│   ├── CLAUDE.md
 │   ├── Behaviours/
 │   │   └── ValidationBehaviour.cs
 │   ├── Commands/
