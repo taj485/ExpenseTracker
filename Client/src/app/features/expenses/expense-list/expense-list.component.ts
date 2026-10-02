@@ -66,6 +66,9 @@ export class ExpenseListComponent implements OnInit {
 
   getCategoryMeta = getCategoryMeta;
 
+  /** Keys of receipt cards folded down to their header. Every card starts expanded. */
+  readonly collapsedReceipts = signal<ReadonlySet<string>>(new Set());
+
   readonly deletingId  = signal<number | null>(null);
   readonly actionError = signal<string | null>(null);
 
@@ -240,6 +243,24 @@ export class ExpenseListComponent implements OnInit {
 
   nextPage(): void {
     this.goToPage(this.safeCurrentPage() + 1);
+  }
+
+  isCollapsed(key: string): boolean {
+    return this.collapsedReceipts().has(key);
+  }
+
+  toggleReceipt(key: string): void {
+    this.collapsedReceipts.update(current => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
+  /** Receipt lines open the receipt page (which links on to each item); standalone expenses open directly. */
+  openItem(receipt: ReceiptCard, expenseId: number): void {
+    if (receipt.receiptId !== null) this.viewReceipt(receipt.receiptId);
+    else this.viewExpense(expenseId);
   }
 
   viewExpense(id: number): void {

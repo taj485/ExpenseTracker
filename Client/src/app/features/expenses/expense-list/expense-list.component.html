@@ -94,8 +94,14 @@
     @for (receipt of pagedReceipts(); track receipt.key) {
       <div class="receipt-card">
         <div class="receipt-head"
-             [class.is-linked]="receipt.receiptId !== null"
-             (click)="receipt.receiptId !== null && viewReceipt(receipt.receiptId)">
+             role="button"
+             tabindex="0"
+             [class.is-collapsed]="isCollapsed(receipt.key)"
+             [attr.aria-expanded]="!isCollapsed(receipt.key)"
+             [attr.aria-controls]="'items-' + receipt.key"
+             (click)="toggleReceipt(receipt.key)"
+             (keydown.enter)="toggleReceipt(receipt.key)"
+             (keydown.space)="$event.preventDefault(); toggleReceipt(receipt.key)">
           <app-merchant-logo [merchant]="receipt.merchant" [website]="receipt.merchantWebsite" />
 
           <div class="receipt-ident">
@@ -114,9 +120,10 @@
           <div class="receipt-total">£{{ receipt.total | number:'1.2-2' }}</div>
         </div>
 
-        <div class="receipt-items">
+        @if (!isCollapsed(receipt.key)) {
+        <div class="receipt-items" [id]="'items-' + receipt.key">
           @for (expense of receipt.expenses; track expense.id) {
-            <div class="receipt-item" (click)="viewExpense(expense.id)">
+            <div class="receipt-item" (click)="openItem(receipt, expense.id)">
               <div class="item-info">
                 <span class="item-name">{{ expense.description }}</span>
                 <span class="badge" [class]="getCategoryMeta(expense.category).badgeClass">
@@ -136,6 +143,7 @@
             </div>
           }
         </div>
+        }
       </div>
     }
 
