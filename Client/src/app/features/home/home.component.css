@@ -48,7 +48,7 @@
   display: flex; align-items: center; gap: var(--spacing-xl);
   margin-left: var(--spacing-2xl); flex: 1;
 }
-.marketing-link { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); cursor: pointer; }
+.marketing-link { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); text-decoration: none; }
 .marketing-link:hover { color: var(--color-text-primary); }
 .marketing-actions { display: flex; align-items: center; gap: var(--spacing-md); }
 
