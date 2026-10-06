@@ -42,7 +42,8 @@
   </div>
 
   <!-- One period (default: this week) or any number of months, kept in date order. -->
-  <div class="filter-bar" role="group" aria-label="Filter by date">
+  <div class="filter-bar">
+    <div class="chip-scroll" appHorizontalWheelScroll role="group" aria-label="Filter by date">
     @for (period of periods; track period) {
       <button type="button" class="category-chip"
               [class.is-selected]="selectedPeriod() === period"
@@ -59,12 +60,14 @@
               [attr.aria-pressed]="selectedMonths().includes(month.key)"
               (click)="toggleMonthFilter(month.key)">{{ month.label }}</button>
     }
+    </div>
 
+    <!-- Outside the scrolling row so it stays in view. -->
     <button class="btn btn-secondary" (click)="resetFilters()">Reset</button>
   </div>
 
   <!-- Multi-select: selected chips move to the front, most recently picked first. -->
-  <div class="category-chips" role="group" aria-label="Filter by category">
+  <div class="category-chips chip-scroll" appHorizontalWheelScroll role="group" aria-label="Filter by category">
     <button type="button" class="category-chip"
             [class.is-selected]="selectedCategories().length === 0"
             [attr.aria-pressed]="selectedCategories().length === 0"
@@ -82,7 +85,7 @@
 
   @if (weekDayTabs().length > 0) {
     <!-- Drill into one day of the selected week; the last tab is the whole week (the default). -->
-    <div #dayTabs class="underline-tabs" role="tablist" aria-label="Filter by day">
+    <div #dayTabs class="underline-tabs" appHorizontalWheelScroll role="tablist" aria-label="Filter by day">
       @for (day of weekDayTabs(); track day.key) {
         <button type="button" role="tab" class="underline-tab"
                 [class.is-selected]="selectedDay()?.key === day.key"

@@ -121,7 +121,6 @@
   gap: 10px;
   align-items: center;
   margin-bottom: 16px;
-  flex-wrap: wrap;
 }
 
 
@@ -141,12 +140,7 @@
 .members-link:hover { background: var(--color-bg-brand-soft); }
 
 /* ---------- Category chips (multi-select filter) ---------- */
-.category-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-base);
-}
+.category-chips { margin-bottom: var(--spacing-base); }
 
 .category-chip {
   padding: 6px 14px;

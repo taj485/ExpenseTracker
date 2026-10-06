@@ -177,8 +177,8 @@ html, body {
   display: flex;
   overflow-x: auto;
   overflow-y: hidden;
-  /* Thin rather than hidden, so mouse users can still scroll when the tabs overflow. */
-  scrollbar-width: thin;
+  /* Hidden like the mobile app; appHorizontalWheelScroll lets a mouse wheel scroll it. */
+  scrollbar-width: none;
   border-bottom: 1px solid var(--color-border-default);
   margin-bottom: var(--spacing-base);
 }
@@ -216,3 +216,16 @@ html, body {
 }
 
 .underline-tab:disabled { color: var(--color-text-muted); cursor: default; }
+
+/* ---------- Chip rows that scroll sideways on one line, like the mobile app ---------- */
+.chip-scroll {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  /* Hidden like the mobile app; appHorizontalWheelScroll lets a mouse wheel scroll it. */
+  scrollbar-width: none;
+}
+
+.chip-scroll > * { flex-shrink: 0; white-space: nowrap; }

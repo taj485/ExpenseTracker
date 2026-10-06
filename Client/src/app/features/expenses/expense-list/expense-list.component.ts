@@ -7,6 +7,7 @@ import { ExpenseTableService } from '../../../core/services/expense-table.servic
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { MerchantLogoComponent } from '../../../shared/merchant-logo/merchant-logo.component';
+import { HorizontalWheelScrollDirective } from '../../../shared/horizontal-wheel-scroll.directive';
 import { MembersDialogComponent } from '../../expense-table/members-dialog.component';
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
@@ -40,7 +41,7 @@ interface ReceiptCard {
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, ConfirmDialogComponent, ShareTablePromptComponent, MembersDialogComponent, MerchantLogoComponent],
+  imports: [DecimalPipe, DatePipe, ConfirmDialogComponent, ShareTablePromptComponent, MembersDialogComponent, MerchantLogoComponent, HorizontalWheelScrollDirective],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

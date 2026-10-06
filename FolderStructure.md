@@ -98,6 +98,8 @@ ExpenseTracker/
 │   │       │       └── topbar.component.css
 │   │       ├── shared/
 │   │       │   ├── drag-to-dismiss.directive.ts
+│   │       │   ├── horizontal-wheel-scroll.directive.ts
+│   │       │   ├── horizontal-wheel-scroll.directive.spec.ts
 │   │       │   ├── confirm-dialog/
 │   │       │   │   ├── confirm-dialog.component.ts
 │   │       │   │   ├── confirm-dialog.component.html
