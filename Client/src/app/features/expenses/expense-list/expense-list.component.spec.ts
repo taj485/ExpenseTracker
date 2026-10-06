@@ -6,7 +6,7 @@ import { ExpenseListComponent } from './expense-list.component';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { Expense } from '../../../core/models/expense.model';
-import { formatDayLabel, periodRange, todayLocalISODate, weekDays } from '../../../core/utils/date.utils';
+import { currentMonthKey, formatDayLabel, periodRange, todayLocalISODate, weekDays } from '../../../core/utils/date.utils';
 
 describe('ExpenseListComponent', () => {
   let component: ExpenseListComponent;
@@ -52,9 +52,11 @@ describe('ExpenseListComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/expenses/table', 7, 5]);
   });
 
-  it('opens on this week when no date filter is set', () => {
-    expect(component.selectedPeriod()).toBe('this-week');
-    expect(component.totalLabel()).toBe('This Week');
+  it('opens on the current month when no date filter is set', () => {
+    expect(component.selectedMonths()).toEqual([currentMonthKey()]);
+    expect(component.selectedPeriod()).toBeNull();
+    expect(component.weekDayTabs()).toEqual([]);
+    expect(component.totalLabel()).toBe('This Month');
   });
 
   it('picks a period and clears any month', () => {
@@ -65,32 +67,19 @@ describe('ExpenseListComponent', () => {
     }));
   });
 
-  it('shows all months when the selected period is picked again', () => {
-    component.selectPeriod('this-week');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { period: 'all', month: null, weekday: null } }));
+  it('adds a month to the default current month, dropping any period', () => {
+    component.toggleMonthFilter('2020-01');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: `${currentMonthKey()},2020-01`, period: null, weekday: null } }));
   });
 
-  it('drops the period when a month is picked', () => {
-    component.toggleMonthFilter('2026-09');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', period: null, weekday: null } }));
-  });
-
-  it('stores All months explicitly, so it does not fall back to this week', () => {
-    component.clearMonths();
+  it('shows all months when the default current month is unticked', () => {
+    component.toggleMonthFilter(currentMonthKey());
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: 'all', weekday: null } }));
   });
 
-  it('shows the day tabs for this week, with the whole week selected', () => {
-    expect(component.weekDayTabs().map(d => d.key)).toEqual(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
-    expect(component.selectedDay()).toBeNull();
-  });
-
-  it('narrows to a day, and back to the whole week', () => {
-    component.selectDay(component.weekDayTabs()[0]);
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: 'mon' } }));
-
-    component.selectDay(null);
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: null } }));
+  it('stores All months explicitly, so it does not fall back to the current month', () => {
+    component.clearMonths();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: 'all', weekday: null } }));
   });
 
   it('stores the search without adding a Back step, and drops it when blank', () => {
@@ -101,7 +90,7 @@ describe('ExpenseListComponent', () => {
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { q: null }, replaceUrl: true }));
   });
 
-  it('goes back to the default (this week) on reset', () => {
+  it('goes back to the default (current month) on reset', () => {
     component.resetFilters();
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: null, weekday: null, category: null, q: null } }));
   });
@@ -132,12 +121,42 @@ describe('ExpenseListComponent date periods', () => {
     expenseOn(4, '2020-01-01', 7),
   ];
 
-  it('shows only this week by default', () => {
+  it('shows only the current month by default', () => {
     const ids = createWithQuery({}, expenses).filteredExpenses().map(e => e.id);
+    expect(ids).toContain(1);
+    expect(ids).not.toContain(4);
+  });
+
+  it('shows only this week', () => {
+    const component = createWithQuery({ period: 'this-week' }, expenses);
+    const ids = component.filteredExpenses().map(e => e.id);
     expect(ids).toContain(1);
     expect(ids).toContain(2);
     expect(ids).not.toContain(3);
     expect(ids).not.toContain(4);
+    expect(component.totalLabel()).toBe('This Week');
+  });
+
+  it('shows the day tabs for this week, with the whole week selected', () => {
+    const component = createWithQuery({ period: 'this-week' }, expenses);
+    expect(component.weekDayTabs().map(d => d.key)).toEqual(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
+    expect(component.selectedDay()).toBeNull();
+  });
+
+  it('narrows to a day, and back to the whole week', () => {
+    const navigate = vi.fn();
+    const component = createWithQuery({ period: 'this-week' }, expenses, navigate);
+    component.selectDay(component.weekDayTabs()[0]);
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: 'mon' } }));
+
+    component.selectDay(null);
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: null } }));
+  });
+
+  it('shows all months when the selected period is picked again', () => {
+    const navigate = vi.fn();
+    createWithQuery({ period: 'this-week' }, expenses, navigate).selectPeriod('this-week');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { period: 'all', month: null, weekday: null } }));
   });
 
   it('shows only last week', () => {
@@ -167,7 +186,7 @@ describe('ExpenseListComponent date periods', () => {
 
   it('narrows this week to today', () => {
     const todayTab = weekDays('this-week').find(d => d.date === todayLocalISODate())!;
-    const ids = createWithQuery({ weekday: todayTab.key }, expenses).filteredExpenses().map(e => e.id);
+    const ids = createWithQuery({ period: 'this-week', weekday: todayTab.key }, expenses).filteredExpenses().map(e => e.id);
     expect(ids).toContain(1);
     expect(ids).not.toContain(3);
   });

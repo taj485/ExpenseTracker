@@ -14,7 +14,7 @@ import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { matchesSearch, orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
-import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
+import { DATE_PERIODS, DatePeriod, WeekDay, currentMonthKey, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -84,16 +84,21 @@ export class ExpenseListComponent implements OnInit {
   private readonly queryParams = toSignal(this.route.queryParamMap);
 
   /** One or more months (?month=2026-10,2026-09), newest first. */
-  readonly selectedMonths = computed(() => parseMonthParam(this.queryParams()?.get('month') ?? null));
+  /** With no ?month and no ?period the list opens on the current month. */
+  readonly selectedMonths = computed(() => {
+    const months = parseMonthParam(this.queryParams()?.get('month') ?? null);
+    const period = this.queryParams()?.get('period');
+    const hasPeriod = period === 'all' || DATE_PERIODS.includes(period as DatePeriod);
+    return months.length > 0 || hasPeriod ? months : [currentMonthKey()];
+  });
   /**
    * ?period=this-week|last-week|today, or null for month-based filtering (?period=all or any
-   * ?month). With neither param the list opens on this week.
+   * ?month, including the default current month).
    */
   readonly selectedPeriod = computed<DatePeriod | null>(() => {
     if (this.selectedMonths().length > 0) return null;
     const period = this.queryParams()?.get('period');
-    if (period === 'all') return null;
-    return DATE_PERIODS.includes(period as DatePeriod) ? (period as DatePeriod) : 'this-week';
+    return DATE_PERIODS.includes(period as DatePeriod) ? (period as DatePeriod) : null;
   });
   readonly periods = DATE_PERIODS;
   readonly periodLabels: Record<DatePeriod, string> = { 'this-week': 'This week', 'last-week': 'Last week', today: 'Today' };
