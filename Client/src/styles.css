@@ -229,3 +229,51 @@ html, body {
 }
 
 .chip-scroll > * { flex-shrink: 0; white-space: nowrap; }
+
+/* ---------- Search bar (icon, input, clear button) ---------- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-sm) 0 var(--spacing-md);
+  margin-bottom: var(--spacing-base);
+  border: 1.5px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+}
+
+.search-bar:focus-within { border-color: var(--color-border-focus); }
+
+.search-bar svg { flex-shrink: 0; width: 18px; height: 18px; }
+
+.search-bar input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--spacing-md) 0;
+  border: none;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
+.search-bar input::placeholder { color: var(--color-text-muted); }
+
+/* Our own clear button replaces the browser's. */
+.search-bar input::-webkit-search-cancel-button { appearance: none; }
+
+.search-clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-clear:hover { background: var(--color-bg-surface-alt); color: var(--color-text-primary); }

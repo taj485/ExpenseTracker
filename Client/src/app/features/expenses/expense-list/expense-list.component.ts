@@ -12,7 +12,7 @@ import { MembersDialogComponent } from '../../expense-table/members-dialog.compo
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
-import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
+import { matchesSearch, orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
 import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
 
@@ -112,6 +112,8 @@ export class ExpenseListComponent implements OnInit {
   /** One or more categories (?category=Food,Health), most recently selected first. */
   readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
   readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
+  /** ?q= text matched against product names and shops. */
+  readonly searchQuery = computed(() => this.queryParams()?.get('q') ?? '');
 
   readonly availableMonths = computed(() => {
     const now = new Date();
@@ -141,6 +143,9 @@ export class ExpenseListComponent implements OnInit {
 
     const categories = this.selectedCategories();
     if (categories.length > 0) list = list.filter(e => categories.includes(e.category));
+
+    const query = this.searchQuery();
+    if (query.trim()) list = list.filter(e => matchesSearch(e, query));
 
     return list;
   });
@@ -295,14 +300,21 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, period: null, weekday: null, category: null });
+    this.updateQueryParams({ month: null, period: null, weekday: null, category: null, q: null });
   }
 
-  private updateQueryParams(params: Record<string, string | null>): void {
+  /** Replaces the URL rather than pushing, so each keystroke doesn't add a Back step. */
+  onSearch(value: string): void {
+    this.currentPage.set(1);
+    this.updateQueryParams({ q: value.trim() ? value : null }, true);
+  }
+
+  private updateQueryParams(params: Record<string, string | null>, replaceUrl = false): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
       queryParamsHandling: 'merge',
+      replaceUrl,
     });
   }
 

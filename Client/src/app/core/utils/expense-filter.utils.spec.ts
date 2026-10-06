@@ -1,4 +1,4 @@
-import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from './expense-filter.utils';
+import { matchesSearch, orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from './expense-filter.utils';
 
 describe('parseCategoryParam', () => {
   it('returns no categories for a missing or empty param', () => {
@@ -61,5 +61,26 @@ describe('toggleMonth', () => {
 
   it('removes a month that is already selected', () => {
     expect(toggleMonth(['2026-10', '2026-09'], '2026-10')).toEqual(['2026-09']);
+  });
+});
+
+describe('matchesSearch', () => {
+  const chocolate = { description: 'Dark Chocolate', merchant: 'Asda' };
+
+  it('matches part of the product name, ignoring case and surrounding spaces', () => {
+    expect(matchesSearch(chocolate, '  CHOC ')).toBe(true);
+  });
+
+  it('matches the shop', () => {
+    expect(matchesSearch(chocolate, 'asda')).toBe(true);
+  });
+
+  it('rejects text in neither', () => {
+    expect(matchesSearch(chocolate, 'milk')).toBe(false);
+  });
+
+  it('matches everything for a blank query, and copes with no shop', () => {
+    expect(matchesSearch(chocolate, '   ')).toBe(true);
+    expect(matchesSearch({ description: 'Bus fare', merchant: null }, 'tesco')).toBe(false);
   });
 });

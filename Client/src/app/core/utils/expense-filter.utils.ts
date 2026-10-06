@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '../models/expense.model';
+import { Expense, ExpenseCategory } from '../models/expense.model';
 import { ALL_CATEGORIES } from './category.utils';
 
 /**
@@ -41,4 +41,11 @@ function newestFirst(months: string[]): string[] {
 /** Chip order: selected categories first (latest first), then the rest in their usual order. */
 export function orderCategoryChips(selected: ExpenseCategory[]): ExpenseCategory[] {
   return [...selected, ...ALL_CATEGORIES.filter(c => !selected.includes(c))];
+}
+
+/** Case-insensitive match on the product name or the shop. A blank query matches everything. */
+export function matchesSearch(expense: Pick<Expense, 'description' | 'merchant'>, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return expense.description.toLowerCase().includes(needle) || (expense.merchant ?? '').toLowerCase().includes(needle);
 }

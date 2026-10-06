@@ -93,9 +93,17 @@ describe('ExpenseListComponent', () => {
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: null } }));
   });
 
+  it('stores the search without adding a Back step, and drops it when blank', () => {
+    component.onSearch('choc');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { q: 'choc' }, replaceUrl: true }));
+
+    component.onSearch('   ');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { q: null }, replaceUrl: true }));
+  });
+
   it('goes back to the default (this week) on reset', () => {
     component.resetFilters();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: null, weekday: null, category: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: null, weekday: null, category: null, q: null } }));
   });
 });
 
@@ -216,5 +224,28 @@ describe('ExpenseListComponent with several months selected', () => {
   it('removes a selected month', () => {
     component.toggleMonthFilter('2026-10');
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08', period: null, weekday: null } }));
+  });
+});
+
+describe('ExpenseListComponent search', () => {
+  const expenses = [
+    { id: 1, date: '2026-09-01T00:00:00', description: 'Dark Chocolate', merchant: 'Asda', unitPrice: 2, quantity: 1, category: 'Food' },
+    { id: 2, date: '2026-09-01T00:00:00', description: 'Milk', merchant: 'Asda', unitPrice: 1, quantity: 1, category: 'Food' },
+    { id: 3, date: '2026-09-02T00:00:00', description: 'Chocolate cake', merchant: 'Tesco', unitPrice: 5, quantity: 1, category: 'Food' },
+    { id: 4, date: '2020-01-01T00:00:00', description: 'Chocolate', merchant: null, unitPrice: 9, quantity: 1, category: 'Food' },
+  ] as Expense[];
+
+  it('matches product names, and the stats follow', () => {
+    const component = createWithQuery({ period: 'all', q: 'choc' }, expenses);
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([1, 3, 4]);
+    expect(component.filteredTotal()).toBe(16);
+  });
+
+  it('matches shops', () => {
+    expect(createWithQuery({ period: 'all', q: 'asda' }, expenses).filteredExpenses().map(e => e.id)).toEqual([1, 2]);
+  });
+
+  it('combines with the date filter', () => {
+    expect(createWithQuery({ month: '2026-09', q: 'choc' }, expenses).filteredExpenses().map(e => e.id)).toEqual([1, 3]);
   });
 });
