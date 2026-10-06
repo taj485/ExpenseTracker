@@ -41,15 +41,17 @@
     }
   </div>
 
-  <!-- Multi-select months, kept in date order. Today and months clear each other. -->
+  <!-- One period (default: this week) or any number of months, kept in date order. -->
   <div class="filter-bar" role="group" aria-label="Filter by date">
+    @for (period of periods; track period) {
+      <button type="button" class="category-chip"
+              [class.is-selected]="selectedPeriod() === period"
+              [attr.aria-pressed]="selectedPeriod() === period"
+              (click)="selectPeriod(period)">{{ periodLabels[period] }}</button>
+    }
     <button type="button" class="category-chip"
-            [class.is-selected]="isTodayFilter()"
-            [attr.aria-pressed]="isTodayFilter()"
-            (click)="toggleToday()">Today</button>
-    <button type="button" class="category-chip"
-            [class.is-selected]="!isTodayFilter() && selectedMonths().length === 0"
-            [attr.aria-pressed]="!isTodayFilter() && selectedMonths().length === 0"
+            [class.is-selected]="!selectedPeriod() && selectedMonths().length === 0"
+            [attr.aria-pressed]="!selectedPeriod() && selectedMonths().length === 0"
             (click)="clearMonths()">All months</button>
     @for (month of availableMonths(); track month.key) {
       <button type="button" class="category-chip"
@@ -83,7 +85,7 @@
       <div class="st-label">{{ totalLabel() }}</div>
       <div class="st-value">£{{ filteredTotal() | number:'1.2-2' }}</div>
     </div>
-    @if (selectedMonths().length === 0 && !isTodayFilter()) {
+    @if (selectedMonths().length === 0 && !selectedPeriod()) {
       <div class="stat-card">
         <div class="st-label">This Month</div>
         <div class="st-value">£{{ store.currentMonthSpent() | number:'1.2-2' }}</div>
@@ -158,7 +160,7 @@
 
     @empty {
       <p class="empty-state">
-        @if (isTodayFilter() || selectedMonths().length > 0 || selectedCategories().length > 0) {
+        @if (store.expenses().length > 0) {
           No expenses match this filter.
         } @else {
           No expenses yet. Add one on the right, or scan a receipt.

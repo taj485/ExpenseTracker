@@ -13,7 +13,7 @@ import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
-import { todayLocalISODate } from '../../../core/utils/date.utils';
+import { DATE_PERIODS, DatePeriod, periodRange } from '../../../core/utils/date.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -82,8 +82,18 @@ export class ExpenseListComponent implements OnInit {
 
   /** One or more months (?month=2026-10,2026-09), newest first. */
   readonly selectedMonths = computed(() => parseMonthParam(this.queryParams()?.get('month') ?? null));
-  /** ?day=today. Mutually exclusive with ?month, since one day always sits inside one month. */
-  readonly isTodayFilter = computed(() => this.queryParams()?.get('day') === 'today');
+  /**
+   * ?period=this-week|last-week|today, or null for month-based filtering (?period=all or any
+   * ?month). With neither param the list opens on this week.
+   */
+  readonly selectedPeriod = computed<DatePeriod | null>(() => {
+    if (this.selectedMonths().length > 0) return null;
+    const period = this.queryParams()?.get('period');
+    if (period === 'all') return null;
+    return DATE_PERIODS.includes(period as DatePeriod) ? (period as DatePeriod) : 'this-week';
+  });
+  readonly periods = DATE_PERIODS;
+  readonly periodLabels: Record<DatePeriod, string> = { 'this-week': 'This week', 'last-week': 'Last week', today: 'Today' };
   /** One or more categories (?category=Food,Health), most recently selected first. */
   readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
   readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
@@ -107,9 +117,10 @@ export class ExpenseListComponent implements OnInit {
     const months = this.selectedMonths();
     if (months.length > 0) list = list.filter(e => months.includes(e.date.slice(0, 7)));
 
-    if (this.isTodayFilter()) {
-      const today = todayLocalISODate();
-      list = list.filter(e => e.date.slice(0, 10) === today);
+    const period = this.selectedPeriod();
+    if (period) {
+      const { start, end } = periodRange(period);
+      list = list.filter(e => e.date.slice(0, 10) >= start && e.date.slice(0, 10) <= end);
     }
 
     const categories = this.selectedCategories();
@@ -125,7 +136,8 @@ export class ExpenseListComponent implements OnInit {
   readonly filteredCount = computed(() => this.filteredExpenses().length);
 
   readonly totalLabel = computed(() => {
-    if (this.isTodayFilter()) return 'Today';
+    const period = this.selectedPeriod();
+    if (period) return { 'this-week': 'This Week', 'last-week': 'Last Week', today: 'Today' }[period];
     const count = this.selectedMonths().length;
     if (count === 1) return 'This Month';
     return count > 1 ? `${count} Months` : 'Total';
@@ -217,17 +229,19 @@ export class ExpenseListComponent implements OnInit {
   toggleMonthFilter(month: string): void {
     this.currentPage.set(1);
     const next = toggleMonth(this.selectedMonths(), month);
-    this.updateQueryParams({ month: next.length > 0 ? next.join(',') : null, day: null });
+    // Unticking the last month means "all months"; without period=all the list would fall back to this week.
+    this.updateQueryParams(next.length > 0 ? { month: next.join(','), period: null } : { month: null, period: 'all' });
   }
 
   clearMonths(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, day: null });
+    this.updateQueryParams({ month: null, period: 'all' });
   }
 
-  toggleToday(): void {
+  /** Picks a period; picking the selected one again shows all months. */
+  selectPeriod(period: DatePeriod): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ day: this.isTodayFilter() ? null : 'today', month: null });
+    this.updateQueryParams({ period: this.selectedPeriod() === period ? 'all' : period, month: null });
   }
 
   toggleCategoryFilter(category: ExpenseCategory): void {
@@ -248,7 +262,7 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, day: null, category: null });
+    this.updateQueryParams({ month: null, period: null, category: null });
   }
 
   private updateQueryParams(params: Record<string, string | null>): void {

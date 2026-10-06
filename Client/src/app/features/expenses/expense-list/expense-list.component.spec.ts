@@ -6,7 +6,7 @@ import { ExpenseListComponent } from './expense-list.component';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { Expense } from '../../../core/models/expense.model';
-import { todayLocalISODate } from '../../../core/utils/date.utils';
+import { periodRange, todayLocalISODate } from '../../../core/utils/date.utils';
 
 describe('ExpenseListComponent', () => {
   let component: ExpenseListComponent;
@@ -52,51 +52,95 @@ describe('ExpenseListComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/expenses/table', 7, 5]);
   });
 
-  it('turns on the Today filter and clears any month', () => {
-    component.toggleToday();
+  it('opens on this week when no date filter is set', () => {
+    expect(component.selectedPeriod()).toBe('this-week');
+    expect(component.totalLabel()).toBe('This Week');
+  });
+
+  it('picks a period and clears any month', () => {
+    component.selectPeriod('last-week');
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { day: 'today', month: null },
+      queryParams: { period: 'last-week', month: null },
       queryParamsHandling: 'merge',
     }));
   });
 
-  it('turns the Today filter off when a month is picked', () => {
+  it('shows all months when the selected period is picked again', () => {
+    component.selectPeriod('this-week');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { period: 'all', month: null } }));
+  });
+
+  it('drops the period when a month is picked', () => {
     component.toggleMonthFilter('2026-09');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', day: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', period: null } }));
   });
 
-  it('clears every month and the Today filter from All months', () => {
+  it('stores All months explicitly, so it does not fall back to this week', () => {
     component.clearMonths();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, day: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: 'all' } }));
   });
 
-  it('clears the Today filter on reset', () => {
+  it('goes back to the default (this week) on reset', () => {
     component.resetFilters();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, day: null, category: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: null, category: null } }));
   });
 });
 
-describe('ExpenseListComponent with ?day=today', () => {
-  it('shows only expenses dated today', () => {
-    const today = todayLocalISODate();
-    const expenses = [
-      { id: 1, date: `${today}T00:00:00`, unitPrice: 2, quantity: 1, category: 'Food' },
-      { id: 2, date: '2020-01-01T00:00:00', unitPrice: 5, quantity: 1, category: 'Food' },
-    ] as Expense[];
+function createWithQuery(query: Record<string, string>, expenses: Expense[], navigate = vi.fn()): ExpenseListComponent {
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: Router, useValue: { navigate } },
+      { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap(query)) } },
+      { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
+      { provide: ExpenseTableService, useValue: { tables: signal([]) } },
+    ],
+  });
+  return TestBed.runInInjectionContext(() => new ExpenseListComponent());
+}
 
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: Router, useValue: { navigate: vi.fn() } },
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap({ day: 'today' })) } },
-        { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
-        { provide: ExpenseTableService, useValue: { tables: signal([]) } },
-      ],
-    });
-    const component = TestBed.runInInjectionContext(() => new ExpenseListComponent());
+describe('ExpenseListComponent date periods', () => {
+  const expenseOn = (id: number, day: string, unitPrice: number) =>
+    ({ id, date: `${day}T00:00:00`, unitPrice, quantity: 1, category: 'Food' }) as Expense;
 
-    expect(component.isTodayFilter()).toBe(true);
-    expect(component.filteredExpenses().map(e => e.id)).toEqual([1]);
-    expect(component.filteredTotal()).toBe(2);
+  const thisWeek = periodRange('this-week');
+  const lastWeek = periodRange('last-week');
+  const expenses = [
+    expenseOn(1, todayLocalISODate(), 2),
+    expenseOn(2, thisWeek.start, 3),
+    expenseOn(3, lastWeek.end, 5),
+    expenseOn(4, '2020-01-01', 7),
+  ];
+
+  it('shows only this week by default', () => {
+    const ids = createWithQuery({}, expenses).filteredExpenses().map(e => e.id);
+    expect(ids).toContain(1);
+    expect(ids).toContain(2);
+    expect(ids).not.toContain(3);
+    expect(ids).not.toContain(4);
+  });
+
+  it('shows only last week', () => {
+    expect(createWithQuery({ period: 'last-week' }, expenses).filteredExpenses().map(e => e.id)).toEqual([3]);
+  });
+
+  it('shows only today', () => {
+    const component = createWithQuery({ period: 'today' }, expenses);
+    expect(component.filteredExpenses().map(e => e.id)).toContain(1);
+    expect(component.filteredExpenses().map(e => e.id)).not.toContain(3);
+    expect(component.totalLabel()).toBe('Today');
+  });
+
+  it('shows everything for period=all', () => {
+    const component = createWithQuery({ period: 'all' }, expenses);
+    expect(component.selectedPeriod()).toBeNull();
+    expect(component.filteredCount()).toBe(4);
+    expect(component.totalLabel()).toBe('Total');
+  });
+
+  it('lets a month in the URL win over a period', () => {
+    const component = createWithQuery({ period: 'today', month: '2020-01' }, expenses);
+    expect(component.selectedPeriod()).toBeNull();
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([4]);
   });
 });
 
@@ -132,11 +176,11 @@ describe('ExpenseListComponent with several months selected', () => {
 
   it('adds a month to the selection', () => {
     component.toggleMonthFilter('2026-09');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-10,2026-09,2026-08', day: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-10,2026-09,2026-08', period: null } }));
   });
 
   it('removes a selected month', () => {
     component.toggleMonthFilter('2026-10');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08', day: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08', period: null } }));
   });
 });

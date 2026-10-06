@@ -5,11 +5,34 @@ export interface MonthOption {
 }
 
 export function todayLocalISODate(): string {
-  const d = new Date();
+  return localISODate(new Date());
+}
+
+function localISODate(d: Date): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/** A rolling date filter on the expense list. Weeks run Monday to Sunday. */
+export type DatePeriod = 'this-week' | 'last-week' | 'today';
+
+export const DATE_PERIODS: readonly DatePeriod[] = ['this-week', 'last-week', 'today'];
+
+/** First and last local day ('YYYY-MM-DD', inclusive) of a period, relative to `now`. */
+export function periodRange(period: DatePeriod, now = new Date()): { start: string; end: string } {
+  if (period === 'today') {
+    const today = localISODate(now);
+    return { start: today, end: today };
+  }
+  // getDay() is 0 for Sunday, so shift it to make Monday day 0.
+  const daysSinceMonday = (now.getDay() + 6) % 7;
+  const weeksBack = period === 'last-week' ? 1 : 0;
+  // Building from y/m/d lets Date roll over month and year ends, and dodges DST hour shifts.
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday - 7 * weeksBack);
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  return { start: localISODate(monday), end: localISODate(sunday) };
 }
 
 // Local date fields throughout, matching todayLocalISODate — an expense dated the 1st at
