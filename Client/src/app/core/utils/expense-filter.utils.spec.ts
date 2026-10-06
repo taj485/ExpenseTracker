@@ -1,4 +1,4 @@
-import { orderCategoryChips, parseCategoryParam, toggleCategory } from './expense-filter.utils';
+import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from './expense-filter.utils';
 
 describe('parseCategoryParam', () => {
   it('returns no categories for a missing or empty param', () => {
@@ -36,5 +36,30 @@ describe('orderCategoryChips', () => {
 
   it('puts selected categories first, then the rest in their usual order', () => {
     expect(orderCategoryChips(['Health', 'Transport'])).toEqual(['Health', 'Transport', 'Food', 'Utilities', 'Entertainment']);
+  });
+});
+
+describe('parseMonthParam', () => {
+  it('returns no months for a missing or empty param', () => {
+    expect(parseMonthParam(null)).toEqual([]);
+    expect(parseMonthParam('')).toEqual([]);
+  });
+
+  it('parses a single month, so older single-month links keep working', () => {
+    expect(parseMonthParam('2026-09')).toEqual(['2026-09']);
+  });
+
+  it('sorts newest first and drops malformed values, duplicates and spaces', () => {
+    expect(parseMonthParam(' 2026-08,2026-10,nope,2026-8,2026-10 ')).toEqual(['2026-10', '2026-08']);
+  });
+});
+
+describe('toggleMonth', () => {
+  it('adds a month in date order', () => {
+    expect(toggleMonth(['2026-10', '2026-07'], '2026-09')).toEqual(['2026-10', '2026-09', '2026-07']);
+  });
+
+  it('removes a month that is already selected', () => {
+    expect(toggleMonth(['2026-10', '2026-09'], '2026-10')).toEqual(['2026-09']);
   });
 });

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
@@ -12,7 +11,7 @@ import { MembersDialogComponent } from '../../expense-table/members-dialog.compo
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
-import { orderCategoryChips, parseCategoryParam, toggleCategory } from '../../../core/utils/expense-filter.utils';
+import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
 import { todayLocalISODate } from '../../../core/utils/date.utils';
 
@@ -41,7 +40,7 @@ interface ReceiptCard {
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, DatePipe, FormsModule, ConfirmDialogComponent, ShareTablePromptComponent, MembersDialogComponent, MerchantLogoComponent],
+  imports: [DecimalPipe, DatePipe, ConfirmDialogComponent, ShareTablePromptComponent, MembersDialogComponent, MerchantLogoComponent],
   templateUrl: './expense-list.component.html',
   styleUrl: './expense-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -81,7 +80,8 @@ export class ExpenseListComponent implements OnInit {
 
   private readonly queryParams = toSignal(this.route.queryParamMap);
 
-  readonly selectedMonth = computed(() => this.queryParams()?.get('month') ?? null);
+  /** One or more months (?month=2026-10,2026-09), newest first. */
+  readonly selectedMonths = computed(() => parseMonthParam(this.queryParams()?.get('month') ?? null));
   /** ?day=today. Mutually exclusive with ?month, since one day always sits inside one month. */
   readonly isTodayFilter = computed(() => this.queryParams()?.get('day') === 'today');
   /** One or more categories (?category=Food,Health), most recently selected first. */
@@ -104,8 +104,8 @@ export class ExpenseListComponent implements OnInit {
   readonly filteredExpenses = computed(() => {
     let list = this.store.expenses();
 
-    const month = this.selectedMonth();
-    if (month) list = list.filter(e => e.date.slice(0, 7) === month);
+    const months = this.selectedMonths();
+    if (months.length > 0) list = list.filter(e => months.includes(e.date.slice(0, 7)));
 
     if (this.isTodayFilter()) {
       const today = todayLocalISODate();
@@ -123,6 +123,13 @@ export class ExpenseListComponent implements OnInit {
   );
 
   readonly filteredCount = computed(() => this.filteredExpenses().length);
+
+  readonly totalLabel = computed(() => {
+    if (this.isTodayFilter()) return 'Today';
+    const count = this.selectedMonths().length;
+    if (count === 1) return 'This Month';
+    return count > 1 ? `${count} Months` : 'Total';
+  });
 
   private compareExpenses(a: Expense, b: Expense): number {
     const column = this.sortColumn();
@@ -204,12 +211,18 @@ export class ExpenseListComponent implements OnInit {
 
   formatMonthLabel(monthKey: string): string {
     const [year, month] = monthKey.split('-').map(Number);
-    return new Date(year, month - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    return new Date(year, month - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
   }
 
-  onMonthChange(value: string): void {
+  toggleMonthFilter(month: string): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: value || null, day: null });
+    const next = toggleMonth(this.selectedMonths(), month);
+    this.updateQueryParams({ month: next.length > 0 ? next.join(',') : null, day: null });
+  }
+
+  clearMonths(): void {
+    this.currentPage.set(1);
+    this.updateQueryParams({ month: null, day: null });
   }
 
   toggleToday(): void {

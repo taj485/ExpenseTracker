@@ -61,8 +61,13 @@ describe('ExpenseListComponent', () => {
   });
 
   it('turns the Today filter off when a month is picked', () => {
-    component.onMonthChange('2026-09');
+    component.toggleMonthFilter('2026-09');
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', day: null } }));
+  });
+
+  it('clears every month and the Today filter from All months', () => {
+    component.clearMonths();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, day: null } }));
   });
 
   it('clears the Today filter on reset', () => {
@@ -92,5 +97,46 @@ describe('ExpenseListComponent with ?day=today', () => {
     expect(component.isTodayFilter()).toBe(true);
     expect(component.filteredExpenses().map(e => e.id)).toEqual([1]);
     expect(component.filteredTotal()).toBe(2);
+  });
+});
+
+describe('ExpenseListComponent with several months selected', () => {
+  let component: ExpenseListComponent;
+  let navigate: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    navigate = vi.fn();
+    const expenses = [
+      { id: 1, date: '2026-10-02T00:00:00', unitPrice: 1, quantity: 1, category: 'Food' },
+      { id: 2, date: '2026-09-15T00:00:00', unitPrice: 2, quantity: 1, category: 'Food' },
+      { id: 3, date: '2026-08-20T00:00:00', unitPrice: 4, quantity: 1, category: 'Food' },
+    ] as Expense[];
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { navigate } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap({ month: '2026-08,2026-10' })) } },
+        { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
+        { provide: ExpenseTableService, useValue: { tables: signal([]) } },
+      ],
+    });
+    component = TestBed.runInInjectionContext(() => new ExpenseListComponent());
+  });
+
+  it('shows expenses from every selected month', () => {
+    expect(component.selectedMonths()).toEqual(['2026-10', '2026-08']);
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([1, 3]);
+    expect(component.filteredTotal()).toBe(5);
+    expect(component.totalLabel()).toBe('2 Months');
+  });
+
+  it('adds a month to the selection', () => {
+    component.toggleMonthFilter('2026-09');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-10,2026-09,2026-08', day: null } }));
+  });
+
+  it('removes a selected month', () => {
+    component.toggleMonthFilter('2026-10');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08', day: null } }));
   });
 });

@@ -18,6 +18,26 @@ export function toggleCategory(selected: ExpenseCategory[], category: ExpenseCat
   return selected.includes(category) ? selected.filter(c => c !== category) : [category, ...selected];
 }
 
+/**
+ * The `month` query param holds one or more 'YYYY-MM' keys: `?month=2026-10,2026-09`.
+ * Returns them newest first, dropping malformed and duplicate values.
+ */
+export function parseMonthParam(value: string | null): string[] {
+  return newestFirst((value ?? '').split(',').map(m => m.trim()).filter(m => MONTH_KEY.test(m)));
+}
+
+/** Removes the month if selected; otherwise adds it. Months stay newest first, unlike categories. */
+export function toggleMonth(selected: string[], month: string): string[] {
+  return selected.includes(month) ? selected.filter(m => m !== month) : newestFirst([...selected, month]);
+}
+
+const MONTH_KEY = /^\d{4}-\d{2}$/;
+
+/** De-duplicated, newest first. 'YYYY-MM' keys sort correctly as strings. */
+function newestFirst(months: string[]): string[] {
+  return [...new Set(months)].sort().reverse();
+}
+
 /** Chip order: selected categories first (latest first), then the rest in their usual order. */
 export function orderCategoryChips(selected: ExpenseCategory[]): ExpenseCategory[] {
   return [...selected, ...ALL_CATEGORIES.filter(c => !selected.includes(c))];
