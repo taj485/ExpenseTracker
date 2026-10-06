@@ -8,6 +8,11 @@ export function todayLocalISODate(): string {
   return localISODate(new Date());
 }
 
+/** The local 'YYYY-MM-DD' an expense date falls on, matching monthKeyOf. */
+export function dayKeyOf(isoDate: string): string {
+  return localISODate(new Date(isoDate));
+}
+
 function localISODate(d: Date): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');

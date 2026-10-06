@@ -1,0 +1,53 @@
+@if (hasSpend()) {
+  <figure class="chart">
+    <div class="plot">
+      <div class="grid" aria-hidden="true">
+        @for (tick of ticks(); track tick.value) {
+          <div class="gridline" [style.bottom.%]="tick.percent">
+            <span class="tick">£{{ tick.value | number:'1.0-2' }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Each day's whole column is its hover target, so thin bars stay easy to point at. -->
+      <div class="bars" aria-hidden="true" (pointerleave)="hovered.set(null)">
+        @for (d of days(); track d.date; let i = $index) {
+          <div class="col" (pointerenter)="hovered.set(i)">
+            @if (d.total > 0) {
+              <div class="bar" [class.is-active]="hovered() === i" [style.height.%]="barHeight(d.total)">
+                @if (i === peakIndex()) {
+                  <span class="peak">£{{ d.total | number:'1.2-2' }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (tooltip(); as t) {
+        <div class="tooltip" [class]="'tooltip align-' + t.align" [style.left.%]="t.left" aria-hidden="true">
+          <strong>£{{ t.day.total | number:'1.2-2' }}</strong>
+          <span>{{ t.label }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="x-axis" aria-hidden="true">
+      @for (d of days(); track d.date) {
+        <span>{{ showDayLabel(d.day) ? d.day : '' }}</span>
+      }
+    </div>
+
+    <table class="sr-only">
+      <caption>Spending by day in {{ monthLabel() || 'this month' }}</caption>
+      <thead><tr><th scope="col">Day</th><th scope="col">Spent</th></tr></thead>
+      <tbody>
+        @for (d of spendDays(); track d.date) {
+          <tr><th scope="row">{{ dayLabel(d.date) }}</th><td>£{{ d.total | number:'1.2-2' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </figure>
+} @else {
+  <p class="empty">No expenses in {{ monthLabel() || 'this month' }}.</p>
+}

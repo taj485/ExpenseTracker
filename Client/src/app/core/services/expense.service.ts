@@ -5,7 +5,7 @@ import { AddExpenseCommand, AddExpensesBatchResult, CategoryStat, Expense, Expen
 import { environment } from '../../../environments/environment';
 import { parseFilenameFromContentDisposition } from '../utils/download.utils';
 import { MonthOption, currentMonthKey, formatMonthKey, monthKeyOf, monthKeysBack } from '../utils/date.utils';
-import { expenseTotal } from '../utils/expense.utils';
+import { DailySpend, dailyTotals, expenseTotal } from '../utils/expense.utils';
 
 /** How far back the dashboard month picker reaches, in months before the current one. */
 const MONTHS_SELECTABLE = 12;
@@ -117,6 +117,9 @@ export class ExpenseService {
       }))
       .sort((a, b) => b.total - a.total);
   });
+
+  /** Spend for each day of the selected month, for the dashboard's daily bar chart. */
+  readonly dailySpend = computed((): DailySpend[] => dailyTotals(this.selectedMonthExpenses(), this.selectedMonth()));
 
   /** Spend per merchant for the selected month: the top few, then everything else as "Other". */
   readonly merchantBreakdown = computed((): MerchantStat[] => {

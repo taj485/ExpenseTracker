@@ -146,6 +146,11 @@ ExpenseTracker/
 │   │           │       │   ├── category-breakdown.component.ts
 │   │           │       │   ├── category-breakdown.component.html
 │   │           │       │   └── category-breakdown.component.css
+│   │           │       ├── daily-spend-chart/
+│   │           │       │   ├── daily-spend-chart.component.ts
+│   │           │       │   ├── daily-spend-chart.component.html
+│   │           │       │   ├── daily-spend-chart.component.css
+│   │           │       │   └── daily-spend-chart.component.spec.ts
 │   │           │       └── merchant-donut/
 │   │           │           ├── merchant-donut.component.ts
 │   │           │           ├── merchant-donut.component.html

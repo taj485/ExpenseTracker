@@ -32,6 +32,12 @@
   />
 
   <div class="section-header">
+    <h2 class="section-title">Spending by Day</h2>
+  </div>
+
+  <app-daily-spend-chart [days]="store.dailySpend()" [monthLabel]="selectedMonthLabel()" />
+
+  <div class="section-header section-header-spaced">
     <h2 class="section-title">Spending by Merchant</h2>
   </div>
 

@@ -4,12 +4,13 @@ import { ExpenseTableService } from '../../core/services/expense-table.service';
 import { SummaryCardsComponent } from './components/summary-cards/summary-cards.component';
 import { CategoryBreakdownComponent } from './components/category-breakdown/category-breakdown.component';
 import { MerchantDonutComponent } from './components/merchant-donut/merchant-donut.component';
+import { DailySpendChartComponent } from './components/daily-spend-chart/daily-spend-chart.component';
 import { formatMonthKey } from '../../core/utils/date.utils';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [SummaryCardsComponent, CategoryBreakdownComponent, MerchantDonutComponent],
+  imports: [SummaryCardsComponent, CategoryBreakdownComponent, MerchantDonutComponent, DailySpendChartComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

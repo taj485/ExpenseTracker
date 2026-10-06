@@ -1,0 +1,118 @@
+.chart { margin: 0; }
+
+/* The left gutter holds the £ tick labels; the top padding leaves room for the peak label. */
+.plot {
+  position: relative;
+  height: 180px;
+  margin-left: 44px;
+  padding-top: 20px;
+}
+
+/* Gridlines and bars share one layer below the top padding, so 100% lines up for both. */
+.grid,
+.bars {
+  position: absolute;
+  inset: 20px 0 0;
+}
+
+.gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.tick {
+  position: absolute;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.bars {
+  display: flex;
+  gap: 2px;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Thin bar, 4px rounded data end, square at the baseline. */
+.bar {
+  position: relative;
+  width: 100%;
+  max-width: 24px;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-bg-brand);
+}
+
+.bar.is-active { background: var(--color-bg-brand-deep); }
+
+.peak {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-on-brand);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tooltip.align-start { transform: translateX(-12px); }
+.tooltip.align-end { transform: translateX(calc(-100% + 12px)); }
+
+.tooltip strong { font-size: 0.875rem; }
+
+.x-axis {
+  display: flex;
+  gap: 2px;
+  margin: 6px 0 0 44px;
+}
+
+.x-axis span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.empty {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  padding: 24px 0;
+  text-align: center;
+}
