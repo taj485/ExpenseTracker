@@ -82,7 +82,7 @@
 
   @if (weekDayTabs().length > 0) {
     <!-- Drill into one day of the selected week; the last tab is the whole week (the default). -->
-    <div class="underline-tabs" role="tablist" aria-label="Filter by day">
+    <div #dayTabs class="underline-tabs" role="tablist" aria-label="Filter by day">
       @for (day of weekDayTabs(); track day.key) {
         <button type="button" role="tab" class="underline-tab"
                 [class.is-selected]="selectedDay()?.key === day.key"

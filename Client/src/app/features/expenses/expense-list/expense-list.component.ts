@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -50,6 +50,8 @@ export class ExpenseListComponent implements OnInit {
   readonly expenseTableService = inject(ExpenseTableService);
   readonly router = inject(Router);
   readonly route  = inject(ActivatedRoute);
+
+  private readonly dayTabsRow = viewChild<ElementRef<HTMLElement>>('dayTabs');
 
   readonly tableId = signal<number>(0);
   readonly isStarred = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isStarred ?? false);
@@ -227,6 +229,15 @@ export class ExpenseListComponent implements OnInit {
   readonly totalPages = computed(() => this.pages().length);
   readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
   readonly pagedReceipts = computed<ReceiptCard[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
+
+  constructor() {
+    // The whole-week tab (the default) sits at the end, so on narrow screens bring the
+    // selected tab into view whenever the tabs appear or the selection changes.
+    afterRenderEffect(() => {
+      this.selectedDay();
+      this.dayTabsRow()?.nativeElement.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
