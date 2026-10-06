@@ -1,4 +1,7 @@
 import {
+  formatDayLabel,
+  weekDays,
+  periodRange,
   currentMonthKey,
   formatMonthKey,
   monthKeyOf,
@@ -74,5 +77,60 @@ describe('formatMonthKey', () => {
     expect(formatMonthKey('2026-08')).toBe('August 2026');
     expect(formatMonthKey('2026-01')).toBe('January 2026');
     expect(formatMonthKey('2025-12')).toBe('December 2025');
+  });
+});
+
+describe('periodRange', () => {
+  // Local dates: new Date(y, monthIndex, d).
+  const tue6Oct2026 = new Date(2026, 9, 6, 15, 0);
+
+  it('covers just today', () => {
+    expect(periodRange('today', tue6Oct2026)).toEqual({ start: '2026-10-06', end: '2026-10-06' });
+  });
+
+  it('runs this week from Monday to Sunday', () => {
+    expect(periodRange('this-week', tue6Oct2026)).toEqual({ start: '2026-10-05', end: '2026-10-11' });
+  });
+
+  it('runs last week as the Monday to Sunday before, across a month boundary', () => {
+    expect(periodRange('last-week', tue6Oct2026)).toEqual({ start: '2026-09-28', end: '2026-10-04' });
+  });
+
+  it('treats Sunday as the last day of the week, not the first', () => {
+    expect(periodRange('this-week', new Date(2026, 9, 11))).toEqual({ start: '2026-10-05', end: '2026-10-11' });
+  });
+
+  it('starts a new week on Monday', () => {
+    expect(periodRange('this-week', new Date(2026, 9, 12))).toEqual({ start: '2026-10-12', end: '2026-10-18' });
+  });
+
+  it('crosses a year boundary', () => {
+    expect(periodRange('this-week', new Date(2027, 0, 1))).toEqual({ start: '2026-12-28', end: '2027-01-03' });
+    expect(periodRange('last-week', new Date(2027, 0, 1))).toEqual({ start: '2026-12-21', end: '2026-12-27' });
+  });
+});
+
+describe('weekDays', () => {
+  const tue6Oct2026 = new Date(2026, 9, 6, 15, 0);
+
+  it('lists this week Monday to Sunday, marking the days still to come', () => {
+    const days = weekDays('this-week', tue6Oct2026);
+    expect(days.map(d => d.key)).toEqual(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
+    expect(days.map(d => d.date)).toEqual(['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']);
+    expect(days.map(d => d.label)).toEqual(['Mon 5', 'Tue 6', 'Wed 7', 'Thu 8', 'Fri 9', 'Sat 10', 'Sun 11']);
+    expect(days.map(d => d.isFuture)).toEqual([false, false, true, true, true, true, true]);
+  });
+
+  it('lists last week across a month boundary, with nothing still to come', () => {
+    const days = weekDays('last-week', tue6Oct2026);
+    expect(days[0].date).toBe('2026-09-28');
+    expect(days[6].date).toBe('2026-10-04');
+    expect(days.some(d => d.isFuture)).toBe(false);
+  });
+});
+
+describe('formatDayLabel', () => {
+  it('renders weekday, day and month', () => {
+    expect(formatDayLabel('2026-10-05')).toBe('Mon 5 Oct');
   });
 });

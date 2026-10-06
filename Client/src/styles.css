@@ -171,3 +171,48 @@ html, body {
 
 .btn:disabled,
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+/* ---------- Underlined tabs (e.g. the day drill-down on the expense list) ---------- */
+.underline-tabs {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Thin rather than hidden, so mouse users can still scroll when the tabs overflow. */
+  scrollbar-width: thin;
+  border-bottom: 1px solid var(--color-border-default);
+  margin-bottom: var(--spacing-base);
+}
+
+.underline-tab {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Comfortable tap target; the row scrolls when they don't all fit. */
+  min-width: 56px;
+  min-height: 52px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.underline-tab-sub { font-size: 0.75rem; font-weight: 500; }
+
+.underline-tab:hover:not(:disabled) { color: var(--color-text-primary); }
+
+.underline-tab.is-selected {
+  color: var(--color-text-brand);
+  border-bottom-color: var(--color-border-brand);
+  font-weight: 600;
+}
+
+.underline-tab:disabled { color: var(--color-text-muted); cursor: default; }
