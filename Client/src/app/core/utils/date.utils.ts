@@ -18,7 +18,7 @@ function localISODate(d: Date): string {
 /** A rolling date filter on the expense list. Weeks run Monday to Sunday. */
 export type DatePeriod = 'this-week' | 'last-week' | 'today';
 
-export const DATE_PERIODS: readonly DatePeriod[] = ['this-week', 'last-week', 'today'];
+export const DATE_PERIODS: readonly DatePeriod[] = ['today', 'this-week', 'last-week'];
 
 /** First and last local day ('YYYY-MM-DD', inclusive) of a period, relative to `now`. */
 export function periodRange(period: DatePeriod, now = new Date()): { start: string; end: string } {
