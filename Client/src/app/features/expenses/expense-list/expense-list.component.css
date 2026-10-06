@@ -136,6 +136,8 @@
   text-align-last: center;
 }
 
+.filter-today.is-active { background: var(--color-bg-brand); border-color: var(--color-bg-brand); color: var(--color-text-on-brand); }
+
 /* ---------- Member count link (opens the members dialog) ---------- */
 .members-link {
   background: none;

@@ -5,6 +5,8 @@ import { of } from 'rxjs';
 import { ExpenseListComponent } from './expense-list.component';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
+import { Expense } from '../../../core/models/expense.model';
+import { todayLocalISODate } from '../../../core/utils/date.utils';
 
 describe('ExpenseListComponent', () => {
   let component: ExpenseListComponent;
@@ -48,5 +50,47 @@ describe('ExpenseListComponent', () => {
   it('opens the expense page for a standalone expense', () => {
     component.openItem({ receiptId: null } as Parameters<ExpenseListComponent['openItem']>[0], 5);
     expect(navigate).toHaveBeenCalledWith(['/expenses/table', 7, 5]);
+  });
+
+  it('turns on the Today filter and clears any month', () => {
+    component.toggleToday();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
+      queryParams: { day: 'today', month: null },
+      queryParamsHandling: 'merge',
+    }));
+  });
+
+  it('turns the Today filter off when a month is picked', () => {
+    component.onMonthChange('2026-09');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', day: null } }));
+  });
+
+  it('clears the Today filter on reset', () => {
+    component.resetFilters();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, day: null, category: null } }));
+  });
+});
+
+describe('ExpenseListComponent with ?day=today', () => {
+  it('shows only expenses dated today', () => {
+    const today = todayLocalISODate();
+    const expenses = [
+      { id: 1, date: `${today}T00:00:00`, unitPrice: 2, quantity: 1, category: 'Food' },
+      { id: 2, date: '2020-01-01T00:00:00', unitPrice: 5, quantity: 1, category: 'Food' },
+    ] as Expense[];
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap({ day: 'today' })) } },
+        { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
+        { provide: ExpenseTableService, useValue: { tables: signal([]) } },
+      ],
+    });
+    const component = TestBed.runInInjectionContext(() => new ExpenseListComponent());
+
+    expect(component.isTodayFilter()).toBe(true);
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([1]);
+    expect(component.filteredTotal()).toBe(2);
   });
 });

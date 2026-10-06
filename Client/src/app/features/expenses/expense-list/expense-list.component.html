@@ -42,6 +42,11 @@
   </div>
 
   <div class="filter-bar">
+    <button type="button" class="filter-select filter-today"
+            [class.is-active]="isTodayFilter()"
+            [attr.aria-pressed]="isTodayFilter()"
+            (click)="toggleToday()">Today</button>
+
     <select class="filter-select" [ngModel]="selectedMonth() ?? ''" (ngModelChange)="onMonthChange($event)">
       <option value="">All Months</option>
       @for (month of availableMonths(); track month.key) {
@@ -71,10 +76,10 @@
 
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="st-label">{{ selectedMonth() ? 'This Month' : 'Total' }}</div>
+      <div class="st-label">{{ isTodayFilter() ? 'Today' : selectedMonth() ? 'This Month' : 'Total' }}</div>
       <div class="st-value">£{{ filteredTotal() | number:'1.2-2' }}</div>
     </div>
-    @if (!selectedMonth()) {
+    @if (!selectedMonth() && !isTodayFilter()) {
       <div class="stat-card">
         <div class="st-label">This Month</div>
         <div class="st-value">£{{ store.currentMonthSpent() | number:'1.2-2' }}</div>
@@ -149,7 +154,7 @@
 
     @empty {
       <p class="empty-state">
-        @if (selectedMonth() || selectedCategories().length > 0) {
+        @if (isTodayFilter() || selectedMonth() || selectedCategories().length > 0) {
           No expenses match this filter.
         } @else {
           No expenses yet. Add one on the right, or scan a receipt.

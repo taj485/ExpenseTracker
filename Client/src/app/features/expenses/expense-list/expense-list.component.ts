@@ -14,6 +14,7 @@ import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { orderCategoryChips, parseCategoryParam, toggleCategory } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
+import { todayLocalISODate } from '../../../core/utils/date.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -81,6 +82,8 @@ export class ExpenseListComponent implements OnInit {
   private readonly queryParams = toSignal(this.route.queryParamMap);
 
   readonly selectedMonth = computed(() => this.queryParams()?.get('month') ?? null);
+  /** ?day=today. Mutually exclusive with ?month, since one day always sits inside one month. */
+  readonly isTodayFilter = computed(() => this.queryParams()?.get('day') === 'today');
   /** One or more categories (?category=Food,Health), most recently selected first. */
   readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
   readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
@@ -103,6 +106,11 @@ export class ExpenseListComponent implements OnInit {
 
     const month = this.selectedMonth();
     if (month) list = list.filter(e => e.date.slice(0, 7) === month);
+
+    if (this.isTodayFilter()) {
+      const today = todayLocalISODate();
+      list = list.filter(e => e.date.slice(0, 10) === today);
+    }
 
     const categories = this.selectedCategories();
     if (categories.length > 0) list = list.filter(e => categories.includes(e.category));
@@ -201,7 +209,12 @@ export class ExpenseListComponent implements OnInit {
 
   onMonthChange(value: string): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: value || null });
+    this.updateQueryParams({ month: value || null, day: null });
+  }
+
+  toggleToday(): void {
+    this.currentPage.set(1);
+    this.updateQueryParams({ day: this.isTodayFilter() ? null : 'today', month: null });
   }
 
   toggleCategoryFilter(category: ExpenseCategory): void {
@@ -222,7 +235,7 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, category: null });
+    this.updateQueryParams({ month: null, day: null, category: null });
   }
 
   private updateQueryParams(params: Record<string, string | null>): void {
