@@ -80,6 +80,24 @@
     }
   </div>
 
+  @if (weekDayTabs().length > 0) {
+    <!-- Drill into one day of the selected week; the last tab is the whole week (the default). -->
+    <div class="underline-tabs" role="tablist" aria-label="Filter by day">
+      @for (day of weekDayTabs(); track day.key) {
+        <button type="button" role="tab" class="underline-tab"
+                [class.is-selected]="selectedDay()?.key === day.key"
+                [attr.aria-selected]="selectedDay()?.key === day.key"
+                [attr.aria-label]="day.label"
+                [disabled]="day.isFuture"
+                (click)="selectDay(day)"><span class="underline-tab-sub">{{ day.name }}</span>{{ day.dayOfMonth }}</button>
+      }
+      <button type="button" role="tab" class="underline-tab"
+              [class.is-selected]="!selectedDay()"
+              [attr.aria-selected]="!selectedDay()"
+              (click)="selectDay(null)">{{ periodLabels[selectedPeriod()!] }}</button>
+    </div>
+  }
+
   <div class="stats-bar">
     <div class="stat-card">
       <div class="st-label">{{ totalLabel() }}</div>

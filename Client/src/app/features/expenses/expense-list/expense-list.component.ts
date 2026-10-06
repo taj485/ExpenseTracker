@@ -13,7 +13,7 @@ import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
-import { DATE_PERIODS, DatePeriod, periodRange } from '../../../core/utils/date.utils';
+import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -94,6 +94,18 @@ export class ExpenseListComponent implements OnInit {
   });
   readonly periods = DATE_PERIODS;
   readonly periodLabels: Record<DatePeriod, string> = { 'this-week': 'This week', 'last-week': 'Last week', today: 'Today' };
+
+  /** Days of the selected week for the day tabs; empty unless This week or Last week is selected. */
+  readonly weekDayTabs = computed<WeekDay[]>(() => {
+    const period = this.selectedPeriod();
+    return period === 'this-week' || period === 'last-week' ? weekDays(period) : [];
+  });
+
+  /** ?weekday=mon narrows the week to one day. Ignored outside a week, or for a day still to come. */
+  readonly selectedDay = computed<WeekDay | null>(() => {
+    const key = this.queryParams()?.get('weekday');
+    return this.weekDayTabs().find(d => d.key === key && !d.isFuture) ?? null;
+  });
   /** One or more categories (?category=Food,Health), most recently selected first. */
   readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
   readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
@@ -119,7 +131,8 @@ export class ExpenseListComponent implements OnInit {
 
     const period = this.selectedPeriod();
     if (period) {
-      const { start, end } = periodRange(period);
+      const day = this.selectedDay();
+      const { start, end } = day ? { start: day.date, end: day.date } : periodRange(period);
       list = list.filter(e => e.date.slice(0, 10) >= start && e.date.slice(0, 10) <= end);
     }
 
@@ -136,6 +149,8 @@ export class ExpenseListComponent implements OnInit {
   readonly filteredCount = computed(() => this.filteredExpenses().length);
 
   readonly totalLabel = computed(() => {
+    const day = this.selectedDay();
+    if (day) return formatDayLabel(day.date);
     const period = this.selectedPeriod();
     if (period) return { 'this-week': 'This Week', 'last-week': 'Last Week', today: 'Today' }[period];
     const count = this.selectedMonths().length;
@@ -230,18 +245,24 @@ export class ExpenseListComponent implements OnInit {
     this.currentPage.set(1);
     const next = toggleMonth(this.selectedMonths(), month);
     // Unticking the last month means "all months"; without period=all the list would fall back to this week.
-    this.updateQueryParams(next.length > 0 ? { month: next.join(','), period: null } : { month: null, period: 'all' });
+    this.updateQueryParams(next.length > 0 ? { month: next.join(','), period: null, weekday: null } : { month: null, period: 'all', weekday: null });
   }
 
   clearMonths(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, period: 'all' });
+    this.updateQueryParams({ month: null, period: 'all', weekday: null });
   }
 
   /** Picks a period; picking the selected one again shows all months. */
   selectPeriod(period: DatePeriod): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ period: this.selectedPeriod() === period ? 'all' : period, month: null });
+    this.updateQueryParams({ period: this.selectedPeriod() === period ? 'all' : period, month: null, weekday: null });
+  }
+
+  /** Narrows the week to one day, or back to the whole week with null. */
+  selectDay(day: WeekDay | null): void {
+    this.currentPage.set(1);
+    this.updateQueryParams({ weekday: day?.key ?? null });
   }
 
   toggleCategoryFilter(category: ExpenseCategory): void {
@@ -262,7 +283,7 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, period: null, category: null });
+    this.updateQueryParams({ month: null, period: null, weekday: null, category: null });
   }
 
   private updateQueryParams(params: Record<string, string | null>): void {

@@ -35,6 +35,40 @@ export function periodRange(period: DatePeriod, now = new Date()): { start: stri
   return { start: localISODate(monday), end: localISODate(sunday) };
 }
 
+export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+const WEEKDAYS: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+/** One day of a week period, for the day tabs: { key: 'mon', date: '2026-10-05', name: 'Mon', dayOfMonth: 5, ... }. */
+export interface WeekDay {
+  key: Weekday;
+  date: string;
+  name: string;
+  dayOfMonth: number;
+  /** 'Mon 5' */
+  label: string;
+  /** Still to come, so it can't have expenses yet. */
+  isFuture: boolean;
+}
+
+/** The seven days, Monday to Sunday, of this week or last week. */
+export function weekDays(period: 'this-week' | 'last-week', now = new Date()): WeekDay[] {
+  const [year, month, day] = periodRange(period, now).start.split('-').map(Number);
+  const today = localISODate(now);
+  return WEEKDAYS.map((key, i) => {
+    const d = new Date(year, month - 1, day + i);
+    const date = localISODate(d);
+    const name = d.toLocaleDateString('en-GB', { weekday: 'short' });
+    return { key, date, name, dayOfMonth: d.getDate(), label: `${name} ${d.getDate()}`, isFuture: date > today };
+  });
+}
+
+/** '2026-10-05' becomes 'Mon 5 Oct'. */
+export function formatDayLabel(isoDay: string): string {
+  const [year, month, day] = isoDay.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 // Local date fields throughout, matching todayLocalISODate — an expense dated the 1st at
 // 00:30 UTC belongs to the month the user saw on the form, not the previous one.
 function monthKey(date: Date): string {
