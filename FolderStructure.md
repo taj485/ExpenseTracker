@@ -4,6 +4,7 @@ ExpenseTracker/
 ├── .dockerignore
 ├── CLAUDE.md
 ├── README.md
+├── uml-policy.json
 ├── .github/
 │   └── workflows/
 │       ├── ci-cd.yml

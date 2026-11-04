@@ -28,6 +28,15 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Auth0__DevBypass": "true"
       }
+    },
+    "mobile": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://0.0.0.0:5252",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }

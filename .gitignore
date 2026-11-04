@@ -466,3 +466,6 @@ override.tf.json
 terraform.rc
 *.tfplan
 tfplan
+
+# Raw coverage reports from uml-crap (uml-viewer)
+.metrics/coverage/
