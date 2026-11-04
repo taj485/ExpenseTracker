@@ -19,6 +19,14 @@ Runs the app without an Auth0 login, for AI agents and quick local checks. Every
 
 It's off unless you start it this way. The API refuses to start with `Auth0:DevBypass` set outside Development, and the client stand-in (`DevAuthService`) is only compiled into the `ai` build configuration.
 
+## Mobile dev mode
+
+Lets the mobile dev build on a phone reach your local API over Wi-Fi. Auth0 stays on.
+
+- API: `dotnet run --project ExpenseTrackerAPI --launch-profile mobile` (listens on all interfaces, port 5252)
+- Allow inbound TCP 5252 in Windows Firewall (private networks only)
+- In the mobile repo's `.env.local`, set `EXPO_PUBLIC_API_URL=http://<your-PC-LAN-IP>:5252/api`
+
 ## Documentation
 
 - [Azure Hosting & CI/CD](Doc/azure-hosting-and-cicd.md) — infrastructure, deployment pipeline, and troubleshooting

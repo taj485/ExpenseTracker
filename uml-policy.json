@@ -1,0 +1,30 @@
+{
+  "name": "ExpenseTracker",
+  "root": ".",
+  "editor": "vscode",
+  "exclude": ["/bin/", "/obj/", "/Migrations/", "/node_modules/", ".spec.ts", ".Designer.cs", "/AssemblyInfo.cs"],
+  "groups": [
+    {
+      "name": "Backend",
+      "language": "csharp",
+      "layers": [
+        { "name": "Domain", "level": 0, "paths": ["ExpenseTracker.Domain"] },
+        { "name": "Application", "level": 1, "paths": ["ExpenseTracker.Application"] },
+        { "name": "Infrastructure", "level": 2, "paths": ["ExpenseTracker.Infrastructure"] },
+        { "name": "API", "level": 2, "paths": ["ExpenseTrackerAPI"] }
+      ]
+    },
+    {
+      "name": "Client",
+      "language": "typescript",
+      "layers": [
+        { "name": "Models", "level": 0, "paths": ["Client/src/app/core/models"] },
+        { "name": "Core", "level": 1, "paths": ["Client/src/app/core"] },
+        { "name": "Shared", "level": 2, "paths": ["Client/src/app/shared"] },
+        { "name": "Features", "level": 3, "paths": ["Client/src/app/features"] },
+        { "name": "Layout", "level": 3, "paths": ["Client/src/app/layout"] },
+        { "name": "App shell", "level": 4, "paths": ["Client/src/app"] }
+      ]
+    }
+  ]
+}
