@@ -44,4 +44,21 @@ describe('discount.utils', () => {
     expect(receiptDiscountError([milk, bread], 4.5)).toBeNull();
     expect(receiptDiscountError([milk, bread], -1)).toBe("Receipt discount can't be negative.");
   });
+
+  it('rounds every amount to the penny so floating point noise never shows', () => {
+    const noisy = [{ unitPrice: 0.1, quantity: 1 }, { unitPrice: 0.2, quantity: 1 }];
+    expect(lineTotalAfterDiscount({ unitPrice: 0.1, quantity: 3, discount: 0 })).toBe(0.3);
+    expect(receiptBreakdown(noisy, 0).subtotal).toBe(0.3);
+    expect(receiptBreakdown([{ unitPrice: 0.3, quantity: 1, discount: 0.1 }, { unitPrice: 0.3, quantity: 1, discount: 0.2 }], 0).itemDiscounts).toBe(0.3);
+    expect(receiptBreakdown(noisy, 0.1).total).toBe(0.2);
+    expect(paidTotal(noisy.map(l => ({ ...l, receiptId: null })))).toBe(0.3);
+    expect(receiptDiscountError(noisy, 0.3)).toBeNull();
+  });
+
+  it('treats a missing receipt discount as nothing off', () => {
+    expect(receiptBreakdown([bread], undefined).total).toBe(2);
+    expect(receiptBreakdown([bread], null).receiptDiscount).toBe(0);
+    expect(paidTotal([{ ...bread, receiptId: 1 }])).toBe(2);
+    expect(receiptDiscountError([bread], null)).toBeNull();
+  });
 });

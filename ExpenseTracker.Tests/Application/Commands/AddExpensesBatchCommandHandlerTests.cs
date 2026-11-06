@@ -231,5 +231,51 @@ namespace ExpenseTracker.Tests.Application.Commands
             result.AddedIds.Should().BeEmpty();
             result.Errors.Should().ContainSingle().Which.Errors.Should().Equal(message);
         }
+
+        [Fact]
+        public async Task Handle_WithNegativeReceiptDiscount_ThrowsAndAddsNothing()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: -1m);
+
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ExpenseTracker.Domain.Exceptions.DomainException>()
+                .WithMessage("Receipt discount can't be negative.");
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()), Times.Never);
+            _mockReceiptWriter.Verify(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WithReceiptDiscountEqualToTotalAfterItemDiscounts_Saves()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: 0.50m),
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: 4.50m);
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task Handle_WithItemDiscountEqualToLineTotal_SavesTheFreeItem()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Free milk", DateTime.UtcNow, Quantity: 2, Discount: 3m),
+            });
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.Errors.Should().BeEmpty();
+            result.AddedIds.Should().ContainSingle();
+        }
     }
 }

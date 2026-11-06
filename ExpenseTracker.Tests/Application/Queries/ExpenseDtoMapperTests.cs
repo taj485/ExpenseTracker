@@ -18,5 +18,18 @@ namespace ExpenseTracker.Tests.Application.Queries
             Assert.Equal(0m, dto.Discount);
             Assert.False(dto.CreatedByCurrentUser);
         }
+
+        [Fact]
+        public void ToDto_CopiesTheReceiptDiscount_WhenTheExpenseIsOnAReceipt()
+        {
+            var expense = Expense.Create(2, ExpenseCategory.Food, "Milk", DateTime.UtcNow, 1, receiptId: 5, discount: 0.5m);
+            typeof(Expense).GetProperty(nameof(Expense.Receipt))!
+                .SetValue(expense, Receipt.Create(DateTime.UtcNow, null, 1.25m));
+
+            var dto = expense.ToDto(currentUserId: 7);
+
+            Assert.Equal(1.25m, dto.ReceiptDiscount);
+            Assert.Equal(0.5m, dto.Discount);
+        }
     }
 }

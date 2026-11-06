@@ -411,3 +411,80 @@ describe('PL-003 Receipt discounts picked up from the scan', () => {
     expectNoItemDiscounts(page);
   });
 });
+
+describe('PL-003 review screen discount handling', () => {
+  const twoItems = scanResult([
+    { description: 'Milk', unitPrice: 1.5, quantity: 2 },
+    { description: 'Bread', unitPrice: 2 },
+  ]);
+  const itemBlock = (review: Awaited<ReturnType<typeof scanReceipt>>, description: string) =>
+    Array.from(review.root.querySelectorAll('.extraction-item')).find(i => fieldInput(i, 'Description').value === description)!;
+
+  it('shows an item discount error beside the item it belongs to', async () => {
+    const review = await scanReceipt(twoItems);
+    review.setItemDiscount('Bread', '9');
+    review.clickAddExpenses();
+
+    expect(text(itemBlock(review, 'Bread'))).toContain("Discount can't be more than the item total (£2.00).");
+    expect(text(itemBlock(review, 'Milk'))).not.toContain("Discount can't");
+  });
+
+  it('checks the receipt discount only once the item discounts are valid', async () => {
+    const review = await scanReceipt(twoItems);
+    review.setItemDiscount('Bread', '9');
+    review.setReceiptDiscount('50');
+    review.clickAddExpenses();
+
+    expect(text(review.root)).toContain("Discount can't be more than the item total");
+    expect(text(review.root)).not.toContain("Receipt discount can't be more than");
+    expect(review.component.receiptDiscountError()).toBeNull();
+  });
+
+  it('refuses to continue while only the receipt discount is invalid', async () => {
+    const review = await scanReceipt(twoItems);
+    review.setReceiptDiscount('-1');
+    review.clickAddExpenses();
+
+    expect(text(review.root)).toContain("Receipt discount can't be negative.");
+    expect(review.addExpensesBatchToTables).not.toHaveBeenCalled();
+    expect(review.component.step()).toBe('review');
+  });
+
+  it('clears the discounts once the receipt is saved', async () => {
+    const review = await scanReceipt(S2_RECEIPT);
+    review.addExpenses();
+
+    expect(review.component.receiptDiscount()).toBeNull();
+  });
+
+  it('clears the discounts and their errors when the photo is removed', async () => {
+    const review = await scanReceipt(twoItems);
+    review.setItemDiscount('Bread', '9');
+    review.clickAddExpenses();
+    expect(Object.keys(review.component.itemDiscountErrors())).toHaveLength(1);
+    review.component.removeFile();
+    expect(review.component.itemDiscountErrors()).toEqual({});
+
+    const second = await scanReceipt(S2_RECEIPT);
+    second.setReceiptDiscount('50');
+    second.clickAddExpenses();
+    expect(second.component.receiptDiscountError()).not.toBeNull();
+    second.component.removeFile();
+    expect(second.component.receiptDiscountError()).toBeNull();
+    expect(second.component.receiptDiscount()).toBeNull();
+  });
+
+  it('sends the receipt discount and each item discount to the API', async () => {
+    const review = await scanReceipt(S3_RECEIPT);
+    const saved = review.addExpenses();
+
+    expect(saved.receiptDiscount).toBe(2);
+    expect(saved.commands.map(c => c.discount)).toEqual([0.5, 0, 1]);
+  });
+
+  it('sends a zero receipt discount when the field is empty', async () => {
+    const review = await scanReceipt(S1_RECEIPT);
+
+    expect(review.addExpenses().receiptDiscount).toBe(0);
+  });
+});

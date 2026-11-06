@@ -171,5 +171,21 @@ namespace ExpenseTracker.Tests.Domain
 
             act.Should().Throw<DomainException>();
         }
+
+        [Fact]
+        public void Create_WithNegativeDiscount_ExplainsWhy()
+        {
+            Action act = () => Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, discount: -1m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be negative.");
+        }
+
+        [Fact]
+        public void Create_WithDiscountAboveLineTotal_ExplainsWhy()
+        {
+            Action act = () => Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, discount: 2m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total.");
+        }
     }
 }

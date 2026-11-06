@@ -250,6 +250,7 @@ ExpenseTracker/
 │   │   ├── MoneyTests.cs
 │   │   ├── ExpenseTests.cs
 │   │   ├── MerchantTests.cs
+│   │   ├── ReceiptTests.cs
 │   │   ├── ExpenseTableTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/

@@ -83,5 +83,18 @@ namespace ExpenseTracker.Tests.Infrastructure
         {
             Assert.Throws<DomainException>(() => GeminiReceiptParser.Parse("{\"items\":[", Today));
         }
+
+        [Fact]
+        public void Parse_AllowsAnItemDiscountUpToTheWholeLineTotal_NotJustOneUnit()
+        {
+            var json = """
+                {"items":[{"unitPrice":2.00,"category":"Food","description":"Milk","date":"2026-11-01","quantity":3,"discount":3.5}],
+                 "receiptDiscount":0}
+                """;
+
+            var item = Assert.Single(GeminiReceiptParser.Parse(json, Today).Items);
+
+            Assert.Equal(3.5m, item.Discount);
+        }
     }
 }
