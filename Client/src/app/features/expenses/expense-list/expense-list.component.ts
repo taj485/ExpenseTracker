@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -13,7 +13,6 @@ import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
-import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
 
 type SortColumn = 'date' | 'description' | 'unitPrice' | 'quantity' | 'category' | 'merchant';
 type SortDirection = 'asc' | 'desc';
@@ -51,8 +50,6 @@ export class ExpenseListComponent implements OnInit {
   readonly router = inject(Router);
   readonly route  = inject(ActivatedRoute);
 
-  private readonly dayTabsRow = viewChild<ElementRef<HTMLElement>>('dayTabs');
-
   readonly tableId = signal<number>(0);
   readonly isStarred = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.isStarred ?? false);
   readonly pageTitle = computed(() => this.expenseTableService.tables().find(t => t.id === this.tableId())?.name ?? 'Expenses');
@@ -82,32 +79,8 @@ export class ExpenseListComponent implements OnInit {
 
   private readonly queryParams = toSignal(this.route.queryParamMap);
 
-  /** One or more months (?month=2026-10,2026-09), newest first. */
+  /** One or more months (?month=2026-10,2026-09), newest first. None means all months. */
   readonly selectedMonths = computed(() => parseMonthParam(this.queryParams()?.get('month') ?? null));
-  /**
-   * ?period=this-week|last-week|today, or null for month-based filtering (?period=all or any
-   * ?month). With neither param the list opens on this week.
-   */
-  readonly selectedPeriod = computed<DatePeriod | null>(() => {
-    if (this.selectedMonths().length > 0) return null;
-    const period = this.queryParams()?.get('period');
-    if (period === 'all') return null;
-    return DATE_PERIODS.includes(period as DatePeriod) ? (period as DatePeriod) : 'this-week';
-  });
-  readonly periods = DATE_PERIODS;
-  readonly periodLabels: Record<DatePeriod, string> = { 'this-week': 'This week', 'last-week': 'Last week', today: 'Today' };
-
-  /** Days of the selected week for the day tabs; empty unless This week or Last week is selected. */
-  readonly weekDayTabs = computed<WeekDay[]>(() => {
-    const period = this.selectedPeriod();
-    return period === 'this-week' || period === 'last-week' ? weekDays(period) : [];
-  });
-
-  /** ?weekday=mon narrows the week to one day. Ignored outside a week, or for a day still to come. */
-  readonly selectedDay = computed<WeekDay | null>(() => {
-    const key = this.queryParams()?.get('weekday');
-    return this.weekDayTabs().find(d => d.key === key && !d.isFuture) ?? null;
-  });
   /** One or more categories (?category=Food,Health), most recently selected first. */
   readonly selectedCategories = computed(() => parseCategoryParam(this.queryParams()?.get('category') ?? null));
   readonly categoryChips = computed(() => orderCategoryChips(this.selectedCategories()));
@@ -131,13 +104,6 @@ export class ExpenseListComponent implements OnInit {
     const months = this.selectedMonths();
     if (months.length > 0) list = list.filter(e => months.includes(e.date.slice(0, 7)));
 
-    const period = this.selectedPeriod();
-    if (period) {
-      const day = this.selectedDay();
-      const { start, end } = day ? { start: day.date, end: day.date } : periodRange(period);
-      list = list.filter(e => e.date.slice(0, 10) >= start && e.date.slice(0, 10) <= end);
-    }
-
     const categories = this.selectedCategories();
     if (categories.length > 0) list = list.filter(e => categories.includes(e.category));
 
@@ -151,10 +117,6 @@ export class ExpenseListComponent implements OnInit {
   readonly filteredCount = computed(() => this.filteredExpenses().length);
 
   readonly totalLabel = computed(() => {
-    const day = this.selectedDay();
-    if (day) return formatDayLabel(day.date);
-    const period = this.selectedPeriod();
-    if (period) return { 'this-week': 'This Week', 'last-week': 'Last Week', today: 'Today' }[period];
     const count = this.selectedMonths().length;
     if (count === 1) return 'This Month';
     return count > 1 ? `${count} Months` : 'Total';
@@ -230,15 +192,6 @@ export class ExpenseListComponent implements OnInit {
   readonly safeCurrentPage = computed(() => Math.min(this.currentPage(), this.totalPages()));
   readonly pagedReceipts = computed<ReceiptCard[]>(() => this.pages()[this.safeCurrentPage() - 1] ?? []);
 
-  constructor() {
-    // The whole-week tab (the default) sits at the end, so on narrow screens bring the
-    // selected tab into view whenever the tabs appear or the selection changes.
-    afterRenderEffect(() => {
-      this.selectedDay();
-      this.dayTabsRow()?.nativeElement.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    });
-  }
-
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const tableId = Number(params.get('tableId'));
@@ -255,25 +208,12 @@ export class ExpenseListComponent implements OnInit {
   toggleMonthFilter(month: string): void {
     this.currentPage.set(1);
     const next = toggleMonth(this.selectedMonths(), month);
-    // Unticking the last month means "all months"; without period=all the list would fall back to this week.
-    this.updateQueryParams(next.length > 0 ? { month: next.join(','), period: null, weekday: null } : { month: null, period: 'all', weekday: null });
+    this.updateQueryParams({ month: next.length > 0 ? next.join(',') : null });
   }
 
   clearMonths(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, period: 'all', weekday: null });
-  }
-
-  /** Picks a period; picking the selected one again shows all months. */
-  selectPeriod(period: DatePeriod): void {
-    this.currentPage.set(1);
-    this.updateQueryParams({ period: this.selectedPeriod() === period ? 'all' : period, month: null, weekday: null });
-  }
-
-  /** Narrows the week to one day, or back to the whole week with null. */
-  selectDay(day: WeekDay | null): void {
-    this.currentPage.set(1);
-    this.updateQueryParams({ weekday: day?.key ?? null });
+    this.updateQueryParams({ month: null });
   }
 
   toggleCategoryFilter(category: ExpenseCategory): void {
@@ -294,7 +234,7 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.currentPage.set(1);
-    this.updateQueryParams({ month: null, period: null, weekday: null, category: null });
+    this.updateQueryParams({ month: null, category: null });
   }
 
   private updateQueryParams(params: Record<string, string | null>): void {

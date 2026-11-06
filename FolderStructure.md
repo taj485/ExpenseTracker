@@ -157,7 +157,8 @@ ExpenseTracker/
 │   │           │   │   ├── expense-list.component.ts
 │   │           │   │   ├── expense-list.component.html
 │   │           │   │   ├── expense-list.component.css
-│   │           │   │   └── expense-list.component.spec.ts
+│   │           │   │   ├── expense-list.component.spec.ts
+│   │           │   │   └── expense-list.acceptance.spec.ts
 │   │           │   ├── expense-detail/
 │   │           │   │   ├── expense-detail.component.ts
 │   │           │   │   ├── expense-detail.component.html
