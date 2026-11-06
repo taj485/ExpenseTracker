@@ -112,3 +112,65 @@ describe('ExpenseListComponent with several months selected', () => {
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08' } }));
   });
 });
+
+describe('ExpenseListComponent filters and month list', () => {
+  let navigate: ReturnType<typeof vi.fn>;
+
+  function build(query: Record<string, string>): ExpenseListComponent {
+    navigate = vi.fn();
+    const expenses = [
+      { id: 1, date: '2026-10-02T00:00:00', unitPrice: 1, quantity: 1, category: 'Food' },
+      { id: 2, date: '2026-09-15T00:00:00', unitPrice: 2, quantity: 1, category: 'Health' },
+    ] as Expense[];
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { navigate } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap(query)) } },
+        { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
+        { provide: ExpenseTableService, useValue: { tables: signal([]) } },
+      ],
+    });
+    return TestBed.runInInjectionContext(() => new ExpenseListComponent());
+  }
+
+  afterEach(() => vi.useRealTimers());
+
+  it('shows every expense when no month is selected', () => {
+    const component = build({});
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([1, 2]);
+  });
+
+  it('shows only the selected category', () => {
+    const component = build({ category: 'Health' });
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([2]);
+  });
+
+  it('labels a single selected month as This Month', () => {
+    expect(build({ month: '2026-10' }).totalLabel()).toBe('This Month');
+  });
+
+  it('drops the month param when the only selected month is toggled off', () => {
+    const component = build({ month: '2026-10' });
+    component.toggleMonthFilter('2026-10');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null } }));
+  });
+
+  it.each([
+    ['toggleMonthFilter', (c: ExpenseListComponent) => c.toggleMonthFilter('2026-09')],
+    ['clearMonths', (c: ExpenseListComponent) => c.clearMonths()],
+    ['resetFilters', (c: ExpenseListComponent) => c.resetFilters()],
+  ])('%s returns to the first page', (_name, act) => {
+    const component = build({});
+    component.currentPage.set(3);
+    act(component);
+    expect(component.currentPage()).toBe(1);
+  });
+
+  it('lists months from the current one back to January of this year', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 2, 15));
+    const component = build({});
+    expect(component.availableMonths().map(m => m.key)).toEqual(['2026-03', '2026-02', '2026-01']);
+  });
+});
