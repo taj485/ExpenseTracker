@@ -175,5 +175,107 @@ namespace ExpenseTracker.Tests.Application.Commands
             await act.Should().ThrowAsync<NotFoundException>();
             _mockExpenseWriter.Verify(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()), Times.Never);
         }
+
+        [Fact]
+        public async Task Handle_WithDiscounts_SavesItemAndReceiptDiscounts()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: 0.50m),
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: 1m);
+            Receipt? capturedReceipt = null;
+            var capturedExpenses = new List<Expense>();
+            _mockReceiptWriter.Setup(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()))
+                .Callback<Receipt, CancellationToken>((r, _) => capturedReceipt = r)
+                .ReturnsAsync(1);
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .Callback<Expense, CancellationToken>((e, _) => capturedExpenses.Add(e))
+                .ReturnsAsync(1);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            capturedReceipt!.Discount.Should().Be(1m);
+            capturedExpenses.Select(e => e.Discount).Should().Equal(0.50m, 0m);
+        }
+
+        [Fact]
+        public async Task Handle_WithReceiptDiscountAboveTotalAfterItemDiscounts_ThrowsAndAddsNothing()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: 0.50m),
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: 5m);
+
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ExpenseTracker.Domain.Exceptions.DomainException>()
+                .WithMessage("Receipt discount can't be more than the receipt total (£4.50).");
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()), Times.Never);
+            _mockReceiptWriter.Verify(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(3.50, "Discount can't be more than the item total (£3.00).")]
+        [InlineData(-0.50, "Discount can't be negative.")]
+        public async Task Handle_WithInvalidItemDiscount_ReturnsItemError(double discount, string message)
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: (decimal)discount),
+            });
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().BeEmpty();
+            result.Errors.Should().ContainSingle().Which.Errors.Should().Equal(message);
+        }
+
+        [Fact]
+        public async Task Handle_WithNegativeReceiptDiscount_ThrowsAndAddsNothing()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: -1m);
+
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ExpenseTracker.Domain.Exceptions.DomainException>()
+                .WithMessage("Receipt discount can't be negative.");
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()), Times.Never);
+            _mockReceiptWriter.Verify(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WithReceiptDiscountEqualToTotalAfterItemDiscounts_Saves()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: 0.50m),
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow),
+            }, ReceiptDiscount: 4.50m);
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task Handle_WithItemDiscountEqualToLineTotal_SavesTheFreeItem()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Free milk", DateTime.UtcNow, Quantity: 2, Discount: 3m),
+            });
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.Errors.Should().BeEmpty();
+            result.AddedIds.Should().ContainSingle();
+        }
     }
 }

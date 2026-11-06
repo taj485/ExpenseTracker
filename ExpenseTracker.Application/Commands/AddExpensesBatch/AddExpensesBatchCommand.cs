@@ -4,7 +4,7 @@ using ExpenseTracker.Application.Commands.AddExpense;
 
 namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 {
-    public record AddExpensesBatchCommand(int ExpenseTableId, List<AddExpenseCommand> Items, string? ReceiptImageReference = null) : IRequest<AddExpensesBatchResult>;
+    public record AddExpensesBatchCommand(int ExpenseTableId, List<AddExpenseCommand> Items, string? ReceiptImageReference = null, decimal ReceiptDiscount = 0) : IRequest<AddExpensesBatchResult>;
 
     public record BatchItemError(int Index, List<string> Errors);
 

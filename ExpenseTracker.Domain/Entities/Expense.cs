@@ -10,6 +10,11 @@ namespace ExpenseTracker.Domain.Entities
         public int Id { get; private set; }
         public Money UnitPrice { get; private set; }
         public int Quantity { get; private set; }
+
+        /// <summary>
+        /// Discount taken off this whole line (quantity x unit price), in pounds. 0 when there is none.
+        /// </summary>
+        public decimal Discount { get; private set; }
         public ExpenseCategory Category { get; private set; }
         public string Description { get; private set; }
         public DateTime Date { get; private set; }
@@ -31,7 +36,7 @@ namespace ExpenseTracker.Domain.Entities
         private Expense() { }
 
         public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            int? merchantId = null, int? receiptId = null, int quantity = 1, int? createdByUserId = null)
+            int? merchantId = null, int? receiptId = null, int quantity = 1, int? createdByUserId = null, decimal discount = 0)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
@@ -39,10 +44,19 @@ namespace ExpenseTracker.Domain.Entities
             if (quantity < 1)
                 throw new DomainException("Quantity must be at least 1");
 
+            var price = Money.Create(unitPrice);
+
+            if (discount < 0)
+                throw new DomainException("Discount can't be negative.");
+
+            if (discount > unitPrice * quantity)
+                throw new DomainException("Discount can't be more than the item total.");
+
             return new Expense
             {
-                UnitPrice = Money.Create(unitPrice),
+                UnitPrice = price,
                 Quantity = quantity,
+                Discount = discount,
                 Category = category,
                 Description = description,
                 Date = date,

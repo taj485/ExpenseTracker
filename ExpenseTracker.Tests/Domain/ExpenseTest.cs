@@ -153,5 +153,39 @@ namespace ExpenseTracker.Tests.Domain
             // Assert
             expense.Category.Should().Be(ExpenseCategory.Transport);
         }
+
+        [Fact]
+        public void Create_WithDiscountEqualToLineTotal_IsAllowed()
+        {
+            var expense = Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 2, discount: 3m);
+
+            expense.Discount.Should().Be(3m);
+        }
+
+        [Theory]
+        [InlineData(-0.01)]
+        [InlineData(3.01)]
+        public void Create_WithDiscountOutsideLineTotal_Throws(double discount)
+        {
+            Action act = () => Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 2, discount: (decimal)discount);
+
+            act.Should().Throw<DomainException>();
+        }
+
+        [Fact]
+        public void Create_WithNegativeDiscount_ExplainsWhy()
+        {
+            Action act = () => Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, discount: -1m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be negative.");
+        }
+
+        [Fact]
+        public void Create_WithDiscountAboveLineTotal_ExplainsWhy()
+        {
+            Action act = () => Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, discount: 2m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total.");
+        }
     }
 }

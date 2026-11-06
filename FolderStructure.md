@@ -64,6 +64,8 @@ ExpenseTracker/
 │   │       │   │   ├── category.utils.ts
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
+│   │       │   │   ├── discount.utils.ts
+│   │       │   │   ├── discount.utils.spec.ts
 │   │       │   │   ├── download.utils.ts
 │   │       │   │   ├── expense-filter.utils.ts
 │   │       │   │   ├── expense-filter.utils.spec.ts
@@ -178,7 +180,8 @@ ExpenseTracker/
 │   │           ├── upload-receipt/
 │   │           │   ├── upload-receipt.component.ts
 │   │           │   ├── upload-receipt.component.html
-│   │           │   └── upload-receipt.component.css
+│   │           │   ├── upload-receipt.component.css
+│   │           │   └── receipt-discounts.acceptance.spec.ts
 │   │           └── expense-table/
 │   │               ├── create-expense-table-prompt.component.ts
 │   │               ├── create-expense-table-prompt.component.html
@@ -248,6 +251,7 @@ ExpenseTracker/
 │   │   ├── MoneyTests.cs
 │   │   ├── ExpenseTests.cs
 │   │   ├── MerchantTests.cs
+│   │   ├── ReceiptTests.cs
 │   │   ├── ExpenseTableTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
@@ -267,6 +271,7 @@ ExpenseTracker/
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
+│   │   │   ├── ExpenseDtoMapperTests.cs
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
 │   │   │   ├── GetExpenseTableMembersQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
@@ -276,6 +281,7 @@ ExpenseTracker/
 │   ├── Infrastructure/
 │   │   ├── AuthenticationRegistrationTests.cs
 │   │   ├── ExpenseRepositoryTests.cs
+│   │   ├── GeminiReceiptParserTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
@@ -370,6 +376,7 @@ ExpenseTracker/
 │   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
 │   │   ├── ExpenseDto.cs
+│   │   ├── ExpenseDtoMapper.cs
 │   │   ├── ExpenseTableDto.cs
 │   │   ├── ExpenseTableMemberDto.cs
 │   │   ├── MonthlySummaryDto.cs
@@ -408,6 +415,7 @@ ExpenseTracker/
     │   └── DevBypassAuthenticationHandler.cs
     ├── AI/
     │   ├── GeminiOptions.cs
+    │   ├── GeminiReceiptParser.cs
     │   └── GeminiReceiptExtractionService.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs

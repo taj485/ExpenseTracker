@@ -1,6 +1,7 @@
 using ExpenseTracker.Application.Commands.AddExpense;
 using ExpenseTracker.Application.Services;
 using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Domain.Interfaces;
 using FluentValidation;
 using MediatR;
@@ -36,6 +37,8 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
             if (!await _expenseTableReader.IsMemberAsync(request.ExpenseTableId, currentUser.Id, cancellationToken))
                 throw new NotFoundException($"Expense table with id {request.ExpenseTableId} was not found");
 
+            ValidateReceiptDiscount(request);
+
             // Every line item on a receipt shares one merchant, so resolve it once rather than per item.
             var merchantId = await _merchantResolver.ResolveOrCreateAsync(
                 request.Items.Select(i => i.Merchant).FirstOrDefault(m => !string.IsNullOrWhiteSpace(m)),
@@ -58,16 +61,30 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
                 if (receiptId is null)
                 {
-                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference);
+                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference, request.ReceiptDiscount);
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
-                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, merchantId, receiptId, item.Quantity, currentUser.Id);
+                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, merchantId, receiptId, item.Quantity, currentUser.Id, item.Discount);
                 var id = await _expenseWriter.AddAsync(expense, cancellationToken);
                 addedIds.Add(id);
             }
 
             return new AddExpensesBatchResult(addedIds, errors);
+        }
+
+        // The receipt discount comes off after item discounts, so it can't exceed what is left of the receipt.
+        private static void ValidateReceiptDiscount(AddExpensesBatchCommand request)
+        {
+            if (request.ReceiptDiscount < 0)
+                throw new DomainException("Receipt discount can't be negative.");
+
+            if (request.ReceiptDiscount == 0)
+                return;
+
+            var totalAfterItemDiscounts = request.Items.Sum(i => i.UnitPrice * i.Quantity - i.Discount);
+            if (request.ReceiptDiscount > totalAfterItemDiscounts)
+                throw new DomainException($"Receipt discount can't be more than the receipt total ({AddExpenseValidator.FormatPounds(totalAfterItemDiscounts)}).");
         }
     }
 }
