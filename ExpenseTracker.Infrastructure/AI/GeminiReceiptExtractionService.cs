@@ -5,8 +5,6 @@ using ExpenseTracker.Domain.ValueObjects;
 using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.Options;
-using System.Globalization;
-using System.Text.Json;
 using GenAIType = Google.GenAI.Types.Type;
 
 namespace ExpenseTracker.Infrastructure.AI
@@ -14,11 +12,6 @@ namespace ExpenseTracker.Infrastructure.AI
     public class GeminiReceiptExtractionService : IReceiptExtractionService
     {
         private static readonly string[] AllowedCategories = Enum.GetNames(typeof(ExpenseCategory));
-
-        private static readonly JsonSerializerOptions RawItemJsonOptions = new(JsonSerializerOptions.Default)
-        {
-            PropertyNameCaseInsensitive = true,
-        };
 
         private const string PromptText =
             "You are analyzing a photo of a purchase receipt. Extract every purchased line item. " +
@@ -43,12 +36,44 @@ namespace ExpenseTracker.Infrastructure.AI
 
         public async Task<ExtractedReceipt> ExtractAsync(byte[] imageBytes, string contentType, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(_options.ApiKey))
-                throw new InvalidOperationException("Gemini API key is not configured.");
+            EnsureApiKeyConfigured(_options.ApiKey);
 
             var client = new Client(apiKey: _options.ApiKey);
 
-            var contents = new List<Content>
+            var contents = BuildContents(imageBytes, contentType);
+
+            var tokenCount = await client.Models.CountTokensAsync(model: _options.Model, contents: contents);
+            EnsureWithinInputLimit(tokenCount.TotalTokens, _options.MaxInputTokens);
+
+            var config = new GenerateContentConfig
+            {
+                ResponseMimeType = "application/json",
+                ResponseSchema = BuildResponseSchema(),
+                MaxOutputTokens = _options.MaxOutputTokens,
+            };
+
+            var response = await client.Models.GenerateContentAsync(model: _options.Model, contents: contents, config: config);
+
+            var text = ReadResponseText(response);
+
+            return GeminiReceiptParser.Parse(text, DateOnly.FromDateTime(DateTime.UtcNow));
+        }
+
+        private static void EnsureApiKeyConfigured(string? apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new InvalidOperationException("Gemini API key is not configured.");
+        }
+
+        public static void EnsureWithinInputLimit(int? totalTokens, int maxInputTokens)
+        {
+            if ((totalTokens ?? 0) > maxInputTokens)
+                throw new DomainException($"This receipt is too large or complex to process (exceeds the {maxInputTokens}-token input limit). Try a clearer or simpler photo.");
+        }
+
+        private static List<Content> BuildContents(byte[] imageBytes, string contentType)
+        {
+            return new List<Content>
             {
                 new Content
                 {
@@ -60,99 +85,15 @@ namespace ExpenseTracker.Infrastructure.AI
                     },
                 },
             };
+        }
 
-            var tokenCount = await client.Models.CountTokensAsync(model: _options.Model, contents: contents);
-            if ((tokenCount.TotalTokens ?? 0) > _options.MaxInputTokens)
-                throw new DomainException($"This receipt is too large or complex to process (exceeds the {_options.MaxInputTokens}-token input limit). Try a clearer or simpler photo.");
-
-            var config = new GenerateContentConfig
-            {
-                ResponseMimeType = "application/json",
-                ResponseSchema = BuildResponseSchema(),
-                MaxOutputTokens = _options.MaxOutputTokens,
-            };
-
-            var response = await client.Models.GenerateContentAsync(model: _options.Model, contents: contents, config: config);
-
+        private string? ReadResponseText(GenerateContentResponse response)
+        {
             var candidate = response.Candidates?.FirstOrDefault();
             if (candidate?.FinishReason == FinishReason.MaxTokens)
                 throw new DomainException($"The extracted receipt data exceeded the {_options.MaxOutputTokens}-token output limit. Try a receipt with fewer line items.");
 
-            var text = candidate?.Content?.Parts?.FirstOrDefault()?.Text;
-            if (string.IsNullOrWhiteSpace(text))
-                return ExtractedReceipt.Empty;
-
-            RawReceipt? rawReceipt;
-            try
-            {
-                rawReceipt = JsonSerializer.Deserialize<RawReceipt>(text, RawItemJsonOptions);
-            }
-            catch (JsonException)
-            {
-                throw new DomainException("Couldn't understand the receipt data returned by the AI model. It may have been truncated by the token limit — try a simpler photo.");
-            }
-
-            var rawItems = rawReceipt?.Items;
-            if (rawItems is null)
-                return ExtractedReceipt.Empty;
-
-            var results = new List<ExtractedReceiptItem>();
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            foreach (var raw in rawItems)
-            {
-                if (raw.UnitPrice <= 0)
-                    continue;
-
-                if (!TryNormalizeCategory(raw.Category, out var category))
-                    continue;
-
-                var date = DateOnly.TryParse(raw.Date, out var parsedDate) && parsedDate <= today
-                    ? parsedDate
-                    : today;
-
-                var quantity = raw.Quantity < 1 ? 1 : raw.Quantity;
-                var merchant = string.IsNullOrWhiteSpace(raw.Merchant) ? null : ToTitleCase(raw.Merchant);
-
-                var discount = Math.Min(ToPounds(raw.Discount), raw.UnitPrice * quantity);
-
-                results.Add(new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant, discount));
-            }
-
-            var totalAfterItemDiscounts = results.Sum(i => i.UnitPrice * i.Quantity - i.Discount);
-            var receiptDiscount = Math.Min(ToPounds(rawReceipt!.ReceiptDiscount), totalAfterItemDiscounts);
-
-            return new ExtractedReceipt(results, receiptDiscount);
-        }
-
-        // Receipts print discounts as "-£0.50", so the model may return either sign.
-        private static decimal ToPounds(decimal? amount)
-        {
-            return Math.Round(Math.Abs(amount ?? 0), 2, MidpointRounding.AwayFromZero);
-        }
-
-        private static string ToTitleCase(string? value)
-        {
-            var trimmed = value?.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-                return string.Empty;
-
-            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(trimmed.ToLowerInvariant());
-        }
-
-        private static bool TryNormalizeCategory(string? raw, out ExpenseCategory category)
-        {
-            foreach (var name in AllowedCategories)
-            {
-                if (string.Equals(name, raw, StringComparison.OrdinalIgnoreCase))
-                {
-                    category = Enum.Parse<ExpenseCategory>(name);
-                    return true;
-                }
-            }
-
-            category = default;
-            return false;
+            return candidate?.Content?.Parts?.FirstOrDefault()?.Text;
         }
 
         private static Schema BuildResponseSchema()
@@ -183,23 +124,6 @@ namespace ExpenseTracker.Infrastructure.AI
                 },
                 Required = new List<string> { "items", "receiptDiscount" },
             };
-        }
-
-        private class RawReceipt
-        {
-            public List<RawReceiptItem>? Items { get; set; }
-            public decimal? ReceiptDiscount { get; set; }
-        }
-
-        private class RawReceiptItem
-        {
-            public decimal UnitPrice { get; set; }
-            public string? Category { get; set; }
-            public string? Description { get; set; }
-            public string? Date { get; set; }
-            public int Quantity { get; set; }
-            public string? Merchant { get; set; }
-            public decimal? Discount { get; set; }
         }
     }
 }

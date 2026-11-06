@@ -269,6 +269,7 @@ ExpenseTracker/
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
+│   │   │   ├── ExpenseDtoMapperTests.cs
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
 │   │   │   ├── GetExpenseTableMembersQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
@@ -278,6 +279,7 @@ ExpenseTracker/
 │   ├── Infrastructure/
 │   │   ├── AuthenticationRegistrationTests.cs
 │   │   ├── ExpenseRepositoryTests.cs
+│   │   ├── GeminiReceiptParserTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
@@ -372,6 +374,7 @@ ExpenseTracker/
 │   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
 │   │   ├── ExpenseDto.cs
+│   │   ├── ExpenseDtoMapper.cs
 │   │   ├── ExpenseTableDto.cs
 │   │   ├── ExpenseTableMemberDto.cs
 │   │   ├── MonthlySummaryDto.cs
@@ -410,6 +413,7 @@ ExpenseTracker/
     │   └── DevBypassAuthenticationHandler.cs
     ├── AI/
     │   ├── GeminiOptions.cs
+    │   ├── GeminiReceiptParser.cs
     │   └── GeminiReceiptExtractionService.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
