@@ -161,7 +161,7 @@
               </div>
 
               <div class="item-figures">
-                <div class="item-amount">£{{ expense.unitPrice * expense.quantity | number:'1.2-2' }}</div>
+                <div class="item-amount">£{{ lineAmount(expense) | number:'1.2-2' }}</div>
                 <div class="item-unit">{{ expense.quantity }} × £{{ expense.unitPrice | number:'1.2-2' }}</div>
               </div>
 

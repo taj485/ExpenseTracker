@@ -99,6 +99,9 @@
 .group-item-qty { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
 
 .group-item-amount { font-size: 0.9rem; font-weight: 700; color: var(--teal); }
+.group-item-full { font-size: 0.78rem; color: var(--muted); text-decoration: line-through; }
+.group-item-discount, .field-value.discount { color: #c0392b; }
+.group-item-discount { font-size: 0.78rem; white-space: nowrap; }
 
 .group-item-link {
   background: none;

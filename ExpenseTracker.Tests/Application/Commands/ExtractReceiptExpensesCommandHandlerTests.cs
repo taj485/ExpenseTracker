@@ -32,7 +32,7 @@ namespace ExpenseTracker.Tests.Application.Commands
             };
             _mockReceiptExtractionService
                 .Setup(x => x.ExtractAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(items);
+                .ReturnsAsync(new ExtractedReceipt(items));
 
             var result = await _handler.Handle(new ExtractReceiptExpensesCommand(new byte[] { 1, 2, 3 }, "image/jpeg"), CancellationToken.None);
 
@@ -52,11 +52,29 @@ namespace ExpenseTracker.Tests.Application.Commands
         {
             _mockReceiptExtractionService
                 .Setup(x => x.ExtractAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<ExtractedReceiptItem>());
+                .ReturnsAsync(ExtractedReceipt.Empty);
 
             var result = await _handler.Handle(new ExtractReceiptExpensesCommand(new byte[] { 1 }, "image/jpeg"), CancellationToken.None);
 
             result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task Handle_MapsItemAndReceiptDiscounts()
+        {
+            var items = new List<ExtractedReceiptItem>
+            {
+                new(1.5m, ExpenseCategory.Food, "Milk", new DateOnly(2026, 11, 5), 2, "Tesco", 0.5m),
+                new(2m, ExpenseCategory.Food, "Bread", new DateOnly(2026, 11, 5), 1, "Tesco"),
+            };
+            _mockReceiptExtractionService
+                .Setup(x => x.ExtractAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ExtractedReceipt(items, 1m));
+
+            var result = await _handler.Handle(new ExtractReceiptExpensesCommand(new byte[] { 1 }, "image/jpeg"), CancellationToken.None);
+
+            result.Select(r => r.Discount).Should().Equal(0.5m, 0m);
+            result.Should().OnlyContain(r => r.ReceiptDiscount == 1m);
         }
     }
 }

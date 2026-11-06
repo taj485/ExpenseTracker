@@ -18,9 +18,27 @@
         </div>
       </div>
       <div class="detail-fields">
-        <div class="field">
+        @if (hasDiscount()) {
+          <div class="field field-subtotal">
+            <div class="field-label">Subtotal</div>
+            <div class="field-value">£{{ breakdown().subtotal | number:'1.2-2' }}</div>
+          </div>
+          @if (breakdown().itemDiscounts > 0) {
+            <div class="field field-item-discounts">
+              <div class="field-label">Item discounts</div>
+              <div class="field-value discount">−£{{ breakdown().itemDiscounts | number:'1.2-2' }}</div>
+            </div>
+          }
+          @if (breakdown().receiptDiscount > 0) {
+            <div class="field field-receipt-discount">
+              <div class="field-label">Receipt discount</div>
+              <div class="field-value discount">−£{{ breakdown().receiptDiscount | number:'1.2-2' }}</div>
+            </div>
+          }
+        }
+        <div class="field field-total">
           <div class="field-label">Total</div>
-          <div class="field-value amount">£{{ totalAmount() | number:'1.2-2' }}</div>
+          <div class="field-value amount">£{{ breakdown().total | number:'1.2-2' }}</div>
         </div>
       </div>
     </div>
@@ -38,7 +56,13 @@
               @if (item.quantity > 1) {
                 <span class="group-item-qty">{{ item.quantity }} × £{{ item.unitPrice | number:'1.2-2' }}</span>
               }
-              <span class="group-item-amount">£{{ lineTotal(item) | number:'1.2-2' }}</span>
+              @if (item.discount) {
+                <span class="group-item-full">£{{ lineTotal(item) | number:'1.2-2' }}</span>
+                <span class="group-item-discount">−£{{ item.discount | number:'1.2-2' }}</span>
+                <span class="group-item-amount">£{{ lineAfterDiscount(item) | number:'1.2-2' }}</span>
+              } @else {
+                <span class="group-item-amount">£{{ lineTotal(item) | number:'1.2-2' }}</span>
+              }
               <button type="button" class="group-item-link" (click)="viewItem(item.id)">View</button>
               <button type="button" class="group-item-link" (click)="editItem(item.id)">Edit</button>
             </div>

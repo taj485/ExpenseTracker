@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { parseFilenameFromContentDisposition } from '../utils/download.utils';
 import { MonthOption, currentMonthKey, formatMonthKey, monthKeyOf, monthKeysBack } from '../utils/date.utils';
 import { expenseTotal } from '../utils/expense.utils';
+import { paidTotal } from '../utils/discount.utils';
 
 /** How far back the dashboard month picker reaches, in months before the current one. */
 const MONTHS_SELECTABLE = 12;
@@ -74,9 +75,7 @@ export class ExpenseService {
    */
   readonly currentMonthSpent = computed(() => {
     const month = currentMonthKey();
-    return this.expenses()
-      .filter(e => monthKeyOf(e.date) === month)
-      .reduce((sum, e) => sum + expenseTotal(e), 0);
+    return paidTotal(this.expenses().filter(e => monthKeyOf(e.date) === month));
   });
 
   readonly topCategory = computed((): { name: ExpenseCategory; total: number } | null => {
@@ -236,6 +235,7 @@ export class ExpenseService {
     tableIds: number[],
     commands: AddExpenseCommand[],
     receiptImageReference: string | null,
+    receiptDiscount: number,
     onSuccess: (results: AddExpensesBatchResult[]) => void,
     onError: (msg: string) => void,
   ): void {
@@ -244,6 +244,7 @@ export class ExpenseService {
         expenseTableId: tableId,
         items: commands,
         receiptImageReference,
+        receiptDiscount,
       })
     )).subscribe({
       next: (results) => {

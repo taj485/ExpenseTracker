@@ -10,7 +10,7 @@ import { MerchantLogoComponent } from '../../../shared/merchant-logo/merchant-lo
 import { MembersDialogComponent } from '../../expense-table/members-dialog.component';
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
-import { expenseTotal } from '../../../core/utils/expense.utils';
+import { lineTotalAfterDiscount, paidTotal } from '../../../core/utils/discount.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
 import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
@@ -67,6 +67,7 @@ export class ExpenseListComponent implements OnInit {
   readonly confirmingDeleteTable = signal(false);
 
   getCategoryMeta = getCategoryMeta;
+  lineAmount = lineTotalAfterDiscount;
 
   /** Keys of receipt cards folded down to their header. Every card starts expanded. */
   readonly collapsedReceipts = signal<ReadonlySet<string>>(new Set());
@@ -145,7 +146,7 @@ export class ExpenseListComponent implements OnInit {
   });
 
   readonly filteredTotal = computed(() =>
-    this.filteredExpenses().reduce((sum, e) => sum + expenseTotal(e), 0)
+    paidTotal(this.filteredExpenses())
   );
 
   readonly filteredCount = computed(() => this.filteredExpenses().length);
@@ -203,7 +204,7 @@ export class ExpenseListComponent implements OnInit {
         merchantWebsite: first.merchantWebsite ?? null,
         date: first.date,
         receiptId: first.receiptId ?? null,
-        total: group.expenses.reduce((sum, e) => sum + expenseTotal(e), 0),
+        total: paidTotal(group.expenses),
         // Every line of a receipt is added together, so the first line's uploader covers the card.
         uploader: uploaderLabel(first, 'short'),
         uploadedByCurrentUser: first.createdByCurrentUser === true,

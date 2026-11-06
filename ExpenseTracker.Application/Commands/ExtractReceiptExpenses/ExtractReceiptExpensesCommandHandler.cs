@@ -18,7 +18,8 @@ namespace ExpenseTracker.Application.Commands.ExtractReceiptExpenses
 
         public async Task<List<ExtractedExpenseDto>> Handle(ExtractReceiptExpensesCommand request, CancellationToken cancellationToken)
         {
-            var items = await _receiptExtractionService.ExtractAsync(request.ImageBytes, request.ContentType, cancellationToken);
+            var receipt = await _receiptExtractionService.ExtractAsync(request.ImageBytes, request.ContentType, cancellationToken);
+            var items = receipt.Items;
 
             // All items come from one receipt and share a merchant, so this is a single lookup.
             // Lookup only — the user can still cancel, and nothing should be written until they save.
@@ -32,6 +33,8 @@ namespace ExpenseTracker.Application.Commands.ExtractReceiptExpenses
                 Description = i.Description,
                 Date = i.Date,
                 Quantity = i.Quantity,
+                Discount = i.Discount,
+                ReceiptDiscount = receipt.ReceiptDiscount,
                 // Prefer the reference table's spelling so the review drawer shows "Tesco",
                 // not whatever the receipt happened to print.
                 Merchant = known?.Name ?? i.Merchant,

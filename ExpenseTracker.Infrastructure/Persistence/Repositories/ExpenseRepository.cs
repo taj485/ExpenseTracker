@@ -19,6 +19,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             return await _context.Expenses
                 .Include(e => e.Merchant)
                 .Include(e => e.CreatedByUser)
+                .Include(e => e.Receipt)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
@@ -34,6 +35,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             return await _context.Expenses
                 .Include(e => e.Merchant)
                 .Include(e => e.CreatedByUser)
+                .Include(e => e.Receipt)
                 .Where(e => e.ExpenseTableId == expenseTableId)
                 .ToListAsync(cancellationToken);
         }
@@ -43,6 +45,7 @@ namespace ExpenseTracker.Infrastructure.Persistence.Repositories
             return await _context.Expenses
                 .Include(e => e.Merchant)
                 .Include(e => e.CreatedByUser)
+                .Include(e => e.Receipt)
                 .Where(e => e.ReceiptId == receiptId && e.ExpenseTableId == expenseTableId)
                 .ToListAsync(cancellationToken);
         }
