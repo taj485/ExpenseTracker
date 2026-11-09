@@ -1,3 +1,4 @@
+using ExpenseTracker.Domain.Enums;
 using System;
 
 namespace ExpenseTracker.Application.DTO
@@ -6,7 +7,8 @@ namespace ExpenseTracker.Application.DTO
     {
         public int Id { get; set; }
         public decimal UnitPrice { get; set; }
-        public int Quantity { get; set; }
+        public decimal Quantity { get; set; }
+        public string Unit { get; set; } = nameof(QuantityUnit.Item);
         /// <summary>Discount on this line, in pounds. 0 when there is none.</summary>
         public decimal Discount { get; set; }
         /// <summary>Discount on the whole receipt this expense belongs to (repeated on each of its lines). 0 when there is none.</summary>

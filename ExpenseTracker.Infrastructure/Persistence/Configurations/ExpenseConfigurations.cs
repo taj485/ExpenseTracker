@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ExpenseTracker.Domain.ValueObjects;
 using System;
@@ -32,8 +33,15 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             });
 
             builder.Property(e => e.Quantity)
+                .HasColumnType("decimal(10,3)")
                 .IsRequired()
-                .HasDefaultValue(1);
+                .HasDefaultValue(1m);
+
+            builder.Property(e => e.Unit)
+                .HasConversion<string>()
+                .HasMaxLength(8)
+                .IsRequired()
+                .HasDefaultValue(QuantityUnit.Item);
 
             builder.Property(e => e.Discount)
                 .HasColumnType("decimal(18,2)")

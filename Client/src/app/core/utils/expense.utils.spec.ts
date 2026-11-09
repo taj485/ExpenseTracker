@@ -5,6 +5,11 @@ describe('expenseTotal', () => {
     expect(expenseTotal({ unitPrice: 12.5, quantity: 1 })).toBe(12.5);
   });
 
+  it('multiplies a per-kg price by a fractional weight', () => {
+    // 0.612 kg of chicken at £5.00/kg
+    expect(expenseTotal({ unitPrice: 5, quantity: 0.612 })).toBe(3.06);
+  });
+
   it('multiplies the unit price by the quantity', () => {
     expect(expenseTotal({ unitPrice: 2.5, quantity: 3 })).toBe(7.5);
   });

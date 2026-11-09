@@ -54,11 +54,12 @@ namespace ExpenseTracker.Infrastructure.AI
                 return null;
 
             var date = DateOnly.TryParse(raw.Date, out var parsedDate) && parsedDate <= today ? parsedDate : today;
-            var quantity = raw.Quantity < 1 ? 1 : raw.Quantity;
+            var unit = ReceiptQuantityNormalizer.ParseUnit(raw.Unit);
+            var quantity = ReceiptQuantityNormalizer.Normalize(raw.Quantity, unit);
             var merchant = string.IsNullOrWhiteSpace(raw.Merchant) ? null : ToTitleCase(raw.Merchant);
             var discount = Math.Min(ToPounds(raw.Discount), raw.UnitPrice * quantity);
 
-            return new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant, discount);
+            return new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant, discount, unit);
         }
 
         // Receipts print discounts as "-£0.50", so the model may return either sign.
@@ -95,7 +96,8 @@ namespace ExpenseTracker.Infrastructure.AI
             public string? Category { get; set; }
             public string? Description { get; set; }
             public string? Date { get; set; }
-            public int Quantity { get; set; }
+            public decimal Quantity { get; set; }
+            public string? Unit { get; set; }
             public string? Merchant { get; set; }
             public decimal? Discount { get; set; }
         }

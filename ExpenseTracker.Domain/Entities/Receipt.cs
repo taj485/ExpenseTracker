@@ -34,5 +34,19 @@ namespace ExpenseTracker.Domain.Entities
                 Discount = discount
             };
         }
+
+        /// <summary>
+        /// Sets the receipt discount (0 clears it), checked against what is left after item discounts.
+        /// </summary>
+        public void UpdateDiscount(decimal discount, decimal totalAfterItemDiscounts)
+        {
+            if (discount < 0)
+                throw new DomainException("Receipt discount can't be negative.");
+
+            if (discount > totalAfterItemDiscounts)
+                throw new DomainException($"Receipt discount can't be more than the receipt total (£{totalAfterItemDiscounts.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}).");
+
+            Discount = discount;
+        }
     }
 }

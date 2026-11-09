@@ -48,6 +48,24 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WithWeighedItem_ReturnsWeightAndUnit()
+        {
+            var items = new List<ExtractedReceiptItem>
+            {
+                new(5m, ExpenseCategory.Food, "Chicken", new DateOnly(2026, 7, 10), 0.612m, null, Unit: QuantityUnit.Kg),
+            };
+            _mockReceiptExtractionService
+                .Setup(x => x.ExtractAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ExtractedReceipt(items));
+
+            var result = await _handler.Handle(new ExtractReceiptExpensesCommand(new byte[] { 1 }, "image/jpeg"), CancellationToken.None);
+
+            result.Single().Quantity.Should().Be(0.612m);
+            result.Single().Unit.Should().Be("Kg");
+            result.Single().UnitPrice.Should().Be(5m);
+        }
+
+        [Fact]
         public async Task Handle_WithNoExtractedItems_ReturnsEmptyList()
         {
             _mockReceiptExtractionService

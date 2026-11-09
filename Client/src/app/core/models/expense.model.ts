@@ -1,9 +1,13 @@
 export type ExpenseCategory = 'Food' | 'Transport' | 'Utilities' | 'Entertainment' | 'Health';
 
+/** What a quantity counts: whole items, or a measured weight/volume (e.g. 0.612 Kg at £5.00/kg). */
+export type QuantityUnit = 'Item' | 'Kg' | 'G' | 'Lb' | 'L';
+
 export interface Expense {
   id: number;
   unitPrice: number;
   quantity: number;
+  unit: QuantityUnit;
   currency: string;
   description: string;
   category: ExpenseCategory;
@@ -26,6 +30,7 @@ export interface AddExpenseCommand {
   expenseTableId: number;
   unitPrice: number;
   quantity: number;
+  unit: QuantityUnit;
   category: ExpenseCategory;
   description: string;
   date: string;
@@ -37,6 +42,7 @@ export interface AddExpenseCommand {
 export interface UpdateExpenseCommand {
   unitPrice: number;
   quantity: number;
+  unit: QuantityUnit;
   category: ExpenseCategory;
   description: string;
   merchant: string | null;
@@ -65,6 +71,7 @@ export interface ExtractedExpense {
   description: string;
   date: string;
   quantity: number;
+  unit: QuantityUnit;
   merchant: string | null;
   merchantWebsite: string | null;
   /** Discount the scan found on this line in £; 0 when none. */

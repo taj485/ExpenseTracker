@@ -7,6 +7,7 @@ import { ExpenseTableService } from '../../../core/services/expense-table.servic
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
+import { formatQuantity, unitLabel } from '../../../core/utils/quantity.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -44,6 +45,8 @@ export class ExpenseDetailComponent implements OnInit {
   private tableId!: number;
 
   getCategoryMeta = getCategoryMeta;
+  formatQuantity = formatQuantity;
+  unitLabel = unitLabel;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {

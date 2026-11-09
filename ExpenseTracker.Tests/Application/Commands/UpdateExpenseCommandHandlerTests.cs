@@ -59,6 +59,24 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WithWeighedQuantity_UpdatesWeightAndUnit()
+        {
+            var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TableId);
+            var command = new UpdateExpenseCommand(1, 5m, ExpenseCategory.Food, "Chicken", Quantity: 0.75m, Unit: QuantityUnit.Kg);
+
+            _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expense);
+            _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, _currentUser.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(It.Is<Expense>(e =>
+                e.Quantity == 0.75m &&
+                e.Unit == QuantityUnit.Kg)), Times.Once);
+        }
+
+        [Fact]
         public async Task Handle_WithQuantity_UpdatesQuantity()
         {
             // Arrange
@@ -196,6 +214,82 @@ namespace ExpenseTracker.Tests.Application.Commands
             _mockExpenseWriter.Verify(
                 x => x.UpdateAsync(It.IsAny<Expense>()),
                 Times.Never);
+        }
+    
+        private Expense SetUpMilk(decimal discount)
+        {
+            var expense = Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TableId, quantity: 2, discount: discount);
+            _mockExpenseReader.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(expense);
+            _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, _currentUser.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            return expense;
+        }
+
+        [Fact]
+        public async Task Handle_WithDiscount_ReplacesTheStoredDiscount()
+        {
+            var expense = SetUpMilk(0.50m);
+
+            await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2, Discount: 1.25m), CancellationToken.None);
+
+            expense.Discount.Should().Be(1.25m);
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(expense), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_WithZeroDiscount_ClearsTheDiscount()
+        {
+            var expense = SetUpMilk(0.50m);
+
+            await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2, Discount: 0m), CancellationToken.None);
+
+            expense.Discount.Should().Be(0m);
+        }
+
+        [Fact]
+        public async Task Handle_WithoutDiscount_KeepsTheStoredDiscount()
+        {
+            var expense = SetUpMilk(0.50m);
+
+            await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2), CancellationToken.None);
+
+            expense.Discount.Should().Be(0.50m);
+        }
+
+        [Fact]
+        public async Task Handle_LoweringThePriceBelowTheKeptDiscount_ThrowsAndDoesNotSave()
+        {
+            SetUpMilk(0.50m);
+
+            var act = async () => await _handler.Handle(new UpdateExpenseCommand(1, 0.20m, ExpenseCategory.Food, "Milk", Quantity: 2), CancellationToken.None);
+
+            await act.Should().ThrowAsync<ExpenseTracker.Domain.Exceptions.DomainException>()
+                .WithMessage("Discount can't be more than the item total (£0.40).");
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(It.IsAny<Expense>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(-0.50, "Discount can't be negative.")]
+        [InlineData(3.50, "Discount can't be more than the item total (£3.00).")]
+        public async Task Handle_WithInvalidDiscount_ThrowsValidationException(decimal discount, string message)
+        {
+            SetUpMilk(0.50m);
+
+            var act = async () => await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2, Discount: discount), CancellationToken.None);
+
+            (await act.Should().ThrowAsync<ValidationException>())
+                .Which.Errors.Should().ContainSingle(e => e.ErrorMessage == message);
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(It.IsAny<Expense>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_WithDiscountEqualToTheLineTotal_IsAcceptedAndSaved()
+        {
+            var expense = SetUpMilk(0m);
+
+            await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2, Discount: 3.00m), CancellationToken.None);
+
+            expense.Discount.Should().Be(3.00m);
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(expense), Times.Once);
         }
     }
 }

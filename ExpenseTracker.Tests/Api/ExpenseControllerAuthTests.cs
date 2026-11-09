@@ -72,5 +72,13 @@ namespace ExpenseTracker.Tests.Api
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
+    
+        [Fact]
+        public async Task UpdateReceiptDiscount_WithoutToken_Returns401()
+        {
+            var response = await _client.PutAsJsonAsync("/api/expensetable/1/expenses/by-receipt/1/discount", new { receiptDiscount = 1m });
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
     }
 }

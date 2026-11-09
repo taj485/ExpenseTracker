@@ -27,6 +27,36 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
+        public void Parse_ReadsAWeighedItemWithItsWeightAndUnit()
+        {
+            var json = """
+                {"items":[{"unitPrice":5.00,"category":"Food","description":"CHICKEN","date":"2026-11-01","quantity":0.612,"unit":"kg","merchant":"TESCO","discount":0.06}],
+                 "receiptDiscount":0}
+                """;
+
+            var item = Assert.Single(GeminiReceiptParser.Parse(json, Today).Items);
+
+            Assert.Equal(0.612m, item.Quantity);
+            Assert.Equal(QuantityUnit.Kg, item.Unit);
+            Assert.Equal(5.00m, item.UnitPrice);
+            Assert.Equal(0.06m, item.Discount);
+        }
+
+        [Fact]
+        public void Parse_TreatsAFractionalQuantityWithoutAUnitAsWholeItems()
+        {
+            var json = """
+                {"items":[{"unitPrice":1.00,"category":"Food","description":"Bun","date":"2026-11-01","quantity":2.4,"merchant":"Tesco","discount":0}],
+                 "receiptDiscount":0}
+                """;
+
+            var item = Assert.Single(GeminiReceiptParser.Parse(json, Today).Items);
+
+            Assert.Equal(2m, item.Quantity);
+            Assert.Equal(QuantityUnit.Item, item.Unit);
+        }
+
+        [Fact]
         public void Parse_CapsDiscountsAtTheirBounds()
         {
             var json = """

@@ -75,6 +75,8 @@ ExpenseTracker/
 │   │       │   │   ├── heic-converter.spec.ts
 │   │       │   │   ├── merchant.utils.ts
 │   │       │   │   ├── merchant.utils.spec.ts
+│   │       │   │   ├── quantity.utils.ts
+│   │       │   │   ├── quantity.utils.spec.ts
 │   │       │   │   ├── uploader.utils.ts
 │   │       │   │   └── uploader.utils.spec.ts
 │   │       │   └── auth/
@@ -175,6 +177,7 @@ ExpenseTracker/
 │   │           │       └── receipt-group.component.css
 │   │           ├── add-expense/
 │   │           │   ├── add-expense-form.component.ts
+│   │           │   ├── add-expense-form.component.spec.ts
 │   │           │   ├── add-expense-form.component.html
 │   │           │   └── add-expense-form.component.css
 │   │           ├── upload-receipt/
@@ -221,7 +224,8 @@ ExpenseTracker/
 │   │   ├── ExpenseTableMember.cs
 │   │   └── ReceiptImage.cs
 │   ├── Enums/
-│   │   └── ExpenseCategory.cs
+│   │   ├── ExpenseCategory.cs
+│   │   └── QuantityUnit.cs
 │   ├── Interfaces/
 │   │   ├── IAccountWriter.cs
 │   │   ├── IDeletedAccountReader.cs
@@ -265,6 +269,7 @@ ExpenseTracker/
 │   │   │   ├── AddExpenseCommandHandlerTests.cs
 │   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseCommandHandlerTests.cs
 │   │   │   ├── DeleteAccountCommandHandlerTests.cs
 │   │   │   ├── ExtractReceiptExpensesCommandHandlerTests.cs
@@ -295,11 +300,13 @@ ExpenseTracker/
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
 │   │   ├── MinioReceiptImageStoreTests.cs
+│   │   ├── ReceiptQuantityNormalizerTests.cs
 │   │   ├── UserRepositoryTests.cs
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
 │       ├── AccountControllerTests.cs
 │       ├── ExpenseControllerAuthTests.cs
+│       ├── ExpenseControllerReceiptDiscountTests.cs
 │       └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ExpenseTrackerAPI/
@@ -332,6 +339,10 @@ ExpenseTracker/
 │   │   ├── DeleteAccount/
 │   │   │   ├── DeleteAccountCommand.cs
 │   │   │   └── DeleteAccountCommandHandler.cs
+│   │   ├── UpdateReceiptDiscount/
+│   │   │   ├── UpdateReceiptDiscountCommand.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandler.cs
+│   │   │   └── UpdateReceiptDiscountValidator.cs
 │   │   ├── DeleteExpense/
 │   │   │   ├── DeleteExpenseCommand.cs
 │   │   │   ├── DeleteExpenseCommandHandler.cs
@@ -436,7 +447,8 @@ ExpenseTracker/
     ├── AI/
     │   ├── GeminiOptions.cs
     │   ├── GeminiReceiptParser.cs
-    │   └── GeminiReceiptExtractionService.cs
+    │   ├── GeminiReceiptExtractionService.cs
+    │   └── ReceiptQuantityNormalizer.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
     │   ├── AzureBlobReceiptImageStore.cs

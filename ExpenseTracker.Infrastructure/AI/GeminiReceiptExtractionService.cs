@@ -12,6 +12,7 @@ namespace ExpenseTracker.Infrastructure.AI
     public class GeminiReceiptExtractionService : IReceiptExtractionService
     {
         private static readonly string[] AllowedCategories = Enum.GetNames(typeof(ExpenseCategory));
+        private static readonly string[] AllowedUnits = Enum.GetNames(typeof(QuantityUnit));
 
         private const string PromptText =
             "You are analyzing a photo of a purchase receipt. Extract every purchased line item. " +
@@ -25,7 +26,10 @@ namespace ExpenseTracker.Infrastructure.AI
             "Any discount that covers more than one item (multibuy, \"3 for 2\", meal deal, \"any 2 for £5\", bundle savings), any whole-receipt discount (coupon, staff discount, a savings line not tied to one item), " +
             "and any discount where it is unclear whether it covers one item or several goes into receiptDiscount instead, never onto an item; add several such discounts together. " +
             "Do not count a \"Total savings\" or \"You saved\" summary line that only adds up discounts already reported. " +
-            "If a discount is printed only as a percentage, convert it to the pound amount it takes off, rounded to the penny. Use 0 when there is no discount.";
+            "If a discount is printed only as a percentage, convert it to the pound amount it takes off, rounded to the penny. Use 0 when there is no discount. " +
+            "For items sold by weight or volume (e.g. '0.612 kg @ £5.00/kg'), report the measured amount as the quantity, " +
+            "its unit (Kg, G, Lb or L), and the price per that unit as the unit price. " +
+            "For counted items use unit 'Item' and a whole-number quantity.";
 
         private readonly GeminiOptions _options;
 
@@ -107,11 +111,12 @@ namespace ExpenseTracker.Infrastructure.AI
                         ["category"] = new Schema { Type = GenAIType.String, Enum = AllowedCategories.ToList() },
                         ["description"] = new Schema { Type = GenAIType.String },
                         ["date"] = new Schema { Type = GenAIType.String, Format = "date", Description = "Purchase date in YYYY-MM-DD format, if visible on the receipt." },
-                        ["quantity"] = new Schema { Type = GenAIType.Integer },
+                        ["quantity"] = new Schema { Type = GenAIType.Number, Description = "How many items, or the measured weight/volume for items sold by weight or volume." },
+                        ["unit"] = new Schema { Type = GenAIType.String, Enum = AllowedUnits.ToList(), Description = "Item for counted items; Kg, G, Lb or L for items sold by weight or volume." },
                         ["merchant"] = new Schema { Type = GenAIType.String, Description = "The shop or merchant name printed on the receipt. Use the exact same value for every item on this receipt." },
                         ["discount"] = new Schema { Type = GenAIType.Number, Description = "Total of the discount lines that clearly belong to this one item only, as a positive pound amount. 0 if none." },
                     },
-                    Required = new List<string> { "unitPrice", "category", "description", "date", "quantity", "merchant", "discount" },
+                    Required = new List<string> { "unitPrice", "category", "description", "date", "quantity", "unit", "merchant", "discount" },
                 };
 
             return new Schema

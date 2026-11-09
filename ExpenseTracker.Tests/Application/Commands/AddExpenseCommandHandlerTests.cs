@@ -73,6 +73,32 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WithWeighedQuantity_PassesWeightAndUnitToExpense()
+        {
+            var command = new AddExpenseCommand(TableId, 5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, Quantity: 0.612m, Unit: QuantityUnit.Kg);
+
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e =>
+                e.Quantity == 0.612m &&
+                e.Unit == QuantityUnit.Kg), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_WithFractionalItemQuantity_ThrowsValidationException()
+        {
+            var command = new AddExpenseCommand(TableId, 5m, ExpenseCategory.Food, "Apples", DateTime.UtcNow, Quantity: 1.5m);
+
+            Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ValidationException>()
+                .WithMessage("*whole number*");
+        }
+
+        [Fact]
         public async Task Handle_WithQuantity_PassesQuantityToExpense()
         {
             // Arrange

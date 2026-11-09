@@ -11,6 +11,7 @@ namespace ExpenseTracker.Application.DTO
                 Id = expense.Id,
                 UnitPrice = expense.UnitPrice.Amount,
                 Quantity = expense.Quantity,
+                Unit = expense.Unit.ToString(),
                 Discount = expense.Discount,
                 ReceiptDiscount = expense.Receipt?.Discount ?? 0,
                 Currency = expense.UnitPrice.Currency,

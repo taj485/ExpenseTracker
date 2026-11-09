@@ -11,6 +11,7 @@ import { MembersDialogComponent } from '../../expense-table/members-dialog.compo
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { lineTotalAfterDiscount, paidTotal } from '../../../core/utils/discount.utils';
+import { formatQuantityLine } from '../../../core/utils/quantity.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
 
@@ -65,6 +66,7 @@ export class ExpenseListComponent implements OnInit {
 
   getCategoryMeta = getCategoryMeta;
   lineAmount = lineTotalAfterDiscount;
+  quantityLine = formatQuantityLine;
 
   /** Keys of receipt cards folded down to their header. Every card starts expanded. */
   readonly collapsedReceipts = signal<ReadonlySet<string>>(new Set());

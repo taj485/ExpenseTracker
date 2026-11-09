@@ -3,7 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ALL_CATEGORIES } from '../../../core/utils/category.utils';
-import { ExpenseCategory } from '../../../core/models/expense.model';
+import { ExpenseCategory, QuantityUnit } from '../../../core/models/expense.model';
+import { QUANTITY_UNITS, quantityError, quantityStep } from '../../../core/utils/quantity.utils';
 
 @Component({
   selector: 'app-expense-edit',
@@ -24,12 +25,15 @@ export class ExpenseEditComponent implements OnInit {
   private id!: number;
 
   readonly categories = ALL_CATEGORIES;
+  readonly units = QUANTITY_UNITS;
+  readonly quantityStep = quantityStep;
 
   readonly loading = signal(true);
   readonly notFound = signal(false);
 
   unitPrice = signal('');
   quantity = signal('1');
+  unit = signal<QuantityUnit>('Item');
   category = signal<ExpenseCategory>('Food');
   description = signal('');
   merchant = signal('');
@@ -45,6 +49,7 @@ export class ExpenseEditComponent implements OnInit {
       (e) => {
         this.unitPrice.set(String(e.unitPrice));
         this.quantity.set(String(e.quantity));
+        this.unit.set(e.unit ?? 'Item');
         this.category.set(e.category);
         this.description.set(e.description);
         this.merchant.set(e.merchant ?? '');
@@ -59,15 +64,16 @@ export class ExpenseEditComponent implements OnInit {
 
   onSubmit(): void {
     const unitPrice = parseFloat(this.unitPrice());
-    const quantity = parseInt(this.quantity(), 10);
+    const quantity = parseFloat(this.quantity());
     const description = this.description().trim();
 
     if (isNaN(unitPrice) || unitPrice <= 0) {
       this.formError.set('Unit price must be greater than zero.');
       return;
     }
-    if (isNaN(quantity) || quantity < 1) {
-      this.formError.set('Quantity must be at least 1.');
+    const quantityProblem = quantityError(quantity, this.unit());
+    if (quantityProblem) {
+      this.formError.set(quantityProblem);
       return;
     }
     if (!description) {
@@ -81,7 +87,7 @@ export class ExpenseEditComponent implements OnInit {
     this.expenseService.updateExpense(
       this.tableId,
       this.id,
-      { unitPrice, quantity, category: this.category(), description, merchant: this.merchant().trim() || null },
+      { unitPrice, quantity, unit: this.unit(), category: this.category(), description, merchant: this.merchant().trim() || null },
       () => {
         this.submitting.set(false);
         this.router.navigate(['/expenses/table', this.tableId, this.id]);
