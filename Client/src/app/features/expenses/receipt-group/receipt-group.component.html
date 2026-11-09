@@ -53,8 +53,8 @@
               <span class="group-item-description">{{ item.description }}</span>
             </div>
             <div class="group-item-actions">
-              @if (item.quantity > 1) {
-                <span class="group-item-qty">{{ item.quantity }} × £{{ item.unitPrice | number:'1.2-2' }}</span>
+              @if (showsQuantityLine(item)) {
+                <span class="group-item-qty">{{ quantityLine(item) }}</span>
               }
               @if (item.discount) {
                 <span class="group-item-full">£{{ lineTotal(item) | number:'1.2-2' }}</span>

@@ -28,6 +28,7 @@ function scanResult(lines: ScanLine[], receiptDiscount = 0): ExtractedExpense[] 
   return lines.map(l => ({
     unitPrice: l.unitPrice,
     quantity: l.quantity ?? 1,
+    unit: 'Item',
     category: l.category ?? 'Food',
     description: l.description,
     date: DATE,
@@ -158,6 +159,7 @@ function savedExpenses(batch: SavedBatch): Expense[] {
     id: i + 1,
     unitPrice: c.unitPrice,
     quantity: c.quantity,
+    unit: c.unit,
     currency: 'GBP',
     description: c.description,
     category: c.category,

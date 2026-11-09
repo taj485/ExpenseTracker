@@ -6,6 +6,7 @@ import { convertIfHeic } from '../../core/utils/heic-converter';
 import { todayLocalISODate } from '../../core/utils/date.utils';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
+import { QUANTITY_UNITS, quantityError, quantityStep, unitLabel } from '../../core/utils/quantity.utils';
 import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
 import { itemDiscountError, receiptDiscountError } from '../../core/utils/discount.utils';
 
@@ -38,6 +39,9 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   private nextDraftId = 0;
 
   readonly categories = ALL_CATEGORIES;
+  readonly units = QUANTITY_UNITS;
+  readonly quantityStep = quantityStep;
+  readonly unitLabel = unitLabel;
   readonly maxDate = todayLocalISODate();
 
   selectedFile = signal<File | null>(null);
@@ -193,6 +197,12 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     const items = this.extractedExpenses();
     if (items.length === 0 || this.submitting()) return;
 
+    const invalid = items.find(i => quantityError(i.quantity, i.unit ?? 'Item'));
+    if (invalid) {
+      this.formError.set(`${invalid.description || 'Item'}: ${quantityError(invalid.quantity, invalid.unit ?? 'Item')}`);
+      return;
+    }
+
     this.formError.set(null);
     if (!this.validateDiscounts(items)) return;
 
@@ -200,6 +210,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       expenseTableId: 0,
       unitPrice: i.unitPrice,
       quantity: i.quantity,
+      unit: i.unit ?? 'Item',
       category: i.category,
       description: i.description.trim(),
       date: i.date,

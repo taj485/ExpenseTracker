@@ -41,7 +41,7 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
                 throw new NotFoundException($"Expense with id {request.Id} was not found");
 
             expense.UpdateUnitPrice(request.UnitPrice);
-            expense.UpdateQuantity(request.Quantity);
+            expense.UpdateQuantity(request.Quantity, request.Unit);
             // Absent keeps the stored discount; either way it is checked against the new line total.
             expense.UpdateDiscount(request.Discount ?? expense.Discount);
             expense.UpdateCategory(request.Category);

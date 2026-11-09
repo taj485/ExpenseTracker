@@ -3,7 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../core/services/expense.service';
 import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { todayLocalISODate } from '../../core/utils/date.utils';
-import { AddExpenseCommand, ExpenseCategory } from '../../core/models/expense.model';
+import { AddExpenseCommand, ExpenseCategory, QuantityUnit } from '../../core/models/expense.model';
+import { QUANTITY_UNITS, quantityError, quantityStep } from '../../core/utils/quantity.utils';
 import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
 
 @Component({
@@ -20,6 +21,8 @@ export class AddExpenseFormComponent {
   private readonly expenseService = inject(ExpenseService);
 
   readonly categories = ALL_CATEGORIES;
+  readonly units = QUANTITY_UNITS;
+  readonly quantityStep = quantityStep;
 
   readonly maxDate = todayLocalISODate();
 
@@ -28,6 +31,7 @@ export class AddExpenseFormComponent {
 
   unitPrice   = signal('');
   quantity    = signal('1');
+  unit        = signal<QuantityUnit>('Item');
   category    = signal<ExpenseCategory>('Food');
   description = signal('');
   date        = signal(todayLocalISODate());
@@ -37,15 +41,16 @@ export class AddExpenseFormComponent {
 
   onSubmit(): void {
     const unitPrice = parseFloat(this.unitPrice());
-    const quantity = parseInt(this.quantity(), 10);
+    const quantity = parseFloat(this.quantity());
     const description = this.description().trim();
 
     if (isNaN(unitPrice) || unitPrice <= 0) {
       this.formError.set('Unit price must be greater than zero.');
       return;
     }
-    if (isNaN(quantity) || quantity < 1) {
-      this.formError.set('Quantity must be at least 1.');
+    const quantityProblem = quantityError(quantity, this.unit());
+    if (quantityProblem) {
+      this.formError.set(quantityProblem);
       return;
     }
     if (!description) {
@@ -61,6 +66,7 @@ export class AddExpenseFormComponent {
     this.pendingCommand = {
       unitPrice,
       quantity,
+      unit: this.unit(),
       category: this.category(),
       description,
       date: this.date(),
@@ -81,6 +87,7 @@ export class AddExpenseFormComponent {
         this.pendingCommand = null;
         this.unitPrice.set('');
         this.quantity.set('1');
+        this.unit.set('Item');
         this.description.set('');
         this.category.set('Food');
         this.date.set(todayLocalISODate());

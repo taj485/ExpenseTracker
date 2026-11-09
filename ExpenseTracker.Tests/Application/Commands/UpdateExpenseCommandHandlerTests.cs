@@ -59,6 +59,24 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WithWeighedQuantity_UpdatesWeightAndUnit()
+        {
+            var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TableId);
+            var command = new UpdateExpenseCommand(1, 5m, ExpenseCategory.Food, "Chicken", Quantity: 0.75m, Unit: QuantityUnit.Kg);
+
+            _mockExpenseReader.Setup(x => x.GetByIdAsync(command.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expense);
+            _mockExpenseTableReader.Setup(x => x.IsMemberAsync(TableId, _currentUser.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(It.Is<Expense>(e =>
+                e.Quantity == 0.75m &&
+                e.Unit == QuantityUnit.Kg)), Times.Once);
+        }
+
+        [Fact]
         public async Task Handle_WithQuantity_UpdatesQuantity()
         {
             // Arrange

@@ -77,7 +77,76 @@ namespace ExpenseTracker.Tests.Domain
             Action act = () => Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId, quantity: quantity);
             // Assert
             act.Should().Throw<DomainException>()
-                .WithMessage("Quantity must be at least 1");
+                .WithMessage("Quantity must be a whole number of at least 1");
+        }
+
+        [Fact]
+        public void Create_WithoutUnit_DefaultsToItem()
+        {
+            var expense = Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId);
+
+            expense.Unit.Should().Be(QuantityUnit.Item);
+        }
+
+        [Fact]
+        public void Create_WithFractionalItemQuantity_ThrowsDomainException()
+        {
+            Action act = () => Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId, quantity: 1.5m);
+
+            act.Should().Throw<DomainException>()
+                .WithMessage("Quantity must be a whole number of at least 1");
+        }
+
+        [Fact]
+        public void Create_WithWeighedQuantity_StoresWeightAndUnit()
+        {
+            var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId, quantity: 0.612m, unit: QuantityUnit.Kg);
+
+            expense.Quantity.Should().Be(0.612m);
+            expense.Unit.Should().Be(QuantityUnit.Kg);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-0.5)]
+        public void Create_WithWeighedQuantityNotAboveZero_ThrowsDomainException(double quantity)
+        {
+            Action act = () => Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId, quantity: (decimal)quantity, unit: QuantityUnit.Kg);
+
+            act.Should().Throw<DomainException>()
+                .WithMessage("Quantity must be greater than 0");
+        }
+
+        [Fact]
+        public void Create_WithMoreThanThreeDecimalPlaces_ThrowsDomainException()
+        {
+            Action act = () => Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId, quantity: 0.6125m, unit: QuantityUnit.Kg);
+
+            act.Should().Throw<DomainException>()
+                .WithMessage("Quantity can have at most 3 decimal places");
+        }
+
+        [Fact]
+        public void UpdateQuantity_WithWeighedQuantity_UpdatesQuantityAndUnit()
+        {
+            var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId);
+
+            expense.UpdateQuantity(0.75m, QuantityUnit.Kg);
+
+            expense.Quantity.Should().Be(0.75m);
+            expense.Unit.Should().Be(QuantityUnit.Kg);
+        }
+
+        [Fact]
+        public void UpdateQuantity_WhenInvalid_LeavesQuantityAndUnitUnchanged()
+        {
+            var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId, quantity: 2);
+
+            Action act = () => expense.UpdateQuantity(0.5m, QuantityUnit.Item);
+
+            act.Should().Throw<DomainException>();
+            expense.Quantity.Should().Be(2);
+            expense.Unit.Should().Be(QuantityUnit.Item);
         }
 
         [Fact]
@@ -114,7 +183,7 @@ namespace ExpenseTracker.Tests.Domain
             Action act = () => expense.UpdateQuantity(quantity);
             // Assert
             act.Should().Throw<DomainException>()
-                .WithMessage("Quantity must be at least 1");
+                .WithMessage("Quantity must be a whole number of at least 1");
         }
 
         [Fact]

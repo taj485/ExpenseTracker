@@ -5,6 +5,7 @@ import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { expenseTotal } from '../../../core/utils/expense.utils';
+import { formatQuantityLine, showsQuantityLine } from '../../../core/utils/quantity.utils';
 import { lineTotalAfterDiscount, receiptBreakdown } from '../../../core/utils/discount.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
@@ -35,6 +36,8 @@ export class ReceiptGroupComponent implements OnInit {
 
   getCategoryMeta = getCategoryMeta;
   lineTotal = expenseTotal;
+  quantityLine = formatQuantityLine;
+  showsQuantityLine = showsQuantityLine;
   lineAfterDiscount = lineTotalAfterDiscount;
 
   /** Every line repeats its receipt's discount, so the first line's covers the receipt. */
