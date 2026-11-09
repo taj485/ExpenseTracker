@@ -92,7 +92,7 @@ namespace ExpenseTracker.Tests.Application.Commands
 
             var act = async () => await _handler.Handle(new UpdateReceiptDiscountCommand(1m, TableId, ReceiptId), CancellationToken.None);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Receipt with id {ReceiptId} was not found");
             _mockExpenseReader.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -103,7 +103,7 @@ namespace ExpenseTracker.Tests.Application.Commands
 
             var act = async () => await _handler.Handle(new UpdateReceiptDiscountCommand(1m, TableId, ReceiptId), CancellationToken.None);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Receipt with id {ReceiptId} was not found");
         }
     }
 }

@@ -262,5 +262,16 @@ namespace ExpenseTracker.Tests.Application.Commands
                 .Which.Errors.Should().ContainSingle(e => e.ErrorMessage == message);
             _mockExpenseWriter.Verify(x => x.UpdateAsync(It.IsAny<Expense>()), Times.Never);
         }
+
+        [Fact]
+        public async Task Handle_WithDiscountEqualToTheLineTotal_IsAcceptedAndSaved()
+        {
+            var expense = SetUpMilk(0m);
+
+            await _handler.Handle(new UpdateExpenseCommand(1, 1.50m, ExpenseCategory.Food, "Milk", Quantity: 2, Discount: 3.00m), CancellationToken.None);
+
+            expense.Discount.Should().Be(3.00m);
+            _mockExpenseWriter.Verify(x => x.UpdateAsync(expense), Times.Once);
+        }
     }
 }

@@ -290,6 +290,7 @@ ExpenseTracker/
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
 │       ├── ExpenseControllerAuthTests.cs
+│       ├── ExpenseControllerReceiptDiscountTests.cs
 │       └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ExpenseTrackerAPI/

@@ -48,5 +48,13 @@ namespace ExpenseTracker.Tests.Domain
 
             act.Should().Throw<DomainException>().WithMessage("Receipt discount can't be more than the receipt total (£7.50).");
         }
+
+        [Fact]
+        public void UpdateDiscount_AboveAWholePoundTotal_FormatsTheTotalToTwoDecimals()
+        {
+            Action act = () => Receipt.Create(DateTime.UtcNow).UpdateDiscount(9m, 8m);
+
+            act.Should().Throw<DomainException>().WithMessage("Receipt discount can't be more than the receipt total (£8.00).");
+        }
     }
 }

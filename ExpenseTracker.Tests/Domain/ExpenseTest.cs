@@ -219,5 +219,15 @@ namespace ExpenseTracker.Tests.Domain
 
             act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total (£3.00).");
         }
+
+        [Fact]
+        public void UpdateDiscount_AboveAWholePoundLineTotal_FormatsTheTotalToTwoDecimals()
+        {
+            var expense = Expense.Create(2m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 1);
+
+            Action act = () => expense.UpdateDiscount(3m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total (£2.00).");
+        }
     }
 }
