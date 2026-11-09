@@ -22,6 +22,11 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
             builder.Property(r => r.ImageReference)
                 .HasMaxLength(500);
 
+            builder.Property(r => r.Discount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasDefaultValue(0m);
+
             builder.Navigation(r => r.Expenses)
                    .UsePropertyAccessMode(PropertyAccessMode.Field);
         }

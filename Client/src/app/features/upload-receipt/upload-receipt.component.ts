@@ -8,11 +8,18 @@ import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
 import { QUANTITY_UNITS, quantityError, quantityStep, unitLabel } from '../../core/utils/quantity.utils';
 import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
+import { itemDiscountError, receiptDiscountError } from '../../core/utils/discount.utils';
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.8;
 
-type DraftExpense = ExtractedExpense & { id: number };
+/** A reviewed item. An empty discount (null) means £0.00. */
+type DraftExpense = Omit<ExtractedExpense, 'discount' | 'receiptDiscount'> & { id: number; discount: number | null };
+
+/** An empty number field is null, so it shows empty rather than 0. */
+function parseOptionalAmount(value: string): number | null {
+  return value.trim() === '' ? null : +value;
+}
 
 @Component({
   selector: 'app-upload-receipt',
@@ -50,6 +57,10 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   formError         = signal<string | null>(null);
   imageEnlarged     = signal(false);
   receiptImageReference = signal<string | null>(null);
+  receiptDiscount   = signal<number | null>(null);
+  itemDiscountErrors = signal<Record<number, string>>({});
+  receiptDiscountError = signal<string | null>(null);
+  readonly parseOptionalAmount = parseOptionalAmount;
 
   readonly step = signal<'review' | 'select-tables'>('review');
   private pendingCommands: AddExpenseCommand[] | null = null;
@@ -144,7 +155,9 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       const items = await new Promise<ExtractedExpense[]>((resolve, reject) => {
         this.expenseService.extractReceipt(tableId, resizedFile, resolve, (msg) => reject(new Error(msg)));
       });
-      this.extractedExpenses.set(items.map(e => ({ ...e, id: this.nextDraftId++ })));
+      // The scan repeats the receipt discount on every item; 0 means none, which shows as empty.
+      this.extractedExpenses.set(items.map(({ receiptDiscount: _, ...e }) => ({ ...e, discount: e.discount || null, id: this.nextDraftId++ })));
+      this.receiptDiscount.set(items[0]?.receiptDiscount || null);
 
       this.expenseService.uploadReceiptImage(
         tableId,
@@ -160,7 +173,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateItem(id: number, patch: Partial<ExtractedExpense>): void {
+  updateItem(id: number, patch: Partial<DraftExpense>): void {
     this.extractedExpenses.update(items =>
       items.map(i => (i.id === id ? { ...i, ...patch } : i))
     );
@@ -175,6 +188,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     this.formError.set(null);
     this.extractedExpenses.set([]);
     this.receiptImageReference.set(null);
+    this.resetDiscounts();
     this.setFile(null);
     void this.startCamera();
   }
@@ -190,6 +204,8 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
     }
 
     this.formError.set(null);
+    if (!this.validateDiscounts(items)) return;
+
     this.pendingCommands = items.map(i => ({
       expenseTableId: 0,
       unitPrice: i.unitPrice,
@@ -199,8 +215,29 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       description: i.description.trim(),
       date: i.date,
       merchant: i.merchant,
+      discount: i.discount ?? 0,
     }));
     this.step.set('select-tables');
+  }
+
+  /** Shows each discount problem beside its field; returns true when there are none. */
+  private validateDiscounts(items: DraftExpense[]): boolean {
+    const itemErrors: Record<number, string> = {};
+    for (const item of items) {
+      const message = itemDiscountError(item);
+      if (message) itemErrors[item.id] = message;
+    }
+    this.itemDiscountErrors.set(itemErrors);
+    // The receipt bound depends on valid item discounts, so only check it once those pass.
+    const hasItemErrors = Object.keys(itemErrors).length > 0;
+    this.receiptDiscountError.set(hasItemErrors ? null : receiptDiscountError(items, this.receiptDiscount()));
+    return !hasItemErrors && this.receiptDiscountError() === null;
+  }
+
+  private resetDiscounts(): void {
+    this.receiptDiscount.set(null);
+    this.itemDiscountErrors.set({});
+    this.receiptDiscountError.set(null);
   }
 
   onTablesConfirmed(tableIds: number[]): void {
@@ -212,6 +249,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       tableIds,
       this.pendingCommands,
       this.receiptImageReference(),
+      this.receiptDiscount() ?? 0,
       (results) => {
         this.submitting.set(false);
 
@@ -231,6 +269,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
           this.setFile(null);
           this.extractedExpenses.set([]);
           this.receiptImageReference.set(null);
+          this.resetDiscounts();
           this.step.set('review');
           this.submitted.emit();
           return;

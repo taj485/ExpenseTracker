@@ -1,3 +1,4 @@
+using ExpenseTracker.Application.Commands.AddExpense;
 using ExpenseTracker.Domain.Entities;
 using FluentValidation;
 
@@ -23,6 +24,13 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
                 .IsInEnum().WithMessage("Invalid expense category");
             RuleFor(x => x.Merchant)
                 .MaximumLength(200).WithMessage("Merchant name is too long.");
+            RuleFor(x => x.Discount)
+                .GreaterThanOrEqualTo(0).WithMessage("Discount can't be negative.")
+                .When(x => x.Discount.HasValue);
+            RuleFor(x => x.Discount)
+                .Must((command, discount) => discount <= command.UnitPrice * command.Quantity)
+                .When(x => x.Discount >= 0)
+                .WithMessage(x => $"Discount can't be more than the item total ({AddExpenseValidator.FormatPounds(x.UnitPrice * x.Quantity)}).");
         }
     }
 }

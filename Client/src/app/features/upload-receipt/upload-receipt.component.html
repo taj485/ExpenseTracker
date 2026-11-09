@@ -100,7 +100,22 @@
                 }
               </select>
             </div>
+            <div class="form-group extraction-field-discount">
+              <label [for]="'discount-' + item.id">Discount (£)</label>
+              <input
+                [id]="'discount-' + item.id"
+                class="input-item-discount"
+                type="number"
+                step="0.01"
+                min="0"
+                [value]="item.discount ?? ''"
+                (input)="updateItem(item.id, { discount: parseOptionalAmount($any($event.target).value) })"
+              />
+            </div>
           </div>
+          @if (itemDiscountErrors()[item.id]; as discountError) {
+            <p class="upload-error">{{ discountError }}</p>
+          }
 
           <div class="form-group">
             <label>Category</label>
@@ -141,6 +156,22 @@
         </div>
       }
     </div>
+
+    <div class="form-group">
+      <label for="receipt-discount">Receipt discount (£)</label>
+      <input
+        id="receipt-discount"
+        class="input-receipt-discount"
+        type="number"
+        step="0.01"
+        min="0"
+        [value]="receiptDiscount() ?? ''"
+        (input)="receiptDiscount.set(parseOptionalAmount($any($event.target).value))"
+      />
+    </div>
+    @if (receiptDiscountError()) {
+      <p class="upload-error">{{ receiptDiscountError() }}</p>
+    }
 
     <div class="extraction-actions">
       <button type="button" class="btn-submit" [disabled]="submitting()" (click)="onAddExpenses()">

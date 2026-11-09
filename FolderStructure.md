@@ -64,6 +64,8 @@ ExpenseTracker/
 │   │       │   │   ├── category.utils.ts
 │   │       │   │   ├── date.utils.ts
 │   │       │   │   ├── date.utils.spec.ts
+│   │       │   │   ├── discount.utils.ts
+│   │       │   │   ├── discount.utils.spec.ts
 │   │       │   │   ├── download.utils.ts
 │   │       │   │   ├── expense-filter.utils.ts
 │   │       │   │   ├── expense-filter.utils.spec.ts
@@ -159,7 +161,8 @@ ExpenseTracker/
 │   │           │   │   ├── expense-list.component.ts
 │   │           │   │   ├── expense-list.component.html
 │   │           │   │   ├── expense-list.component.css
-│   │           │   │   └── expense-list.component.spec.ts
+│   │           │   │   ├── expense-list.component.spec.ts
+│   │           │   │   └── expense-list.acceptance.spec.ts
 │   │           │   ├── expense-detail/
 │   │           │   │   ├── expense-detail.component.ts
 │   │           │   │   ├── expense-detail.component.html
@@ -180,7 +183,8 @@ ExpenseTracker/
 │   │           ├── upload-receipt/
 │   │           │   ├── upload-receipt.component.ts
 │   │           │   ├── upload-receipt.component.html
-│   │           │   └── upload-receipt.component.css
+│   │           │   ├── upload-receipt.component.css
+│   │           │   └── receipt-discounts.acceptance.spec.ts
 │   │           └── expense-table/
 │   │               ├── create-expense-table-prompt.component.ts
 │   │               ├── create-expense-table-prompt.component.html
@@ -251,6 +255,7 @@ ExpenseTracker/
 │   │   ├── MoneyTests.cs
 │   │   ├── ExpenseTests.cs
 │   │   ├── MerchantTests.cs
+│   │   ├── ReceiptTests.cs
 │   │   ├── ExpenseTableTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
@@ -258,6 +263,7 @@ ExpenseTracker/
 │   │   │   ├── AddExpenseCommandHandlerTests.cs
 │   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseCommandHandlerTests.cs
 │   │   │   ├── ExtractReceiptExpensesCommandHandlerTests.cs
 │   │   │   ├── CreateExpenseTableCommandHandlerTests.cs
@@ -270,6 +276,7 @@ ExpenseTracker/
 │   │   ├── Queries/
 │   │   │   ├── GetAllExpensesQueryHandlerTests.cs
 │   │   │   ├── GetExpenseQueryHandlerTests.cs
+│   │   │   ├── ExpenseDtoMapperTests.cs
 │   │   │   ├── GetExpenseTablesForUserQueryHandlerTests.cs
 │   │   │   ├── GetExpenseTableMembersQueryHandlerTests.cs
 │   │   │   └── GetReceiptImageQueryHandlerTests.cs
@@ -279,6 +286,7 @@ ExpenseTracker/
 │   ├── Infrastructure/
 │   │   ├── AuthenticationRegistrationTests.cs
 │   │   ├── ExpenseRepositoryTests.cs
+│   │   ├── GeminiReceiptParserTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
@@ -287,6 +295,7 @@ ExpenseTracker/
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
 │       ├── ExpenseControllerAuthTests.cs
+│       ├── ExpenseControllerReceiptDiscountTests.cs
 │       └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ExpenseTrackerAPI/
@@ -315,6 +324,10 @@ ExpenseTracker/
 │   │   │   ├── UpdateExpenseCommand.cs
 │   │   │   ├── UpdateExpenseCommandHandler.cs
 │   │   │   └── UpdateExpenseValidator.cs
+│   │   ├── UpdateReceiptDiscount/
+│   │   │   ├── UpdateReceiptDiscountCommand.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandler.cs
+│   │   │   └── UpdateReceiptDiscountValidator.cs
 │   │   ├── DeleteExpense/
 │   │   │   ├── DeleteExpenseCommand.cs
 │   │   │   ├── DeleteExpenseCommandHandler.cs
@@ -374,6 +387,7 @@ ExpenseTracker/
 │   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
 │   │   ├── ExpenseDto.cs
+│   │   ├── ExpenseDtoMapper.cs
 │   │   ├── ExpenseTableDto.cs
 │   │   ├── ExpenseTableMemberDto.cs
 │   │   ├── MonthlySummaryDto.cs
@@ -412,6 +426,7 @@ ExpenseTracker/
     │   └── DevBypassAuthenticationHandler.cs
     ├── AI/
     │   ├── GeminiOptions.cs
+    │   ├── GeminiReceiptParser.cs
     │   ├── GeminiReceiptExtractionService.cs
     │   └── ReceiptQuantityNormalizer.cs
     ├── Storage/

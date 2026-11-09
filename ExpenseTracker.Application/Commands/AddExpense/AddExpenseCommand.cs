@@ -6,5 +6,5 @@ using System.Text;
 
 namespace ExpenseTracker.Application.Commands.AddExpense
 {
-    public record AddExpenseCommand(int ExpenseTableId, decimal UnitPrice, ExpenseCategory Category, string Description, DateTime Date, string? Merchant = null, decimal Quantity = 1, QuantityUnit Unit = QuantityUnit.Item) : IRequest<int>;
+    public record AddExpenseCommand(int ExpenseTableId, decimal UnitPrice, ExpenseCategory Category, string Description, DateTime Date, string? Merchant = null, decimal Quantity = 1, decimal Discount = 0, QuantityUnit Unit = QuantityUnit.Item) : IRequest<int>;
 }

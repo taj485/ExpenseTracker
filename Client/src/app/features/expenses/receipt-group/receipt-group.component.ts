@@ -6,6 +6,7 @@ import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { expenseTotal } from '../../../core/utils/expense.utils';
 import { formatQuantityLine, showsQuantityLine } from '../../../core/utils/quantity.utils';
+import { lineTotalAfterDiscount, receiptBreakdown } from '../../../core/utils/discount.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
@@ -37,8 +38,11 @@ export class ReceiptGroupComponent implements OnInit {
   lineTotal = expenseTotal;
   quantityLine = formatQuantityLine;
   showsQuantityLine = showsQuantityLine;
+  lineAfterDiscount = lineTotalAfterDiscount;
 
-  readonly totalAmount = computed(() => this.items().reduce((sum, i) => sum + expenseTotal(i), 0));
+  /** Every line repeats its receipt's discount, so the first line's covers the receipt. */
+  readonly breakdown = computed(() => receiptBreakdown(this.items(), this.items()[0]?.receiptDiscount));
+  readonly hasDiscount = computed(() => this.breakdown().itemDiscounts > 0 || this.breakdown().receiptDiscount > 0);
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {

@@ -3,6 +3,7 @@ using ExpenseTracker.Application.Commands.AddExpensesBatch;
 using ExpenseTracker.Application.Commands.DeleteExpense;
 using ExpenseTracker.Application.Commands.ExtractReceiptExpenses;
 using ExpenseTracker.Application.Commands.UpdateExpense;
+using ExpenseTracker.Application.Commands.UpdateReceiptDiscount;
 using ExpenseTracker.Application.Commands.UploadReceiptImage;
 using ExpenseTracker.Application.Queries.GetAllExpenses;
 using ExpenseTracker.Application.Queries.GetExpenseById;
@@ -135,6 +136,14 @@ namespace ExpenseTrackerAPI.Controllers
                 return BadRequest("Route id and body id must match.");
 
             await _mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+
+        // PUT api/expensetable/{tableId}/expenses/by-receipt/5/discount
+        [HttpPut("by-receipt/{receiptId}/discount")]
+        public async Task<IActionResult> UpdateReceiptDiscount(int tableId, int receiptId, [FromBody] UpdateReceiptDiscountCommand command, CancellationToken cancellationToken)
+        {
+            await _mediator.Send(command with { ExpenseTableId = tableId, ReceiptId = receiptId }, cancellationToken);
             return NoContent();
         }
 

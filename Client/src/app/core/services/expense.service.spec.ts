@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ExpenseService } from './expense.service';
 import { Expense } from '../models/expense.model';
 import { currentMonthKey } from '../utils/date.utils';
@@ -251,5 +252,34 @@ describe('ExpenseService month selection', () => {
 
       expect(service.merchantBreakdown()[0].total).toBe(30);
     });
+  });
+});
+
+describe('ExpenseService receipt discounts', () => {
+  let service: ExpenseService;
+
+  beforeEach(() => {
+    nextId = 1;
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    service = TestBed.inject(ExpenseService);
+  });
+
+  it('counts what was paid in the calendar month, taking each receipt discount off once', () => {
+    service.expenses.set([
+      expense({ date: dateInMonth(0), unitPrice: 5, quantity: 2, discount: 1, receiptId: 7, receiptDiscount: 2 }),
+      expense({ date: dateInMonth(0), unitPrice: 4, receiptId: 7, receiptDiscount: 2 }),
+      expense({ date: dateInMonth(1), unitPrice: 50 }),
+    ]);
+
+    expect(service.currentMonthSpent()).toBe(11);
+  });
+
+  it('sends the receipt discount with the batch for every selected table', () => {
+    const http = TestBed.inject(HttpTestingController);
+    service.addExpensesBatchToTables([1, 2], [], 'img', 2.5, vi.fn(), vi.fn());
+
+    const requests = http.match(r => r.url.endsWith('/batch'));
+    expect(requests).toHaveLength(2);
+    for (const r of requests) expect(r.request.body.receiptDiscount).toBe(2.5);
   });
 });

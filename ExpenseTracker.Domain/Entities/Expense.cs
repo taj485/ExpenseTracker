@@ -11,6 +11,11 @@ namespace ExpenseTracker.Domain.Entities
         public Money UnitPrice { get; private set; }
         public decimal Quantity { get; private set; }
         public QuantityUnit Unit { get; private set; }
+
+        /// <summary>
+        /// Discount taken off this whole line (quantity x unit price), in pounds. 0 when there is none.
+        /// </summary>
+        public decimal Discount { get; private set; }
         public ExpenseCategory Category { get; private set; }
         public string Description { get; private set; }
         public DateTime Date { get; private set; }
@@ -32,7 +37,7 @@ namespace ExpenseTracker.Domain.Entities
         private Expense() { }
 
         public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            int? merchantId = null, int? receiptId = null, decimal quantity = 1, int? createdByUserId = null,
+            int? merchantId = null, int? receiptId = null, decimal quantity = 1, int? createdByUserId = null, decimal discount = 0,
             QuantityUnit unit = QuantityUnit.Item)
         {
             if (string.IsNullOrWhiteSpace(description))
@@ -40,11 +45,20 @@ namespace ExpenseTracker.Domain.Entities
 
             EnsureValidQuantity(quantity, unit);
 
+            var price = Money.Create(unitPrice);
+
+            if (discount < 0)
+                throw new DomainException("Discount can't be negative.");
+
+            if (discount > unitPrice * quantity)
+                throw new DomainException("Discount can't be more than the item total.");
+
             return new Expense
             {
-                UnitPrice = Money.Create(unitPrice),
+                UnitPrice = price,
                 Quantity = quantity,
                 Unit = unit,
+                Discount = discount,
                 Category = category,
                 Description = description,
                 Date = date,
@@ -59,6 +73,21 @@ namespace ExpenseTracker.Domain.Entities
         public void UpdateUnitPrice(decimal newUnitPrice)
         {
             UnitPrice = Money.Create(newUnitPrice);
+        }
+
+        /// <summary>
+        /// Sets the line discount, checked against the current unit price x quantity. 0 clears it.
+        /// </summary>
+        public void UpdateDiscount(decimal discount)
+        {
+            if (discount < 0)
+                throw new DomainException("Discount can't be negative.");
+
+            var lineTotal = UnitPrice.Amount * Quantity;
+            if (discount > lineTotal)
+                throw new DomainException($"Discount can't be more than the item total (£{lineTotal.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}).");
+
+            Discount = discount;
         }
 
         public void UpdateQuantity(decimal quantity, QuantityUnit unit = QuantityUnit.Item)

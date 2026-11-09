@@ -6,7 +6,6 @@ import { ExpenseListComponent } from './expense-list.component';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseTableService } from '../../../core/services/expense-table.service';
 import { Expense } from '../../../core/models/expense.model';
-import { formatDayLabel, periodRange, todayLocalISODate, weekDays } from '../../../core/utils/date.utils';
 
 describe('ExpenseListComponent', () => {
   let component: ExpenseListComponent;
@@ -52,129 +51,24 @@ describe('ExpenseListComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/expenses/table', 7, 5]);
   });
 
-  it('opens on this week when no date filter is set', () => {
-    expect(component.selectedPeriod()).toBe('this-week');
-    expect(component.totalLabel()).toBe('This Week');
-  });
-
-  it('picks a period and clears any month', () => {
-    component.selectPeriod('last-week');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { period: 'last-week', month: null, weekday: null },
-      queryParamsHandling: 'merge',
-    }));
-  });
-
-  it('shows all months when the selected period is picked again', () => {
-    component.selectPeriod('this-week');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { period: 'all', month: null, weekday: null } }));
-  });
-
-  it('drops the period when a month is picked', () => {
-    component.toggleMonthFilter('2026-09');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09', period: null, weekday: null } }));
-  });
-
-  it('stores All months explicitly, so it does not fall back to this week', () => {
-    component.clearMonths();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: 'all', weekday: null } }));
-  });
-
-  it('shows the day tabs for this week, with the whole week selected', () => {
-    expect(component.weekDayTabs().map(d => d.key)).toEqual(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
-    expect(component.selectedDay()).toBeNull();
-  });
-
-  it('narrows to a day, and back to the whole week', () => {
-    component.selectDay(component.weekDayTabs()[0]);
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: 'mon' } }));
-
-    component.selectDay(null);
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { weekday: null } }));
-  });
-
-  it('goes back to the default (this week) on reset', () => {
-    component.resetFilters();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, period: null, weekday: null, category: null } }));
-  });
-});
-
-function createWithQuery(query: Record<string, string>, expenses: Expense[], navigate = vi.fn()): ExpenseListComponent {
-  TestBed.configureTestingModule({
-    providers: [
-      { provide: Router, useValue: { navigate } },
-      { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap(query)) } },
-      { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
-      { provide: ExpenseTableService, useValue: { tables: signal([]) } },
-    ],
-  });
-  return TestBed.runInInjectionContext(() => new ExpenseListComponent());
-}
-
-describe('ExpenseListComponent date periods', () => {
-  const expenseOn = (id: number, day: string, unitPrice: number) =>
-    ({ id, date: `${day}T00:00:00`, unitPrice, quantity: 1, category: 'Food' }) as Expense;
-
-  const thisWeek = periodRange('this-week');
-  const lastWeek = periodRange('last-week');
-  const expenses = [
-    expenseOn(1, todayLocalISODate(), 2),
-    expenseOn(2, thisWeek.start, 3),
-    expenseOn(3, lastWeek.end, 5),
-    expenseOn(4, '2020-01-01', 7),
-  ];
-
-  it('shows only this week by default', () => {
-    const ids = createWithQuery({}, expenses).filteredExpenses().map(e => e.id);
-    expect(ids).toContain(1);
-    expect(ids).toContain(2);
-    expect(ids).not.toContain(3);
-    expect(ids).not.toContain(4);
-  });
-
-  it('shows only last week', () => {
-    expect(createWithQuery({ period: 'last-week' }, expenses).filteredExpenses().map(e => e.id)).toEqual([3]);
-  });
-
-  it('shows only today', () => {
-    const component = createWithQuery({ period: 'today' }, expenses);
-    expect(component.filteredExpenses().map(e => e.id)).toContain(1);
-    expect(component.filteredExpenses().map(e => e.id)).not.toContain(3);
-    expect(component.totalLabel()).toBe('Today');
-  });
-
-  it('shows everything for period=all', () => {
-    const component = createWithQuery({ period: 'all' }, expenses);
-    expect(component.selectedPeriod()).toBeNull();
-    expect(component.filteredCount()).toBe(4);
+  it('opens on all months when no date filter is set', () => {
+    expect(component.selectedMonths()).toEqual([]);
     expect(component.totalLabel()).toBe('Total');
   });
 
-  it('narrows last week to one day', () => {
-    const component = createWithQuery({ period: 'last-week', weekday: 'sun' }, expenses);
-    expect(component.selectedDay()?.date).toBe(lastWeek.end);
-    expect(component.filteredExpenses().map(e => e.id)).toEqual([3]);
-    expect(component.totalLabel()).toBe(formatDayLabel(lastWeek.end));
+  it('picks a month', () => {
+    component.toggleMonthFilter('2026-09');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-09' }, queryParamsHandling: 'merge' }));
   });
 
-  it('narrows this week to today', () => {
-    const todayTab = weekDays('this-week').find(d => d.date === todayLocalISODate())!;
-    const ids = createWithQuery({ weekday: todayTab.key }, expenses).filteredExpenses().map(e => e.id);
-    expect(ids).toContain(1);
-    expect(ids).not.toContain(3);
+  it('clears the months for All months', () => {
+    component.clearMonths();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null } }));
   });
 
-  it('ignores a weekday outside a week period', () => {
-    const component = createWithQuery({ period: 'all', weekday: 'mon' }, expenses);
-    expect(component.weekDayTabs()).toEqual([]);
-    expect(component.selectedDay()).toBeNull();
-    expect(component.filteredCount()).toBe(4);
-  });
-
-  it('lets a month in the URL win over a period', () => {
-    const component = createWithQuery({ period: 'today', month: '2020-01' }, expenses);
-    expect(component.selectedPeriod()).toBeNull();
-    expect(component.filteredExpenses().map(e => e.id)).toEqual([4]);
+  it('clears months and categories on reset', () => {
+    component.resetFilters();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null, category: null } }));
   });
 });
 
@@ -210,11 +104,73 @@ describe('ExpenseListComponent with several months selected', () => {
 
   it('adds a month to the selection', () => {
     component.toggleMonthFilter('2026-09');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-10,2026-09,2026-08', period: null, weekday: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-10,2026-09,2026-08' } }));
   });
 
   it('removes a selected month', () => {
     component.toggleMonthFilter('2026-10');
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08', period: null, weekday: null } }));
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: '2026-08' } }));
+  });
+});
+
+describe('ExpenseListComponent filters and month list', () => {
+  let navigate: ReturnType<typeof vi.fn>;
+
+  function build(query: Record<string, string>): ExpenseListComponent {
+    navigate = vi.fn();
+    const expenses = [
+      { id: 1, date: '2026-10-02T00:00:00', unitPrice: 1, quantity: 1, category: 'Food' },
+      { id: 2, date: '2026-09-15T00:00:00', unitPrice: 2, quantity: 1, category: 'Health' },
+    ] as Expense[];
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { navigate } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ tableId: '7' })), queryParamMap: of(convertToParamMap(query)) } },
+        { provide: ExpenseService, useValue: { expenses: signal(expenses), loadAll: vi.fn() } },
+        { provide: ExpenseTableService, useValue: { tables: signal([]) } },
+      ],
+    });
+    return TestBed.runInInjectionContext(() => new ExpenseListComponent());
+  }
+
+  afterEach(() => vi.useRealTimers());
+
+  it('shows every expense when no month is selected', () => {
+    const component = build({});
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([1, 2]);
+  });
+
+  it('shows only the selected category', () => {
+    const component = build({ category: 'Health' });
+    expect(component.filteredExpenses().map(e => e.id)).toEqual([2]);
+  });
+
+  it('labels a single selected month as This Month', () => {
+    expect(build({ month: '2026-10' }).totalLabel()).toBe('This Month');
+  });
+
+  it('drops the month param when the only selected month is toggled off', () => {
+    const component = build({ month: '2026-10' });
+    component.toggleMonthFilter('2026-10');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { month: null } }));
+  });
+
+  it.each([
+    ['toggleMonthFilter', (c: ExpenseListComponent) => c.toggleMonthFilter('2026-09')],
+    ['clearMonths', (c: ExpenseListComponent) => c.clearMonths()],
+    ['resetFilters', (c: ExpenseListComponent) => c.resetFilters()],
+  ])('%s returns to the first page', (_name, act) => {
+    const component = build({});
+    component.currentPage.set(3);
+    act(component);
+    expect(component.currentPage()).toBe(1);
+  });
+
+  it('lists months from the current one back to January of this year', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 2, 15));
+    const component = build({});
+    expect(component.availableMonths().map(m => m.key)).toEqual(['2026-03', '2026-02', '2026-01']);
   });
 });

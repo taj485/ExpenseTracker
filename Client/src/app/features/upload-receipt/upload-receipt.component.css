@@ -273,6 +273,7 @@
 .extraction-item-row { display: flex; gap: 12px; }
 .extraction-field-amount { flex: 2; min-width: 0; }
 .extraction-field-quantity { flex: 1; min-width: 0; }
+.extraction-field-discount { flex: 1.5; min-width: 0; }
 
 .extraction-actions {
   display: flex;

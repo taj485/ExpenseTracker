@@ -28,24 +28,8 @@ namespace ExpenseTracker.Application.Queries.GetExpensesByReceiptId
             var expenses = await _expenseReader.GetByReceiptIdAsync(request.ReceiptId, request.ExpenseTableId, cancellationToken);
 
             return expenses
-                .Select(expense => new ExpenseDto
-            {
-                Id = expense.Id,
-                UnitPrice = expense.UnitPrice.Amount,
-                Quantity = expense.Quantity,
-                Unit = expense.Unit.ToString(),
-                Currency = expense.UnitPrice.Currency,
-                Category = expense.Category.ToString(),
-                Description = expense.Description,
-                Date = expense.Date,
-                MerchantId = expense.MerchantId,
-                Merchant = expense.Merchant?.Name,
-                MerchantWebsite = expense.Merchant?.Website,
-                ReceiptId = expense.ReceiptId,
-                ExpenseTableId = expense.ExpenseTableId,
-                CreatedByEmail = expense.CreatedByUser?.Email,
-                CreatedByCurrentUser = expense.CreatedByUserId == currentUser.Id
-            }).ToList();
+                .Select(expense => expense.ToDto(currentUser.Id))
+                .ToList();
         }
     }
 }

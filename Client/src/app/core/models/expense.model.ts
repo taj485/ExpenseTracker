@@ -16,6 +16,10 @@ export interface Expense {
   merchant: string | null;
   merchantWebsite: string | null;
   receiptId: number | null;
+  /** Discount on this line in £; 0 when there is none. */
+  discount?: number;
+  /** Discount on the whole receipt in £, repeated on each of its lines; 0 when there is none. */
+  receiptDiscount?: number;
   /** Email of whoever added it; null for expenses added before uploaders were recorded. */
   createdByEmail: string | null;
   /** True when the signed-in user added it. */
@@ -31,6 +35,8 @@ export interface AddExpenseCommand {
   description: string;
   date: string;
   merchant: string | null;
+  /** Discount on this line in £. Only sent for receipt items. */
+  discount?: number;
 }
 
 export interface UpdateExpenseCommand {
@@ -68,6 +74,10 @@ export interface ExtractedExpense {
   unit: QuantityUnit;
   merchant: string | null;
   merchantWebsite: string | null;
+  /** Discount the scan found on this line in £; 0 when none. */
+  discount?: number;
+  /** Discount the scan found on the whole receipt in £, repeated on every item; 0 when none. */
+  receiptDiscount?: number;
 }
 
 export interface BatchItemError {

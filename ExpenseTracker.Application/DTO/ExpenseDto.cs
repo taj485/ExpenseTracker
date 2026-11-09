@@ -9,6 +9,10 @@ namespace ExpenseTracker.Application.DTO
         public decimal UnitPrice { get; set; }
         public decimal Quantity { get; set; }
         public string Unit { get; set; } = nameof(QuantityUnit.Item);
+        /// <summary>Discount on this line, in pounds. 0 when there is none.</summary>
+        public decimal Discount { get; set; }
+        /// <summary>Discount on the whole receipt this expense belongs to (repeated on each of its lines). 0 when there is none.</summary>
+        public decimal ReceiptDiscount { get; set; }
         public string Currency { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }

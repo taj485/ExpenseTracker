@@ -43,6 +43,11 @@ namespace ExpenseTracker.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasDefaultValue(QuantityUnit.Item);
 
+            builder.Property(e => e.Discount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasDefaultValue(0m);
+
             builder.Property(e => e.Date)
                 .HasConversion(
                     v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
