@@ -70,6 +70,27 @@ namespace ExpenseTracker.Infrastructure.Storage
             }
         }
 
+        public async Task DeleteAsync(string blobReference, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(_options.Endpoint))
+                throw new InvalidOperationException("MinIO storage is not configured.");
+
+            try
+            {
+                await _client.RemoveObjectAsync(new RemoveObjectArgs()
+                    .WithBucket(_options.BucketName)
+                    .WithObject(blobReference), cancellationToken);
+            }
+            catch (ObjectNotFoundException)
+            {
+                // Already gone.
+            }
+            catch (BucketNotFoundException)
+            {
+                // Nothing was ever stored.
+            }
+        }
+
         private async Task EnsureBucketExistsAsync(CancellationToken cancellationToken)
         {
             var exists = await _client.BucketExistsAsync(

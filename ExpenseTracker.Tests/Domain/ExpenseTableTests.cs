@@ -135,6 +135,71 @@ namespace ExpenseTracker.Tests.Domain
         }
 
         [Fact]
+        public void RemoveDeletedAccount_WhenTheOnlyAdminLeaves_PromotesEveryRemainingMember()
+        {
+            // Arrange
+            var table = ExpenseTable.Create("Office", 1);
+            table.AddMember(2, isAdmin: false);
+            table.AddMember(3, isAdmin: false);
+
+            // Act
+            table.RemoveDeletedAccount(1);
+
+            // Assert
+            table.Members.Select(m => m.UserId).Should().BeEquivalentTo(new[] { 2, 3 });
+            table.Members.Should().OnlyContain(m => m.IsAdmin);
+            table.CreatedByUserId.Should().BeNull();
+        }
+
+        [Fact]
+        public void RemoveDeletedAccount_WhenAnotherAdminRemains_LeavesRolesAlone()
+        {
+            // Arrange
+            var table = ExpenseTable.Create("Office", 1);
+            table.AddMember(2, isAdmin: true);
+            table.AddMember(3, isAdmin: false);
+
+            // Act
+            table.RemoveDeletedAccount(1);
+
+            // Assert
+            table.Members.Single(m => m.UserId == 2).IsAdmin.Should().BeTrue();
+            table.Members.Single(m => m.UserId == 3).IsAdmin.Should().BeFalse();
+        }
+
+        [Fact]
+        public void RemoveDeletedAccount_ForANonAdminMember_KeepsTheCreator()
+        {
+            // Arrange
+            var table = ExpenseTable.Create("Flat", 1);
+            table.AddMember(2, isAdmin: false);
+
+            // Act
+            table.RemoveDeletedAccount(2);
+
+            // Assert
+            table.Members.Select(m => m.UserId).Should().Equal(1);
+            table.CreatedByUserId.Should().Be(1);
+        }
+
+        [Fact]
+        public void RemoveDeletedAccount_ForANonMember_ChangesNothing()
+        {
+            // Arrange: no admin among the members, so any promotion would be visible
+            var table = ExpenseTable.Create("Flat", 1);
+            table.AddMember(2, isAdmin: false);
+            table.RemoveDeletedAccount(1);
+            var modified = table.LastModified;
+
+            // Act
+            table.RemoveDeletedAccount(99);
+
+            // Assert
+            table.Members.Single().IsAdmin.Should().BeTrue();
+            table.LastModified.Should().Be(modified);
+        }
+
+        [Fact]
         public void Delete_WhenAlreadyDeleted_ThrowsDomainException()
         {
             // Arrange

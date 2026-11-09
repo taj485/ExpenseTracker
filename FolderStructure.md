@@ -210,6 +210,7 @@ ExpenseTracker/
 │
 ├── ExpenseTracker.Domain/
 │   ├── Entities/
+│   │   ├── DeletedAccount.cs
 │   │   ├── Expense.cs
 │   │   ├── ExpenseTable.cs
 │   │   ├── Merchant.cs
@@ -226,6 +227,9 @@ ExpenseTracker/
 │   │   ├── ExpenseCategory.cs
 │   │   └── QuantityUnit.cs
 │   ├── Interfaces/
+│   │   ├── IAccountWriter.cs
+│   │   ├── IDeletedAccountReader.cs
+│   │   ├── IIdentityProviderAdmin.cs
 │   │   ├── IExpenseReader.cs
 │   │   ├── IExpenseWriter.cs
 │   │   ├── IExpenseTableReader.cs
@@ -246,6 +250,7 @@ ExpenseTracker/
 │   │   └── WeeklySummaryCalculator.cs
 │   ├── Exceptions/
 │   │   ├── DomainException.cs
+│   │   ├── ExternalServiceException.cs
 │   │   ├── ForbiddenException.cs
 │   │   └── NotFoundException.cs
 │   └── AssemblyInfo.cs
@@ -257,6 +262,7 @@ ExpenseTracker/
 │   │   ├── MerchantTests.cs
 │   │   ├── ReceiptTests.cs
 │   │   ├── ExpenseTableTests.cs
+│   │   ├── DeletedAccountTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
 │   │   ├── Commands/
@@ -265,6 +271,7 @@ ExpenseTracker/
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
 │   │   │   ├── UpdateReceiptDiscountCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseCommandHandlerTests.cs
+│   │   │   ├── DeleteAccountCommandHandlerTests.cs
 │   │   │   ├── ExtractReceiptExpensesCommandHandlerTests.cs
 │   │   │   ├── CreateExpenseTableCommandHandlerTests.cs
 │   │   │   ├── InviteUserToTableCommandHandlerTests.cs
@@ -284,16 +291,20 @@ ExpenseTracker/
 │   │       ├── CurrentUserProviderTests.cs
 │   │       └── MerchantResolverTests.cs
 │   ├── Infrastructure/
+│   │   ├── AccountRepositoryTests.cs
+│   │   ├── Auth0IdentityProviderAdminTests.cs
 │   │   ├── AuthenticationRegistrationTests.cs
 │   │   ├── ExpenseRepositoryTests.cs
 │   │   ├── GeminiReceiptParserTests.cs
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
+│   │   ├── MinioReceiptImageStoreTests.cs
 │   │   ├── ReceiptQuantityNormalizerTests.cs
 │   │   ├── UserRepositoryTests.cs
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
+│       ├── AccountControllerTests.cs
 │       ├── ExpenseControllerAuthTests.cs
 │       ├── ExpenseControllerReceiptDiscountTests.cs
 │       └── ExceptionHandlingMiddlewareTests.cs
@@ -301,6 +312,7 @@ ExpenseTracker/
 ├── ExpenseTrackerAPI/
 │   ├── Dockerfile
 │   ├── Controllers/
+│   │   ├── AccountController.cs
 │   │   ├── ExpenseController.cs
 │   │   └── ExpenseTableController.cs
 │   ├── Middleware/
@@ -324,6 +336,9 @@ ExpenseTracker/
 │   │   │   ├── UpdateExpenseCommand.cs
 │   │   │   ├── UpdateExpenseCommandHandler.cs
 │   │   │   └── UpdateExpenseValidator.cs
+│   │   ├── DeleteAccount/
+│   │   │   ├── DeleteAccountCommand.cs
+│   │   │   └── DeleteAccountCommandHandler.cs
 │   │   ├── UpdateReceiptDiscount/
 │   │   │   ├── UpdateReceiptDiscountCommand.cs
 │   │   │   ├── UpdateReceiptDiscountCommandHandler.cs
@@ -406,6 +421,7 @@ ExpenseTracker/
     │   ├── ExpenseTrackerDbContext.cs
     │   ├── MerchantSeedData.cs
     │   ├── Configurations/
+    │   │   ├── DeletedAccountConfiguration.cs
     │   │   ├── ExpenseConfigurations.cs
     │   │   ├── ExpenseTableConfiguration.cs
     │   │   ├── MerchantConfiguration.cs
@@ -414,6 +430,7 @@ ExpenseTracker/
     │   │   ├── UserConfiguration.cs
     │   │   └── UserExpenseTableConfiguration.cs
     │   └── Repositories/
+    │       ├── AccountRepository.cs
     │       ├── ExpenseRepository.cs
     │       ├── ExpenseTableRepository.cs
     │       ├── MerchantRepository.cs
@@ -421,9 +438,12 @@ ExpenseTracker/
     │       └── UserRepository.cs
     ├── Migrations/
     ├── Auth/
+    │   ├── Auth0IdentityProviderAdmin.cs
+    │   ├── Auth0ManagementOptions.cs
     │   ├── AuthenticationServiceCollectionExtensions.cs
     │   ├── CurrentUserService.cs
-    │   └── DevBypassAuthenticationHandler.cs
+    │   ├── DevBypassAuthenticationHandler.cs
+    │   └── NoOpIdentityProviderAdmin.cs
     ├── AI/
     │   ├── GeminiOptions.cs
     │   ├── GeminiReceiptParser.cs

@@ -9,5 +9,8 @@ namespace ExpenseTracker.Domain.Interfaces
     {
         Task<string> UploadAsync(byte[] content, string contentType, CancellationToken cancellationToken = default);
         Task<ReceiptImage?> DownloadAsync(string blobReference, CancellationToken cancellation = default);
+
+        /// <summary>Deletes the image. A missing image is not an error.</summary>
+        Task DeleteAsync(string blobReference, CancellationToken cancellationToken = default);
     }
 }

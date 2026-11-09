@@ -87,5 +87,90 @@ namespace ExpenseTracker.Tests.Api
             context.Response.StatusCode.Should().Be(404);
             VerifyLoggedError(notFound, Times.Never());
         }
+
+        [Fact]
+        public async Task UnauthorizedAccessException_Returns401()
+        {
+            var context = BuildContext();
+            var middleware = new ExceptionHandlingMiddleware(
+                _ => throw new UnauthorizedAccessException("This account has been deleted."), _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(401);
+        }
+
+        [Theory]
+        [InlineData(typeof(DomainException), 400, "Domain rule violation")]
+        [InlineData(typeof(ForbiddenException), 403, "Forbidden")]
+        [InlineData(typeof(NotFoundException), 404, "Not found")]
+        [InlineData(typeof(UnauthorizedAccessException), 401, "Unauthorized")]
+        [InlineData(typeof(ExternalServiceException), 502, "Bad gateway")]
+        public async Task MappedExceptions_ReturnStatusTitleMessageAndJson(Type type, int status, string title)
+        {
+            var context = BuildContext();
+            var ex = type == typeof(ExternalServiceException)
+                ? new ExternalServiceException("the message")
+                : (Exception)Activator.CreateInstance(type, "the message")!;
+            var middleware = new ExceptionHandlingMiddleware(_ => throw ex, _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(status);
+            context.Response.ContentType.Should().StartWith("application/json");
+            using var json = JsonDocument.Parse(await ReadBodyAsync(context));
+            json.RootElement.GetProperty("status").GetInt32().Should().Be(status);
+            json.RootElement.GetProperty("title").GetString().Should().Be(title);
+            json.RootElement.GetProperty("error").GetString().Should().Be("the message");
+        }
+
+        [Fact]
+        public async Task UnhandledException_Returns500WithTitle()
+        {
+            var context = BuildContext();
+            var middleware = new ExceptionHandlingMiddleware(_ => throw new InvalidOperationException("x"), _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.ContentType.Should().StartWith("application/json");
+            using var json = JsonDocument.Parse(await ReadBodyAsync(context));
+            json.RootElement.GetProperty("status").GetInt32().Should().Be(500);
+            json.RootElement.GetProperty("title").GetString().Should().Be("Internal server error");
+        }
+
+        [Fact]
+        public async Task ValidationException_Returns400WithFieldErrors()
+        {
+            var context = BuildContext();
+            var failure = new FluentValidation.ValidationException(new[]
+            {
+                new FluentValidation.Results.ValidationFailure("Name", "Name is required"),
+            });
+            var middleware = new ExceptionHandlingMiddleware(_ => throw failure, _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(400);
+            using var json = JsonDocument.Parse(await ReadBodyAsync(context));
+            json.RootElement.GetProperty("title").GetString().Should().Be("Validation failed");
+            var error = json.RootElement.GetProperty("errors")[0];
+            error.GetProperty("field").GetString().Should().Be("Name");
+            error.GetProperty("message").GetString().Should().Be("Name is required");
+        }
+
+        [Fact]
+        public async Task ExternalServiceException_Returns502WithItsMessage_AndIsLogged()
+        {
+            var failure = new ExternalServiceException("Couldn't delete your account. Please try again.");
+            var context = BuildContext();
+            var middleware = new ExceptionHandlingMiddleware(_ => throw failure, _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(502);
+            using var json = JsonDocument.Parse(await ReadBodyAsync(context));
+            json.RootElement.GetProperty("error").GetString().Should().Be("Couldn't delete your account. Please try again.");
+            VerifyLoggedError(failure, Times.Once());
+        }
     }
 }

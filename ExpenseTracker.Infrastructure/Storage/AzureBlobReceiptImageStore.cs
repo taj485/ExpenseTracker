@@ -58,6 +58,16 @@ namespace ExpenseTracker.Infrastructure.Storage
             };
         }
 
+        public async Task DeleteAsync(string blobReference, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(_options.ConnectionString))
+                throw new InvalidOperationException("Azure Blob Storage is not configured.");
+
+            var client = new BlobServiceClient(_options.ConnectionString);
+            var container = client.GetBlobContainerClient(_options.ContainerName);
+            await container.GetBlobClient(blobReference).DeleteIfExistsAsync(cancellationToken: cancellationToken);
+        }
+
         private static string GetExtension(string contentType) => contentType switch
         {
             "image/png" => ".png",

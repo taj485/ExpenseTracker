@@ -141,6 +141,15 @@ namespace ExpenseTracker.Domain.Entities
             MerchantId = merchantId;
         }
 
+        /// <summary>
+        /// Forgets who added the expense, e.g. when that user deletes their account.
+        /// </summary>
+        public void ClearCreator()
+        {
+            CreatedByUserId = null;
+            CreatedByUser = null;
+        }
+
         public void Delete()
         {
             if (IsDeleted)

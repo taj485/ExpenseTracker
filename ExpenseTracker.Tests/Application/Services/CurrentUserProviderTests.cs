@@ -11,6 +11,7 @@ namespace ExpenseTracker.Tests.Application.Services
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IUserReader> _mockUserReader;
         private readonly Mock<IUserWriter> _mockUserWriter;
+        private readonly Mock<IDeletedAccountReader> _mockDeletedAccountReader;
         private readonly CurrentUserProvider _provider;
 
         public CurrentUserProviderTests()
@@ -18,7 +19,9 @@ namespace ExpenseTracker.Tests.Application.Services
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockUserReader = new Mock<IUserReader>();
             _mockUserWriter = new Mock<IUserWriter>();
-            _provider = new CurrentUserProvider(_mockCurrentUserService.Object, _mockUserReader.Object, _mockUserWriter.Object);
+            _mockDeletedAccountReader = new Mock<IDeletedAccountReader>();
+            _provider = new CurrentUserProvider(_mockCurrentUserService.Object, _mockUserReader.Object, _mockUserWriter.Object,
+                _mockDeletedAccountReader.Object);
         }
 
         [Fact]
@@ -56,6 +59,43 @@ namespace ExpenseTracker.Tests.Application.Services
             result.Subject.Should().Be("auth0|new-user");
             result.Email.Should().Be("new@example.com");
             _mockUserWriter.Verify(x => x.AddAsync(It.Is<User>(u => u.Subject == "auth0|new-user"), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task S7_GetOrProvisionAsync_WhenSubjectWasDeleted_ThrowsUnauthorizedAndCreatesNoUser()
+        {
+            // Arrange
+            _mockCurrentUserService.Setup(x => x.GetCurrentUserSubject()).Returns("auth0|deleted");
+            _mockUserReader.Setup(x => x.GetByUserIdpAsync("auth0|deleted", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((User?)null);
+            _mockDeletedAccountReader.Setup(x => x.IsDeletedAsync("auth0|deleted", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var act = () => _provider.GetOrProvisionAsync(CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("This account has been deleted.");
+            _mockUserWriter.Verify(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task S5_GetOrProvisionAsync_ForANewSubjectWithADeletedAccountsEmail_CreatesAFreshUser()
+        {
+            // Arrange
+            _mockCurrentUserService.Setup(x => x.GetCurrentUserSubject()).Returns("auth0|alex-again");
+            _mockCurrentUserService.Setup(x => x.GetCurrentUserEmail()).Returns("alex@example.com");
+            _mockUserReader.Setup(x => x.GetByUserIdpAsync("auth0|alex-again", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((User?)null);
+            _mockDeletedAccountReader.Setup(x => x.IsDeletedAsync("auth0|alex", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _provider.GetOrProvisionAsync(CancellationToken.None);
+
+            // Assert
+            result.Subject.Should().Be("auth0|alex-again");
+            _mockUserWriter.Verify(x => x.AddAsync(It.Is<User>(u => u.Subject == "auth0|alex-again"), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
