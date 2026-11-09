@@ -259,6 +259,7 @@ ExpenseTracker/
 │   │   │   ├── AddExpenseCommandHandlerTests.cs
 │   │   │   ├── AddExpensesBatchCommandHandlerTests.cs
 │   │   │   ├── UpdateExpenseCommandHandlerTests.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandlerTests.cs
 │   │   │   ├── DeleteExpenseCommandHandlerTests.cs
 │   │   │   ├── ExtractReceiptExpensesCommandHandlerTests.cs
 │   │   │   ├── CreateExpenseTableCommandHandlerTests.cs
@@ -317,6 +318,10 @@ ExpenseTracker/
 │   │   │   ├── UpdateExpenseCommand.cs
 │   │   │   ├── UpdateExpenseCommandHandler.cs
 │   │   │   └── UpdateExpenseValidator.cs
+│   │   ├── UpdateReceiptDiscount/
+│   │   │   ├── UpdateReceiptDiscountCommand.cs
+│   │   │   ├── UpdateReceiptDiscountCommandHandler.cs
+│   │   │   └── UpdateReceiptDiscountValidator.cs
 │   │   ├── DeleteExpense/
 │   │   │   ├── DeleteExpenseCommand.cs
 │   │   │   ├── DeleteExpenseCommandHandler.cs
