@@ -258,6 +258,7 @@ ExpenseTracker/
 │   │   ├── MerchantTests.cs
 │   │   ├── ReceiptTests.cs
 │   │   ├── ExpenseTableTests.cs
+│   │   ├── DeletedAccountTests.cs
 │   │   └── UserTests.cs
 │   ├── Application/
 │   │   ├── Commands/

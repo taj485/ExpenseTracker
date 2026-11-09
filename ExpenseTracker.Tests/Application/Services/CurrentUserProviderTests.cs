@@ -75,7 +75,7 @@ namespace ExpenseTracker.Tests.Application.Services
             var act = () => _provider.GetOrProvisionAsync(CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+            await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("This account has been deleted.");
             _mockUserWriter.Verify(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 

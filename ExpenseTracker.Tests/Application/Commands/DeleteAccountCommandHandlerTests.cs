@@ -71,6 +71,20 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
+        public async Task Handle_WhenAuth0DeleteFails_LogsTheFailure()
+        {
+            var failure = new HttpRequestException("Auth0 is down");
+            _identityProviderAdmin.Setup(x => x.DeleteUserAsync(Subject, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(failure);
+
+            var act = () => _handler.Handle(new DeleteAccountCommand(), CancellationToken.None);
+            await act.Should().ThrowAsync<ExternalServiceException>();
+
+            _logger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => true),
+                failure, It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)), Times.Once);
+        }
+
+        [Fact]
         public async Task Handle_SecondCallWithNothingLeftInTheDatabase_StillFinishesTheAuth0Step()
         {
             _accountWriter.Setup(x => x.DeleteAccountDataAsync(Subject, It.IsAny<CancellationToken>()))
