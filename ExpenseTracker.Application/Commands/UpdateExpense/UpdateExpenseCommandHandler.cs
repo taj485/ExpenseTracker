@@ -41,7 +41,7 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
                 throw new NotFoundException($"Expense with id {request.Id} was not found");
 
             expense.UpdateUnitPrice(request.UnitPrice);
-            expense.UpdateQuantity(request.Quantity);
+            expense.UpdateQuantity(request.Quantity, request.Unit);
             expense.UpdateCategory(request.Category);
             expense.UpdateDescription(request.Description);
             expense.UpdateMerchant(await _merchantResolver.ResolveOrCreateAsync(request.Merchant, cancellationToken));

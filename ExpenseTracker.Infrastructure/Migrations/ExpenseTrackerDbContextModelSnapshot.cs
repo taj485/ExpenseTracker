@@ -56,13 +56,20 @@ namespace ExpenseTracker.Infrastructure.Migrations
                     b.Property<int?>("MerchantId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Quantity")
+                    b.Property<decimal>("Quantity")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasColumnType("decimal(10,3)")
+                        .HasDefaultValue(1m);
 
                     b.Property<int?>("ReceiptId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasDefaultValue("Item");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "UnitPrice", "ExpenseTracker.Domain.Entities.Expense.UnitPrice#Money", b1 =>
                         {

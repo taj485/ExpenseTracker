@@ -14,6 +14,7 @@ namespace ExpenseTracker.Infrastructure.AI
     public class GeminiReceiptExtractionService : IReceiptExtractionService
     {
         private static readonly string[] AllowedCategories = Enum.GetNames(typeof(ExpenseCategory));
+        private static readonly string[] AllowedUnits = Enum.GetNames(typeof(QuantityUnit));
 
         private static readonly JsonSerializerOptions RawItemJsonOptions = new(JsonSerializerOptions.Default)
         {
@@ -25,7 +26,10 @@ namespace ExpenseTracker.Infrastructure.AI
             "For each item, report its unit price (not the line total for that item), its category, " +
             "a short description, the purchase date if visible on the receipt, and the quantity purchased. " +
             "Also identify the shop or merchant name printed on the receipt (e.g. the store name at the top), " +
-            "and repeat that exact same merchant name on every single extracted item — all items come from the same receipt.";
+            "and repeat that exact same merchant name on every single extracted item — all items come from the same receipt. " +
+            "For items sold by weight or volume (e.g. '0.612 kg @ £5.00/kg'), report the measured amount as the quantity, " +
+            "its unit (Kg, G, Lb or L), and the price per that unit as the unit price. " +
+            "For counted items use unit 'Item' and a whole-number quantity.";
 
         private readonly GeminiOptions _options;
 
@@ -103,10 +107,11 @@ namespace ExpenseTracker.Infrastructure.AI
                     ? parsedDate
                     : today;
 
-                var quantity = raw.Quantity < 1 ? 1 : raw.Quantity;
+                var unit = ReceiptQuantityNormalizer.ParseUnit(raw.Unit);
+                var quantity = ReceiptQuantityNormalizer.Normalize(raw.Quantity, unit);
                 var merchant = string.IsNullOrWhiteSpace(raw.Merchant) ? null : ToTitleCase(raw.Merchant);
 
-                results.Add(new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant));
+                results.Add(new ExtractedReceiptItem(raw.UnitPrice, category, ToTitleCase(raw.Description), date, quantity, merchant, unit));
             }
 
             return results;
@@ -150,10 +155,11 @@ namespace ExpenseTracker.Infrastructure.AI
                         ["category"] = new Schema { Type = GenAIType.String, Enum = AllowedCategories.ToList() },
                         ["description"] = new Schema { Type = GenAIType.String },
                         ["date"] = new Schema { Type = GenAIType.String, Format = "date", Description = "Purchase date in YYYY-MM-DD format, if visible on the receipt." },
-                        ["quantity"] = new Schema { Type = GenAIType.Integer },
+                        ["quantity"] = new Schema { Type = GenAIType.Number, Description = "How many items, or the measured weight/volume for items sold by weight or volume." },
+                        ["unit"] = new Schema { Type = GenAIType.String, Enum = AllowedUnits.ToList(), Description = "Item for counted items; Kg, G, Lb or L for items sold by weight or volume." },
                         ["merchant"] = new Schema { Type = GenAIType.String, Description = "The shop or merchant name printed on the receipt. Use the exact same value for every item on this receipt." },
                     },
-                    Required = new List<string> { "unitPrice", "category", "description", "date", "quantity", "merchant" },
+                    Required = new List<string> { "unitPrice", "category", "description", "date", "quantity", "unit", "merchant" },
                 },
             };
         }
@@ -164,7 +170,8 @@ namespace ExpenseTracker.Infrastructure.AI
             public string? Category { get; set; }
             public string? Description { get; set; }
             public string? Date { get; set; }
-            public int Quantity { get; set; }
+            public decimal Quantity { get; set; }
+            public string? Unit { get; set; }
             public string? Merchant { get; set; }
         }
     }

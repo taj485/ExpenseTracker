@@ -22,6 +22,7 @@ function expense(partial: Partial<Expense> & { date: string }): Expense {
     id: nextId++,
     unitPrice: 10,
     quantity: 1,
+    unit: 'Item',
     currency: 'GBP',
     description: 'Test',
     category: 'Food',

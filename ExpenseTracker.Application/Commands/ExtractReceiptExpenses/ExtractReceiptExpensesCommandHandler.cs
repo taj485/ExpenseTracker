@@ -32,6 +32,7 @@ namespace ExpenseTracker.Application.Commands.ExtractReceiptExpenses
                 Description = i.Description,
                 Date = i.Date,
                 Quantity = i.Quantity,
+                Unit = i.Unit.ToString(),
                 // Prefer the reference table's spelling so the review drawer shows "Tesco",
                 // not whatever the receipt happened to print.
                 Merchant = known?.Name ?? i.Merchant,

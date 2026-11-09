@@ -73,6 +73,8 @@ ExpenseTracker/
 │   │       │   │   ├── heic-converter.spec.ts
 │   │       │   │   ├── merchant.utils.ts
 │   │       │   │   ├── merchant.utils.spec.ts
+│   │       │   │   ├── quantity.utils.ts
+│   │       │   │   ├── quantity.utils.spec.ts
 │   │       │   │   ├── uploader.utils.ts
 │   │       │   │   └── uploader.utils.spec.ts
 │   │       │   └── auth/
@@ -172,6 +174,7 @@ ExpenseTracker/
 │   │           │       └── receipt-group.component.css
 │   │           ├── add-expense/
 │   │           │   ├── add-expense-form.component.ts
+│   │           │   ├── add-expense-form.component.spec.ts
 │   │           │   ├── add-expense-form.component.html
 │   │           │   └── add-expense-form.component.css
 │   │           ├── upload-receipt/
@@ -216,7 +219,8 @@ ExpenseTracker/
 │   │   ├── ExpenseTableMember.cs
 │   │   └── ReceiptImage.cs
 │   ├── Enums/
-│   │   └── ExpenseCategory.cs
+│   │   ├── ExpenseCategory.cs
+│   │   └── QuantityUnit.cs
 │   ├── Interfaces/
 │   │   ├── IExpenseReader.cs
 │   │   ├── IExpenseWriter.cs
@@ -278,6 +282,7 @@ ExpenseTracker/
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
+│   │   ├── ReceiptQuantityNormalizerTests.cs
 │   │   ├── UserRepositoryTests.cs
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
@@ -407,7 +412,8 @@ ExpenseTracker/
     │   └── DevBypassAuthenticationHandler.cs
     ├── AI/
     │   ├── GeminiOptions.cs
-    │   └── GeminiReceiptExtractionService.cs
+    │   ├── GeminiReceiptExtractionService.cs
+    │   └── ReceiptQuantityNormalizer.cs
     ├── Storage/
     │   ├── AzureBlobStorageOptions.cs
     │   ├── AzureBlobReceiptImageStore.cs

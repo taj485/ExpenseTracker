@@ -29,12 +29,25 @@
           <input
             id="quantity"
             type="number"
-            step="1"
-            min="1"
+            [step]="quantityStep(unit())"
+            [min]="quantityStep(unit())"
             [value]="quantity()"
             (input)="quantity.set($any($event.target).value)"
             required
           />
+        </div>
+
+        <div class="form-group">
+          <label for="unit">Unit</label>
+          <select
+            id="unit"
+            [value]="unit()"
+            (change)="unit.set($any($event.target).value)"
+          >
+            @for (u of units; track u.value) {
+              <option [value]="u.value" [selected]="u.value === unit()">{{ u.label }}</option>
+            }
+          </select>
         </div>
 
         <div class="form-group">

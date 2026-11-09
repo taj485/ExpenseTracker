@@ -11,6 +11,7 @@ import { MembersDialogComponent } from '../../expense-table/members-dialog.compo
 import { ShareTablePromptComponent } from '../../expense-table/share-table-prompt.component';
 import { Expense, ExpenseCategory } from '../../../core/models/expense.model';
 import { expenseTotal } from '../../../core/utils/expense.utils';
+import { formatQuantityLine } from '../../../core/utils/quantity.utils';
 import { orderCategoryChips, parseCategoryParam, parseMonthParam, toggleCategory, toggleMonth } from '../../../core/utils/expense-filter.utils';
 import { uploaderLabel } from '../../../core/utils/uploader.utils';
 import { DATE_PERIODS, DatePeriod, WeekDay, formatDayLabel, periodRange, weekDays } from '../../../core/utils/date.utils';
@@ -67,6 +68,8 @@ export class ExpenseListComponent implements OnInit {
   readonly confirmingDeleteTable = signal(false);
 
   getCategoryMeta = getCategoryMeta;
+  lineTotal = expenseTotal;
+  quantityLine = formatQuantityLine;
 
   /** Keys of receipt cards folded down to their header. Every card starts expanded. */
   readonly collapsedReceipts = signal<ReadonlySet<string>>(new Set());

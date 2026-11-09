@@ -5,6 +5,7 @@ import { Expense } from '../../../core/models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { getCategoryMeta } from '../../../core/utils/category.utils';
 import { expenseTotal } from '../../../core/utils/expense.utils';
+import { formatQuantityLine, showsQuantityLine } from '../../../core/utils/quantity.utils';
 import { triggerBlobDownload } from '../../../core/utils/download.utils';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
@@ -34,6 +35,8 @@ export class ReceiptGroupComponent implements OnInit {
 
   getCategoryMeta = getCategoryMeta;
   lineTotal = expenseTotal;
+  quantityLine = formatQuantityLine;
+  showsQuantityLine = showsQuantityLine;
 
   readonly totalAmount = computed(() => this.items().reduce((sum, i) => sum + expenseTotal(i), 0));
 

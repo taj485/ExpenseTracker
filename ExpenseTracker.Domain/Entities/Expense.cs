@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.Domain.Enums;
+using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Domain.ValueObjects;
 using System;
@@ -9,7 +9,8 @@ namespace ExpenseTracker.Domain.Entities
     {
         public int Id { get; private set; }
         public Money UnitPrice { get; private set; }
-        public int Quantity { get; private set; }
+        public decimal Quantity { get; private set; }
+        public QuantityUnit Unit { get; private set; }
         public ExpenseCategory Category { get; private set; }
         public string Description { get; private set; }
         public DateTime Date { get; private set; }
@@ -31,18 +32,19 @@ namespace ExpenseTracker.Domain.Entities
         private Expense() { }
 
         public static Expense Create(decimal unitPrice, ExpenseCategory category, string description, DateTime date, int expenseTableId,
-            int? merchantId = null, int? receiptId = null, int quantity = 1, int? createdByUserId = null)
+            int? merchantId = null, int? receiptId = null, decimal quantity = 1, int? createdByUserId = null,
+            QuantityUnit unit = QuantityUnit.Item)
         {
             if (string.IsNullOrWhiteSpace(description))
                 throw new DomainException("Description is required");
 
-            if (quantity < 1)
-                throw new DomainException("Quantity must be at least 1");
+            EnsureValidQuantity(quantity, unit);
 
             return new Expense
             {
                 UnitPrice = Money.Create(unitPrice),
                 Quantity = quantity,
+                Unit = unit,
                 Category = category,
                 Description = description,
                 Date = date,
@@ -59,12 +61,37 @@ namespace ExpenseTracker.Domain.Entities
             UnitPrice = Money.Create(newUnitPrice);
         }
 
-        public void UpdateQuantity(int quantity)
+        public void UpdateQuantity(decimal quantity, QuantityUnit unit = QuantityUnit.Item)
         {
-            if (quantity < 1)
-                throw new DomainException("Quantity must be at least 1");
+            EnsureValidQuantity(quantity, unit);
 
             Quantity = quantity;
+            Unit = unit;
+        }
+
+        /// <summary>
+        /// Why a quantity is not allowed for its unit, or null when it is. Items are counted in whole
+        /// numbers; weights and volumes may be fractional, to at most 3 decimal places.
+        /// </summary>
+        public static string? QuantityError(decimal quantity, QuantityUnit unit)
+        {
+            if (unit == QuantityUnit.Item && (quantity < 1 || quantity % 1 != 0))
+                return "Quantity must be a whole number of at least 1";
+
+            if (quantity <= 0)
+                return "Quantity must be greater than 0";
+
+            if (decimal.Round(quantity, 3) != quantity)
+                return "Quantity can have at most 3 decimal places";
+
+            return null;
+        }
+
+        private static void EnsureValidQuantity(decimal quantity, QuantityUnit unit)
+        {
+            var error = QuantityError(quantity, unit);
+            if (error is not null)
+                throw new DomainException(error);
         }
 
         public void UpdateDescription(string description)

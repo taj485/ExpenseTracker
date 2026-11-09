@@ -42,6 +42,7 @@ namespace ExpenseTracker.Application.Queries.GetExpenseById
                 Id = expense.Id,
                 UnitPrice = expense.UnitPrice.Amount,
                 Quantity = expense.Quantity,
+                Unit = expense.Unit.ToString(),
                 Currency = expense.UnitPrice.Currency,
                 Category = expense.Category.ToString(),
                 Description = expense.Description,

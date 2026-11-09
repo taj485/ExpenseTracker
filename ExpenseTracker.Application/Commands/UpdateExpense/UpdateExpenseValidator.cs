@@ -1,3 +1,4 @@
+using ExpenseTracker.Domain.Entities;
 using FluentValidation;
 
 namespace ExpenseTracker.Application.Commands.UpdateExpense
@@ -10,8 +11,12 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
                 .GreaterThan(0).WithMessage("Id must be greater than zero.");
             RuleFor(x => x.UnitPrice)
                 .GreaterThan(0).WithMessage("Unit price must be greater than zero.");
-            RuleFor(x => x.Quantity)
-                .GreaterThan(0).WithMessage("Quantity must be at least 1.");
+            RuleFor(x => x.Unit)
+                .IsInEnum().WithMessage("Invalid quantity unit");
+            RuleFor(x => x)
+                .Must(x => Expense.QuantityError(x.Quantity, x.Unit) is null)
+                .WithName(nameof(UpdateExpenseCommand.Quantity))
+                .WithMessage(x => Expense.QuantityError(x.Quantity, x.Unit) + ".");
             RuleFor(x => x.Description)
                 .NotEmpty().WithMessage("Description is required");
             RuleFor(x => x.Category)

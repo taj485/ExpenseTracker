@@ -1,3 +1,4 @@
+using ExpenseTracker.Domain.Enums;
 using System;
 
 namespace ExpenseTracker.Application.DTO
@@ -6,7 +7,8 @@ namespace ExpenseTracker.Application.DTO
     {
         public int Id { get; set; }
         public decimal UnitPrice { get; set; }
-        public int Quantity { get; set; }
+        public decimal Quantity { get; set; }
+        public string Unit { get; set; } = nameof(QuantityUnit.Item);
         public string Currency { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }
