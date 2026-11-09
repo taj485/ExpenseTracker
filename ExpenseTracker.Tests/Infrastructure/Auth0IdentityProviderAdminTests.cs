@@ -14,22 +14,32 @@ namespace ExpenseTracker.Tests.Infrastructure
         private sealed class StubHandler : HttpMessageHandler
         {
             private readonly HttpStatusCode _deleteStatus;
+            private readonly HttpStatusCode _tokenStatus;
+            private readonly string _tokenBody;
             public List<HttpRequestMessage> Requests { get; } = new();
+            public string? TokenRequestBody { get; private set; }
 
-            public StubHandler(HttpStatusCode deleteStatus) => _deleteStatus = deleteStatus;
+            public StubHandler(HttpStatusCode deleteStatus, HttpStatusCode tokenStatus = HttpStatusCode.OK,
+                string tokenBody = "{\"access_token\":\"m2m-token\"}")
+            {
+                _deleteStatus = deleteStatus;
+                _tokenStatus = tokenStatus;
+                _tokenBody = tokenBody;
+            }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 Requests.Add(request);
                 if (request.Method == HttpMethod.Post)
                 {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    TokenRequestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+                    return new HttpResponseMessage(_tokenStatus)
                     {
-                        Content = new StringContent("{\"access_token\":\"m2m-token\"}", System.Text.Encoding.UTF8, "application/json")
-                    });
+                        Content = new StringContent(_tokenBody, System.Text.Encoding.UTF8, "application/json")
+                    };
                 }
 
-                return Task.FromResult(new HttpResponseMessage(_deleteStatus));
+                return new HttpResponseMessage(_deleteStatus);
             }
         }
 
@@ -51,6 +61,56 @@ namespace ExpenseTracker.Tests.Infrastructure
             var delete = handler.Requests.Single(r => r.Method == HttpMethod.Delete);
             delete.RequestUri!.AbsoluteUri.Should().Be("https://tenant.auth0.com/api/v2/users/auth0%7Calex");
             delete.Headers.Authorization!.Parameter.Should().Be("m2m-token");
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_EscapesSlashesInTheSubject_AndUsesTheBearerScheme()
+        {
+            var handler = new StubHandler(HttpStatusCode.NoContent);
+
+            await CreateAdmin(handler).DeleteUserAsync("oauth2/a?b");
+
+            var delete = handler.Requests.Single(r => r.Method == HttpMethod.Delete);
+            delete.RequestUri!.OriginalString.Should().Be("https://tenant.auth0.com/api/v2/users/oauth2%2Fa%3Fb");
+            delete.Headers.Authorization!.Scheme.Should().Be("Bearer");
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_RequestsAClientCredentialsTokenForTheManagementApi()
+        {
+            var handler = new StubHandler(HttpStatusCode.NoContent);
+
+            await CreateAdmin(handler).DeleteUserAsync("auth0|alex");
+
+            var token = handler.Requests.Single(r => r.Method == HttpMethod.Post);
+            token.RequestUri!.AbsoluteUri.Should().Be("https://tenant.auth0.com/oauth/token");
+            using var body = System.Text.Json.JsonDocument.Parse(handler.TokenRequestBody!);
+            body.RootElement.GetProperty("grant_type").GetString().Should().Be("client_credentials");
+            body.RootElement.GetProperty("client_id").GetString().Should().Be("client");
+            body.RootElement.GetProperty("client_secret").GetString().Should().Be("secret");
+            body.RootElement.GetProperty("audience").GetString().Should().Be("https://tenant.auth0.com/api/v2/");
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_WhenTheTokenRequestFails_ThrowsWithoutDeleting()
+        {
+            var handler = new StubHandler(HttpStatusCode.NoContent, HttpStatusCode.Unauthorized);
+
+            var act = () => CreateAdmin(handler).DeleteUserAsync("auth0|alex");
+
+            await act.Should().ThrowAsync<HttpRequestException>();
+            handler.Requests.Should().NotContain(r => r.Method == HttpMethod.Delete);
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_WhenAuth0ReturnsNoToken_ThrowsWithoutDeleting()
+        {
+            var handler = new StubHandler(HttpStatusCode.NoContent, tokenBody: "{}");
+
+            var act = () => CreateAdmin(handler).DeleteUserAsync("auth0|alex");
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            handler.Requests.Should().NotContain(r => r.Method == HttpMethod.Delete);
         }
 
         [Fact]
@@ -78,6 +138,24 @@ namespace ExpenseTracker.Tests.Infrastructure
             var act = () => admin.DeleteUserAsync("auth0|alex");
 
             await act.Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [Theory]
+        [InlineData(null, "client", "secret")]
+        [InlineData("tenant.auth0.com", null, "secret")]
+        [InlineData("tenant.auth0.com", "client", null)]
+        [InlineData("tenant.auth0.com", " ", "secret")]
+        public async Task DeleteUserAsync_WhenAnyManagementSettingIsMissing_ThrowsWithoutCallingAuth0(
+            string? domain, string? clientId, string? clientSecret)
+        {
+            var handler = new StubHandler(HttpStatusCode.NoContent);
+            var admin = new Auth0IdentityProviderAdmin(new HttpClient(handler),
+                Options.Create(new Auth0ManagementOptions { Domain = domain, ClientId = clientId, ClientSecret = clientSecret }));
+
+            var act = () => admin.DeleteUserAsync("auth0|alex");
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            handler.Requests.Should().BeEmpty();
         }
 
         [Theory]

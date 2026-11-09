@@ -150,6 +150,56 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
+        public async Task S4_WhenTheOnlyAdminLeavesASpaceTheyDidNotCreate_EveryRemainingMemberBecomesAnAdmin()
+        {
+            var alex = await SeedUserAsync(AlexSubject, "alex@example.com");
+            var sam = await SeedUserAsync("auth0|sam", "sam@example.com");
+            var flat = await SeedTableAsync("Flat", sam, (alex, true));
+            _context.Entry(flat.Members.Single(m => m.UserId == sam.Id)).Property(nameof(UserExpenseTable.IsAdmin)).CurrentValue = false;
+            await _context.SaveChangesAsync();
+
+            await _repository.DeleteAccountDataAsync(AlexSubject, CancellationToken.None);
+
+            using var verify = CreateContext();
+            var members = await verify.UserExpenseTables.Where(m => m.ExpenseTableId == flat.Id).ToListAsync();
+            members.Should().ContainSingle().Which.UserId.Should().Be(sam.Id);
+            members.Single().IsAdmin.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task S1_DeletesASpaceTheUserCreatedButAlreadyLeft_WhenNobodyIsLeftInIt()
+        {
+            var alex = await SeedUserAsync(AlexSubject, "alex@example.com");
+            var empty = await SeedTableAsync("Empty", alex);
+            var membership = await _context.UserExpenseTables.SingleAsync(m => m.ExpenseTableId == empty.Id);
+            _context.UserExpenseTables.Remove(membership);
+            await _context.SaveChangesAsync();
+
+            await _repository.DeleteAccountDataAsync(AlexSubject, CancellationToken.None);
+
+            using var verify = CreateContext();
+            (await verify.ExpenseTables.IgnoreQueryFilters().AnyAsync()).Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task S1_KeepsAReceiptAndItsPhotoWhileAnExpenseInAnotherSpaceStillUsesIt()
+        {
+            var alex = await SeedUserAsync(AlexSubject, "alex@example.com");
+            var sam = await SeedUserAsync("auth0|sam", "sam@example.com");
+            var home = await SeedTableAsync("Home", alex);
+            var flat = await SeedTableAsync("Flat", sam);
+            var shared = await SeedReceiptAsync("shared.jpg");
+            await SeedExpenseAsync(home, "Bread", 1.50m, alex, shared.Id);
+            await SeedExpenseAsync(flat, "Milk", 1.20m, sam, shared.Id);
+
+            var imageReferences = await _repository.DeleteAccountDataAsync(AlexSubject, CancellationToken.None);
+
+            imageReferences.Should().BeEmpty();
+            using var verify = CreateContext();
+            (await verify.Receipts.AnyAsync(r => r.Id == shared.Id)).Should().BeTrue();
+        }
+
+        [Fact]
         public async Task S4_WhenTheOnlyAdminLeaves_EveryRemainingMemberBecomesAnAdmin()
         {
             var alex = await SeedUserAsync(AlexSubject, "alex@example.com");
