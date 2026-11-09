@@ -87,5 +87,32 @@ namespace ExpenseTracker.Tests.Api
             context.Response.StatusCode.Should().Be(404);
             VerifyLoggedError(notFound, Times.Never());
         }
+
+        [Fact]
+        public async Task UnauthorizedAccessException_Returns401()
+        {
+            var context = BuildContext();
+            var middleware = new ExceptionHandlingMiddleware(
+                _ => throw new UnauthorizedAccessException("This account has been deleted."), _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(401);
+        }
+
+        [Fact]
+        public async Task ExternalServiceException_Returns502WithItsMessage_AndIsLogged()
+        {
+            var failure = new ExternalServiceException("Couldn't delete your account. Please try again.");
+            var context = BuildContext();
+            var middleware = new ExceptionHandlingMiddleware(_ => throw failure, _logger.Object);
+
+            await middleware.InvokeAsync(context);
+
+            context.Response.StatusCode.Should().Be(502);
+            using var json = JsonDocument.Parse(await ReadBodyAsync(context));
+            json.RootElement.GetProperty("error").GetString().Should().Be("Couldn't delete your account. Please try again.");
+            VerifyLoggedError(failure, Times.Once());
+        }
     }
 }

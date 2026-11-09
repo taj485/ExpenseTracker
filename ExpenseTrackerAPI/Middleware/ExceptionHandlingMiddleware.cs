@@ -68,6 +68,31 @@ namespace ExpenseTrackerAPI.Middleware
                     error = ex.Message
                 });
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    status = 401,
+                    title = "Unauthorized",
+                    error = ex.Message
+                });
+            }
+            catch (ExternalServiceException ex)
+            {
+                _logger.LogError(ex, "External service failure processing {Method} {Path}",
+                    context.Request.Method, context.Request.Path);
+
+                context.Response.StatusCode = 502;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    status = 502,
+                    title = "Bad gateway",
+                    error = ex.Message
+                });
+            }
             catch (Exception ex)
             {
                 // The client gets a deliberately generic message; the detail has to

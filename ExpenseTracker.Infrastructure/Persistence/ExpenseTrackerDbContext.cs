@@ -16,6 +16,7 @@ namespace ExpenseTracker.Infrastructure.Persistence
         public DbSet<UserExpenseTable> UserExpenseTables { get; set; }
         public DbSet<Merchant> Merchants { get; set; }
         public DbSet<MerchantAlias> MerchantAliases { get; set; }
+        public DbSet<DeletedAccount> DeletedAccounts { get; set; }
 
         public ExpenseTrackerDbContext(DbContextOptions options) : base(options)
         {

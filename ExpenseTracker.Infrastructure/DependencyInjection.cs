@@ -43,6 +43,10 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddScoped<IReceiptReader, ReceiptRepository>();  
 
+            services.AddScoped<IAccountWriter, AccountRepository>();
+
+            services.AddScoped<IDeletedAccountReader, AccountRepository>();
+
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddScoped<IReceiptExtractionService, GeminiReceiptExtractionService>();
@@ -51,7 +55,30 @@ namespace ExpenseTracker.Infrastructure
 
             services.AddReceiptImageStore(configuration);
 
+            services.AddIdentityProviderAdmin(configuration);
+
             services.Configure<GeminiOptions>(configuration.GetSection("Gemini"));
+
+            return services;
+        }
+
+        public static IServiceCollection AddIdentityProviderAdmin(this IServiceCollection services, IConfiguration configuration)
+        {
+            // AI dev mode signs everyone in as a fixed local user with no Auth0 account behind it.
+            if (configuration.GetValue<bool>("Auth0:DevBypass"))
+            {
+                services.AddScoped<IIdentityProviderAdmin, NoOpIdentityProviderAdmin>();
+                return services;
+            }
+
+            // ClientId/ClientSecret live in user secrets / Azure app settings, never appsettings.json.
+            services.Configure<Auth0ManagementOptions>(options =>
+            {
+                options.Domain = configuration["Auth0:Domain"] ?? string.Empty;
+                options.ClientId = configuration["Auth0:Management:ClientId"] ?? string.Empty;
+                options.ClientSecret = configuration["Auth0:Management:ClientSecret"] ?? string.Empty;
+            });
+            services.AddHttpClient<IIdentityProviderAdmin, Auth0IdentityProviderAdmin>();
 
             return services;
         }

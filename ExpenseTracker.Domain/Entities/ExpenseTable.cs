@@ -9,7 +9,10 @@ namespace ExpenseTracker.Domain.Entities
     {
         public int Id { get; private set; }
         public string Name { get; private set; }
-        public int CreatedByUserId { get; private set; }
+        /// <summary>
+        /// The user who created the space. Null once that user has deleted their account.
+        /// </summary>
+        public int? CreatedByUserId { get; private set; }
         public bool IsDeleted { get; private set; }
         public DateTime DateCreated { get; private set; }
         public DateTime? DateDeleted { get; private set; }
@@ -67,6 +70,31 @@ namespace ExpenseTracker.Domain.Entities
                 throw new DomainException("Cannot remove the last remaining admin");
 
             _members.Remove(member);
+            LastModified = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Removes a member whose account is being deleted. Unlike <see cref="RemoveMember"/> this may
+        /// remove the last admin: every remaining member then becomes an admin. Clears the creator if
+        /// it was this user. Does nothing to the membership if the user isn't a member.
+        /// </summary>
+        public void RemoveDeletedAccount(int userId)
+        {
+            if (CreatedByUserId == userId)
+                CreatedByUserId = null;
+
+            var member = _members.FirstOrDefault(m => m.UserId == userId);
+            if (member is null)
+                return;
+
+            _members.Remove(member);
+
+            if (!_members.Any(m => m.IsAdmin))
+            {
+                foreach (var remaining in _members)
+                    remaining.PromoteToAdmin();
+            }
+
             LastModified = DateTime.UtcNow;
         }
 
