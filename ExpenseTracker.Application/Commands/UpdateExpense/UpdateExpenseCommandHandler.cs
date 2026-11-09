@@ -42,6 +42,8 @@ namespace ExpenseTracker.Application.Commands.UpdateExpense
 
             expense.UpdateUnitPrice(request.UnitPrice);
             expense.UpdateQuantity(request.Quantity);
+            // Absent keeps the stored discount; either way it is checked against the new line total.
+            expense.UpdateDiscount(request.Discount ?? expense.Discount);
             expense.UpdateCategory(request.Category);
             expense.UpdateDescription(request.Description);
             expense.UpdateMerchant(await _merchantResolver.ResolveOrCreateAsync(request.Merchant, cancellationToken));

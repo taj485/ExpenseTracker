@@ -73,6 +73,21 @@ namespace ExpenseTracker.Domain.Entities
             UnitPrice = Money.Create(newUnitPrice);
         }
 
+        /// <summary>
+        /// Sets the line discount, checked against the current unit price x quantity. 0 clears it.
+        /// </summary>
+        public void UpdateDiscount(decimal discount)
+        {
+            if (discount < 0)
+                throw new DomainException("Discount can't be negative.");
+
+            var lineTotal = UnitPrice.Amount * Quantity;
+            if (discount > lineTotal)
+                throw new DomainException($"Discount can't be more than the item total (£{lineTotal.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}).");
+
+            Discount = discount;
+        }
+
         public void UpdateQuantity(int quantity)
         {
             if (quantity < 1)

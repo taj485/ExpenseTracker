@@ -187,5 +187,47 @@ namespace ExpenseTracker.Tests.Domain
 
             act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total.");
         }
+    
+        [Fact]
+        public void UpdateDiscount_SetsAndClearsTheDiscount()
+        {
+            var expense = Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 2, discount: 0.50m);
+
+            expense.UpdateDiscount(3.00m);
+            expense.Discount.Should().Be(3.00m);
+
+            expense.UpdateDiscount(0m);
+            expense.Discount.Should().Be(0m);
+        }
+
+        [Fact]
+        public void UpdateDiscount_WithNegativeDiscount_Throws()
+        {
+            var expense = Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 2);
+
+            Action act = () => expense.UpdateDiscount(-0.50m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be negative.");
+        }
+
+        [Fact]
+        public void UpdateDiscount_AboveTheLineTotal_ThrowsWithTheTotal()
+        {
+            var expense = Expense.Create(1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 2);
+
+            Action act = () => expense.UpdateDiscount(3.01m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total (£3.00).");
+        }
+
+        [Fact]
+        public void UpdateDiscount_AboveAWholePoundLineTotal_FormatsTheTotalToTwoDecimals()
+        {
+            var expense = Expense.Create(2m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, TestTableId, quantity: 1);
+
+            Action act = () => expense.UpdateDiscount(3m);
+
+            act.Should().Throw<DomainException>().WithMessage("Discount can't be more than the item total (£2.00).");
+        }
     }
 }
