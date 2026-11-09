@@ -293,6 +293,7 @@ ExpenseTracker/
 │   │   ├── ExpenseTableRepositoryTests.cs
 │   │   ├── MerchantRepositoryTests.cs
 │   │   ├── MerchantSeedDataTests.cs
+│   │   ├── MinioReceiptImageStoreTests.cs
 │   │   ├── UserRepositoryTests.cs
 │   │   └── StorageProviderRegistrationTests.cs
 │   └── Api/
