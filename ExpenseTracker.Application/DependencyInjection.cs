@@ -1,6 +1,7 @@
 using ExpenseTracker.Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace ExpenseTracker.Application
 {
@@ -16,6 +17,8 @@ namespace ExpenseTracker.Application
             services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
 
             services.AddScoped<IMerchantResolver, MerchantResolver>();
+
+            services.TryAddSingleton(TimeProvider.System);
 
             return services;
         }

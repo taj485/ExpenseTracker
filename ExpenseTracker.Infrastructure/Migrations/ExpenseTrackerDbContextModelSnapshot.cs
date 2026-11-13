@@ -8296,6 +8296,12 @@ namespace ExpenseTracker.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("AiReceiptConsentGivenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("AiReceiptConsentVersion")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Email")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");

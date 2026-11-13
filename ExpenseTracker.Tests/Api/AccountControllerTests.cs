@@ -38,8 +38,22 @@ namespace ExpenseTracker.Tests.Api
         }
     }
 
+    /// <summary>A clock that always reads the given time.</summary>
+    public class FixedTimeProvider : TimeProvider
+    {
+        private DateTimeOffset _now;
+
+        public FixedTimeProvider(DateTimeOffset now) => _now = now;
+
+        public void SetNow(DateTimeOffset now) => _now = now;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+    }
+
     public class AccountControllerTests
     {
+        private static readonly DateTimeOffset Now = new(2026, 11, 12, 10, 15, 0, TimeSpan.Zero);
+        private readonly FixedTimeProvider _timeProvider = new(Now);
         private const string Subject = "auth0|alex";
 
         private readonly Mock<IAccountWriter> _accountWriter = new();
@@ -73,6 +87,7 @@ namespace ExpenseTracker.Tests.Api
                     services.AddScoped(_ => _userReader.Object);
                     services.AddScoped(_ => _userWriter.Object);
                     services.AddScoped(_ => _expenseTableReader.Object);
+                    services.AddSingleton<TimeProvider>(_timeProvider);
                 });
             });
 
@@ -150,6 +165,152 @@ namespace ExpenseTracker.Tests.Api
             var client = CreateClient();
 
             var response = await client.GetAsync("/api/expensetable");
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            _userWriter.Verify(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        private User SeedUser()
+        {
+            var user = User.Create(Subject, "alex@example.com");
+            _userReader.Setup(x => x.GetByUserIdpAsync(Subject, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            return user;
+        }
+
+        private static async Task<JsonElement> ReadJsonAsync(HttpResponseMessage response)
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            return json.RootElement.Clone();
+        }
+
+        private static HttpContent VersionBody(int version) =>
+            new StringContent("{\"version\":" + version + "}", System.Text.Encoding.UTF8, "application/json");
+
+        [Fact]
+        public async Task S1_GetAiReceiptConsent_WhenNeverGiven_ReturnsNotGiven()
+        {
+            SeedUser();
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/api/account/ai-receipt-consent");
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var body = await ReadJsonAsync(response);
+            body.GetProperty("given").GetBoolean().Should().BeFalse();
+            body.GetProperty("version").ValueKind.Should().Be(JsonValueKind.Null);
+            body.GetProperty("givenAt").ValueKind.Should().Be(JsonValueKind.Null);
+        }
+
+        [Fact]
+        public async Task S2_PutAiReceiptConsent_ThenGet_ShowsGivenWithVersion1AndTheServerTime()
+        {
+            var user = SeedUser();
+            var client = CreateClient();
+
+            var put = await client.PutAsync("/api/account/ai-receipt-consent", VersionBody(1));
+            var get = await client.GetAsync("/api/account/ai-receipt-consent");
+
+            put.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            _userWriter.Verify(x => x.UpdateAsync(user), Times.Once);
+            var body = await ReadJsonAsync(get);
+            body.GetProperty("given").GetBoolean().Should().BeTrue();
+            body.GetProperty("version").GetInt32().Should().Be(1);
+            body.GetProperty("givenAt").GetString().Should().Be("2026-11-12T10:15:00Z");
+        }
+
+        [Fact]
+        public async Task S3_PutAiReceiptConsent_Twice_KeepsTheFirstGivenAt()
+        {
+            var user = SeedUser();
+            var client = CreateClient();
+
+            await client.PutAsync("/api/account/ai-receipt-consent", VersionBody(1));
+            _timeProvider.SetNow(Now.AddDays(1));
+            var second = await client.PutAsync("/api/account/ai-receipt-consent", VersionBody(1));
+
+            second.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            user.AiReceiptConsentGivenAt.Should().Be(Now);
+        }
+
+        [Fact]
+        public async Task PutAiReceiptConsent_WithAnOutOfDateVersion_Returns400AndStoresNothing()
+        {
+            var user = SeedUser();
+            var client = CreateClient();
+
+            var response = await client.PutAsync("/api/account/ai-receipt-consent", VersionBody(2));
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var body = await ReadJsonAsync(response);
+            body.GetProperty("error").GetString().Should().Be("This consent text is out of date. Please update the app.");
+            user.AiReceiptConsentVersion.Should().BeNull();
+            user.AiReceiptConsentGivenAt.Should().BeNull();
+            _userWriter.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task S5_DeleteAiReceiptConsent_ClearsIt()
+        {
+            var user = SeedUser();
+            user.GiveAiReceiptConsent(1, Now);
+            var client = CreateClient();
+
+            var delete = await client.DeleteAsync("/api/account/ai-receipt-consent");
+            var get = await client.GetAsync("/api/account/ai-receipt-consent");
+
+            delete.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            user.AiReceiptConsentVersion.Should().BeNull();
+            user.AiReceiptConsentGivenAt.Should().BeNull();
+            (await ReadJsonAsync(get)).GetProperty("given").GetBoolean().Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeleteAiReceiptConsent_WhenNothingIsStored_Returns204()
+        {
+            SeedUser();
+            var client = CreateClient();
+
+            var response = await client.DeleteAsync("/api/account/ai-receipt-consent");
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task GetAiReceiptConsent_GivenForAnOlderVersion_ReadsAsNotGiven()
+        {
+            var user = SeedUser();
+            user.GiveAiReceiptConsent(0, Now);
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/api/account/ai-receipt-consent");
+
+            var body = await ReadJsonAsync(response);
+            body.GetProperty("given").GetBoolean().Should().BeFalse();
+            body.GetProperty("version").ValueKind.Should().Be(JsonValueKind.Null);
+            body.GetProperty("givenAt").ValueKind.Should().Be(JsonValueKind.Null);
+        }
+
+        [Fact]
+        public async Task GetAiReceiptConsent_OnFirstCall_CreatesTheUserWithNoConsent()
+        {
+            _userReader.Setup(x => x.GetByUserIdpAsync(Subject, It.IsAny<CancellationToken>())).ReturnsAsync((User?)null);
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/api/account/ai-receipt-consent");
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            (await ReadJsonAsync(response)).GetProperty("given").GetBoolean().Should().BeFalse();
+            _userWriter.Verify(x => x.AddAsync(It.Is<User>(u => u.Subject == Subject), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task PutAiReceiptConsent_ForADeletedAccount_Returns401_AndCreatesNoUser()
+        {
+            _userReader.Setup(x => x.GetByUserIdpAsync(Subject, It.IsAny<CancellationToken>())).ReturnsAsync((User?)null);
+            _deletedAccountReader.Setup(x => x.IsDeletedAsync(Subject, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var client = CreateClient();
+
+            var response = await client.PutAsync("/api/account/ai-receipt-consent", VersionBody(1));
 
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             _userWriter.Verify(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
