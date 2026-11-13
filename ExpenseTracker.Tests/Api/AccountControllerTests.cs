@@ -262,6 +262,7 @@ namespace ExpenseTracker.Tests.Api
             user.AiReceiptConsentVersion.Should().BeNull();
             user.AiReceiptConsentGivenAt.Should().BeNull();
             (await ReadJsonAsync(get)).GetProperty("given").GetBoolean().Should().BeFalse();
+            _userWriter.Verify(x => x.UpdateAsync(user), Times.Once);
         }
 
         [Fact]
