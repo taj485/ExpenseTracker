@@ -339,6 +339,12 @@ ExpenseTracker/
 │   │   ├── DeleteAccount/
 │   │   │   ├── DeleteAccountCommand.cs
 │   │   │   └── DeleteAccountCommandHandler.cs
+│   │   ├── GiveAiReceiptConsent/
+│   │   │   ├── GiveAiReceiptConsentCommand.cs
+│   │   │   └── GiveAiReceiptConsentCommandHandler.cs
+│   │   ├── WithdrawAiReceiptConsent/
+│   │   │   ├── WithdrawAiReceiptConsentCommand.cs
+│   │   │   └── WithdrawAiReceiptConsentCommandHandler.cs
 │   │   ├── UpdateReceiptDiscount/
 │   │   │   ├── UpdateReceiptDiscountCommand.cs
 │   │   │   ├── UpdateReceiptDiscountCommandHandler.cs
@@ -378,6 +384,9 @@ ExpenseTracker/
 │   │       ├── UploadReceiptImageCommand.cs
 │   │       └── UploadReceiptImageCommandHandler.cs
 │   ├── Queries/
+│   │   ├── GetAiReceiptConsent/
+│   │   │   ├── GetAiReceiptConsentQuery.cs
+│   │   │   └── GetAiReceiptConsentQueryHandler.cs
 │   │   ├── GetExpenseById/
 │   │   │   ├── GetExpenseByIdQuery.cs
 │   │   │   └── GetExpenseByIdQueryHandler.cs
@@ -401,6 +410,7 @@ ExpenseTracker/
 │   │       ├── GetReceiptImageQuery.cs
 │   │       └── GetReceiptImageQueryHandler.cs
 │   ├── DTO/
+│   │   ├── AiReceiptConsentDto.cs
 │   │   ├── ExpenseDto.cs
 │   │   ├── ExpenseDtoMapper.cs
 │   │   ├── ExpenseTableDto.cs
@@ -411,6 +421,7 @@ ExpenseTracker/
 │   ├── Mappings/
 │   │   └── ExpenseMappingProfile.cs
 │   └── Services/
+│       ├── AiReceiptConsent.cs
 │       ├── ICurrentUserProvider.cs
 │       ├── CurrentUserProvider.cs
 │       ├── IMerchantResolver.cs

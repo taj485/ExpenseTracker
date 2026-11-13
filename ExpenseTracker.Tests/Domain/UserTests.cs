@@ -75,5 +75,28 @@ namespace ExpenseTracker.Tests.Domain
             // Assert
             user.Email.Should().Be("new@example.com");
         }
+
+        [Fact]
+        public void Create_StartsWithNoAiReceiptConsent()
+        {
+            var user = User.Create("auth0|abc123");
+
+            user.AiReceiptConsentVersion.Should().BeNull();
+            user.AiReceiptConsentGivenAt.Should().BeNull();
+        }
+
+        [Fact]
+        public void GiveAiReceiptConsent_ForANewVersion_ReplacesTheOlderOne()
+        {
+            var user = User.Create("auth0|abc123");
+            var first = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            var second = first.AddMonths(6);
+            user.GiveAiReceiptConsent(1, first);
+
+            user.GiveAiReceiptConsent(2, second);
+
+            user.AiReceiptConsentVersion.Should().Be(2);
+            user.AiReceiptConsentGivenAt.Should().Be(second);
+        }
     }
 }

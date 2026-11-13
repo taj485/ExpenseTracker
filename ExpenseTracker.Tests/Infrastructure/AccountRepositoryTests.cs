@@ -273,6 +273,20 @@ namespace ExpenseTracker.Tests.Infrastructure
             (await verify.ExpenseTables.AnyAsync()).Should().BeFalse();
         }
 
+        [Fact]
+        public async Task DeletingTheAccount_RemovesItsAiReceiptConsent()
+        {
+            var alex = await SeedUserAsync(AlexSubject, "alex@example.com");
+            alex.GiveAiReceiptConsent(1, DateTimeOffset.UtcNow);
+            await _context.SaveChangesAsync();
+
+            await _repository.DeleteAccountDataAsync(AlexSubject, CancellationToken.None);
+
+            using var verify = CreateContext();
+            (await verify.Users.AnyAsync(u => u.AiReceiptConsentVersion != null)).Should().BeFalse();
+            (await verify.Users.AnyAsync(u => u.Subject == AlexSubject)).Should().BeFalse();
+        }
+
         public void Dispose()
         {
             _context.Dispose();
