@@ -39,11 +39,7 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
             ValidateReceiptDiscount(request);
 
-            // A lone item carries every discount on its receipt, so the receipt discount moves onto it.
-            // The check above already keeps the combined discount within the item's line total.
-            var moveReceiptDiscountOntoItem = request.Items.Count == 1 && request.ReceiptDiscount > 0;
-            var receiptDiscount = moveReceiptDiscountOntoItem ? 0 : request.ReceiptDiscount;
-            var movedDiscount = moveReceiptDiscountOntoItem ? request.ReceiptDiscount : 0;
+            var (receiptDiscount, movedDiscount) = SplitReceiptDiscount(request);
 
             // Every line item on a receipt shares one merchant, so resolve it once rather than per item.
             var merchantId = await _merchantResolver.ResolveOrCreateAsync(
@@ -77,6 +73,14 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
             }
 
             return new AddExpensesBatchResult(addedIds, errors);
+        }
+
+        // A lone item carries every discount on its receipt, so the receipt discount moves onto it.
+        // ValidateReceiptDiscount already keeps the combined discount within the item's line total.
+        private static (decimal ReceiptDiscount, decimal MovedDiscount) SplitReceiptDiscount(AddExpensesBatchCommand request)
+        {
+            var moveOntoItem = request.Items.Count == 1 && request.ReceiptDiscount > 0;
+            return moveOntoItem ? (0, request.ReceiptDiscount) : (request.ReceiptDiscount, 0);
         }
 
         // The receipt discount comes off after item discounts, so it can't exceed what is left of the receipt.
