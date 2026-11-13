@@ -625,4 +625,43 @@ describe('PL-006 One-item receipts keep their discount on the item', () => {
     expect(page.row('Receipt discount')).toBe('−£1.00');
     expect(page.row('Total')).toBe('£3.05');
   });
+
+  it('hardening_a_failed_save_that_leaves_one_item_moves_the_receipt_discount_onto_it', async () => {
+    const review = await scanReceipt(mealDeal());
+    review.addExpensesBatchToTables.mockImplementationOnce((_t, _c, _r, _d, onSuccess) =>
+      onSuccess([{ addedIds: [1, 3], errors: [{ index: 1, errors: ['Bad item.'] }] }]));
+
+    review.clickAddExpenses();
+    review.component.onTablesConfirmed([HOME.id]);
+    review.fixture.detectChanges();
+
+    expect(review.itemNames()).toEqual(['Crisps']);
+    expect(review.hasReceiptDiscountField()).toBe(false);
+    expect(review.itemDiscount('Crisps')).toBe('2');
+  });
+
+  it('hardening_a_receipt_discount_that_cancels_the_item_discount_leaves_the_field_empty', async () => {
+    const review = await scanReceipt(scanResult([
+      { description: 'Sandwich', unitPrice: 3.5, discount: 1 },
+      { description: 'Crisps', unitPrice: 1.2 },
+    ]));
+
+    review.setReceiptDiscount('-1');
+    review.removeItem('Crisps');
+
+    expect(review.hasReceiptDiscountField()).toBe(false);
+    expect(review.itemDiscount('Sandwich')).toBe('');
+  });
+
+  it('hardening_removing_an_item_with_no_receipt_discount_leaves_the_remaining_item_discount_alone', async () => {
+    const review = await scanReceipt(scanResult([
+      { description: 'Sandwich', unitPrice: 3.5 },
+      { description: 'Crisps', unitPrice: 1.2 },
+    ]));
+
+    review.setItemDiscount('Sandwich', '0');
+    review.removeItem('Crisps');
+
+    expect(review.itemDiscount('Sandwich')).toBe('0');
+  });
 });
