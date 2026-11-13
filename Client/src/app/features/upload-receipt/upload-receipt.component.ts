@@ -8,7 +8,7 @@ import { ALL_CATEGORIES } from '../../core/utils/category.utils';
 import { AddExpenseCommand, ExtractedExpense } from '../../core/models/expense.model';
 import { QUANTITY_UNITS, quantityError, quantityStep, unitLabel } from '../../core/utils/quantity.utils';
 import { SelectTablesPromptComponent } from '../expense-table/select-tables-prompt.component';
-import { itemDiscountError, receiptDiscountError } from '../../core/utils/discount.utils';
+import { addDiscounts, itemDiscountError, receiptDiscountError } from '../../core/utils/discount.utils';
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.8;
@@ -66,6 +66,8 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
   private pendingCommands: AddExpenseCommand[] | null = null;
 
   readonly hasExtraction = computed(() => this.extractedExpenses().length > 0);
+  /** A one-item receipt keeps every discount on its item, so it has no separate receipt discount. */
+  readonly showReceiptDiscount = computed(() => this.extractedExpenses().length !== 1);
 
   readonly formattedSize = computed(() => {
     const file = this.selectedFile();
@@ -158,6 +160,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
       // The scan repeats the receipt discount on every item; 0 means none, which shows as empty.
       this.extractedExpenses.set(items.map(({ receiptDiscount: _, ...e }) => ({ ...e, discount: e.discount || null, id: this.nextDraftId++ })));
       this.receiptDiscount.set(items[0]?.receiptDiscount || null);
+      this.moveReceiptDiscountOntoLoneItem();
 
       this.expenseService.uploadReceiptImage(
         tableId,
@@ -181,6 +184,22 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
 
   removeItem(id: number): void {
     this.extractedExpenses.update(items => items.filter(i => i.id !== id));
+    this.moveReceiptDiscountOntoLoneItem();
+  }
+
+  /**
+   * When one item is left, any receipt discount moves onto it. It isn't capped, so a total over the
+   * item's line total shows the usual item discount error on "Add Expenses".
+   */
+  private moveReceiptDiscountOntoLoneItem(): void {
+    const items = this.extractedExpenses();
+    const receiptDiscount = this.receiptDiscount();
+    if (items.length !== 1 || !receiptDiscount) return;
+
+    const [item] = items;
+    this.updateItem(item.id, { discount: addDiscounts(item.discount, receiptDiscount) || null });
+    this.receiptDiscount.set(null);
+    this.receiptDiscountError.set(null);
   }
 
   removeFile(): void {
@@ -276,6 +295,7 @@ export class UploadReceiptComponent implements OnInit, OnDestroy {
         }
 
         this.extractedExpenses.update(list => list.filter((_, i) => failedIndexes.has(i)));
+        this.moveReceiptDiscountOntoLoneItem();
         this.pendingCommands = null;
         this.step.set('review');
         this.formError.set(failureMessages.join(' '));

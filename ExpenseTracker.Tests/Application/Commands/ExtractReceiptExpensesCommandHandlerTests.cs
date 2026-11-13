@@ -94,5 +94,26 @@ namespace ExpenseTracker.Tests.Application.Commands
             result.Select(r => r.Discount).Should().Equal(0.5m, 0m);
             result.Should().OnlyContain(r => r.ReceiptDiscount == 1m);
         }
+
+        [Theory]
+        [InlineData(0.5, 1.0, 1.5)]
+        [InlineData(0, 1.0, 1.0)]
+        [InlineData(1.0, 5.0, 3.0)]
+        public async Task Handle_WithOneItem_MovesTheReceiptDiscountOntoTheItemWithinItsLineTotal(double itemDiscount, double receiptDiscount, double expected)
+        {
+            var items = new List<ExtractedReceiptItem>
+            {
+                new(1.5m, ExpenseCategory.Food, "Bread", new DateOnly(2026, 11, 5), 2, "Tesco", (decimal)itemDiscount),
+            };
+            _mockReceiptExtractionService
+                .Setup(x => x.ExtractAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ExtractedReceipt(items, (decimal)receiptDiscount));
+
+            var result = await _handler.Handle(new ExtractReceiptExpensesCommand(new byte[] { 1 }, "image/jpeg"), CancellationToken.None);
+
+            result.Should().ContainSingle();
+            result[0].Discount.Should().Be((decimal)expected);
+            result[0].ReceiptDiscount.Should().Be(0m);
+        }
     }
 }

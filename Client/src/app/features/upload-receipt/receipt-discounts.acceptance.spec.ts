@@ -137,6 +137,9 @@ async function scanReceipt(scan: ExtractedExpense[]) {
     itemNames: () => items().map(i => fieldInput(i, 'Description').value),
     itemDiscount: (description: string) => fieldInput(item(description), 'Discount (£)').value,
     setItemDiscount: (description: string, value: string) => { typeInto(fieldInput(item(description), 'Discount (£)'), value); fixture.detectChanges(); },
+    itemText: (description: string) => text(item(description)),
+    removeItem: (description: string) => { (item(description).querySelector('.btn-item-remove') as HTMLButtonElement).click(); fixture.detectChanges(); },
+    hasReceiptDiscountField: () => Array.from(root.querySelectorAll('label')).some(l => text(l) === 'Receipt discount (£)'),
     unitPrice: (description: string) => fieldInput(item(description), 'Unit Price (£)').value,
     quantity: (description: string) => fieldInput(item(description), 'Qty').value,
     receiptDiscount: () => fieldInput(root, 'Receipt discount (£)').value,
@@ -488,5 +491,138 @@ describe('PL-003 review screen discount handling', () => {
     const review = await scanReceipt(S1_RECEIPT);
 
     expect(review.addExpenses().receiptDiscount).toBe(0);
+  });
+});
+
+describe('PL-006 One-item receipts keep their discount on the item', () => {
+  const coffeeBeans = (discount: number, receiptDiscount: number) =>
+    scanResult([{ description: 'Coffee Beans', unitPrice: 6, discount }], receiptDiscount);
+  const mealDeal = () => scanResult([
+    { description: 'Sandwich', unitPrice: 3.5 },
+    { description: 'Crisps', unitPrice: 1.2 },
+    { description: 'Orange Juice', unitPrice: 1.5 },
+  ], 2);
+
+  it('S1_one_item_scan_with_only_an_item_discount', async () => {
+    const review = await scanReceipt(coffeeBeans(0.5, 0));
+
+    expect(review.itemNames()).toEqual(['Coffee Beans']);
+    expect(review.itemDiscount('Coffee Beans')).toBe('0.5');
+    expect(review.hasReceiptDiscountField()).toBe(false);
+    expect(review.itemNames()).not.toContain('Clubcard Price');
+  });
+
+  it('S2_coupon_on_a_one_item_receipt_moves_onto_the_item', async () => {
+    // A scan that still reports the coupon as a receipt discount (e.g. an older API).
+    const review = await scanReceipt(coffeeBeans(0, 1));
+
+    expect(review.itemNames()).toEqual(['Coffee Beans']);
+    expect(review.itemDiscount('Coffee Beans')).toBe('1');
+    expect(review.hasReceiptDiscountField()).toBe(false);
+    expect(review.itemNames()).not.toContain('Coupon');
+  });
+
+  it('S3_item_discount_and_coupon_on_a_one_item_receipt_add_up_and_stay_editable', async () => {
+    const review = await scanReceipt(coffeeBeans(0.5, 1));
+
+    expect(review.itemDiscount('Coffee Beans')).toBe('1.5');
+    expect(review.hasReceiptDiscountField()).toBe(false);
+
+    review.setItemDiscount('Coffee Beans', '1.25');
+    const saved = review.addExpenses();
+
+    expect(saved.tableIds).toEqual([HOME.id]);
+    expect(saved.commands.map(c => c.discount)).toEqual([1.25]);
+    expect(saved.receiptDiscount).toBe(0);
+  });
+
+  it('S4_combined_discount_cannot_be_more_than_the_line_total', async () => {
+    // The scan caps the £5.00 coupon at what is left after the £1.00 price cut.
+    const review = await scanReceipt(scanResult([{ description: 'Bread', unitPrice: 3, discount: 1 }], 2));
+    expect(review.itemDiscount('Bread')).toBe('3');
+
+    review.setItemDiscount('Bread', '3.01');
+    review.clickAddExpenses();
+
+    expect(review.itemText('Bread')).toContain("Discount can't be more than the item total (£3.00).");
+    expect(text(review.root.querySelector('.upload-title'))).toBe('Review Your Receipt');
+    expect(review.addExpensesBatchToTables).not.toHaveBeenCalled();
+
+    review.setItemDiscount('Bread', '3.00');
+    const page = openReceiptPage(savedExpenses(review.addExpenses()));
+
+    expect(page.row('Total')).toBe('£0.00');
+  });
+
+  it('S5_one_item_receipt_saves_the_discount_on_the_item_and_its_page_has_no_receipt_discount_row', async () => {
+    const review = await scanReceipt(coffeeBeans(0.5, 1));
+    expect(review.itemDiscount('Coffee Beans')).toBe('1.5');
+
+    const saved = review.addExpenses();
+    const page = openReceiptPage(savedExpenses(saved));
+
+    expect(page.row('Subtotal')).toBe('£6.00');
+    expect(page.row('Item discounts')).toBe('−£1.50');
+    expect(page.row('Total')).toBe('£4.50');
+    expect(page.rowLabels()).not.toContain('Receipt discount');
+    expect(page.item('Coffee Beans')).toMatchObject({ full: '£6.00', discount: '−£1.50', amount: '£4.50' });
+    expect(saved.commands[0].discount).toBe(1.5);
+    expect(saved.receiptDiscount).toBe(0);
+  });
+
+  it('S6_removing_items_until_one_is_left_moves_the_receipt_discount_onto_it', async () => {
+    const review = await scanReceipt(mealDeal());
+    expect(review.receiptDiscount()).toBe('2');
+
+    review.removeItem('Crisps');
+    expect(review.receiptDiscount()).toBe('2');
+    expect(review.itemDiscount('Sandwich')).toBe('');
+
+    review.removeItem('Orange Juice');
+    expect(review.hasReceiptDiscountField()).toBe(false);
+    expect(review.itemDiscount('Sandwich')).toBe('2');
+
+    const page = openReceiptPage(savedExpenses(review.addExpenses()));
+
+    expect(page.row('Subtotal')).toBe('£3.50');
+    expect(page.row('Item discounts')).toBe('−£2.00');
+    expect(page.row('Total')).toBe('£1.50');
+    expect(page.rowLabels()).not.toContain('Receipt discount');
+  });
+
+  it('S7_removing_items_until_one_is_left_can_push_its_discount_over_the_line_total', async () => {
+    const review = await scanReceipt(mealDeal());
+
+    review.removeItem('Sandwich');
+    review.removeItem('Orange Juice');
+    expect(review.itemDiscount('Crisps')).toBe('2');
+
+    review.clickAddExpenses();
+    expect(review.itemText('Crisps')).toContain("Discount can't be more than the item total (£1.20).");
+    expect(text(review.root.querySelector('.upload-title'))).toBe('Review Your Receipt');
+    expect(review.addExpensesBatchToTables).not.toHaveBeenCalled();
+
+    review.setItemDiscount('Crisps', '1.20');
+    const page = openReceiptPage(savedExpenses(review.addExpenses()));
+
+    expect(page.row('Total')).toBe('£0.00');
+  });
+
+  it('S8_receipts_with_two_or_more_items_are_unchanged', async () => {
+    const review = await scanReceipt(scanResult([
+      { description: 'Milk', unitPrice: 1.5, discount: 0.25 },
+      { description: 'Eggs', unitPrice: 2.8 },
+    ], 1));
+
+    expect(review.itemDiscount('Milk')).toBe('0.25');
+    expect(review.itemDiscount('Eggs')).toBe('');
+    expect(review.receiptDiscount()).toBe('1');
+
+    const page = openReceiptPage(savedExpenses(review.addExpenses()));
+
+    expect(page.row('Subtotal')).toBe('£4.30');
+    expect(page.row('Item discounts')).toBe('−£0.25');
+    expect(page.row('Receipt discount')).toBe('−£1.00');
+    expect(page.row('Total')).toBe('£3.05');
   });
 });

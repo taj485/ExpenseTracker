@@ -1,4 +1,5 @@
 import {
+  addDiscounts,
   formatPounds,
   itemDiscountError,
   lineTotalAfterDiscount,
@@ -11,6 +12,12 @@ const milk = { unitPrice: 1.5, quantity: 2, discount: 0.5 };
 const bread = { unitPrice: 2, quantity: 1, discount: null };
 
 describe('discount.utils', () => {
+  it('adds two discounts to the penny, treating empty as zero', () => {
+    expect(addDiscounts(0.1, 0.2)).toBe(0.3);
+    expect(addDiscounts(null, 2)).toBe(2);
+    expect(addDiscounts(undefined, null)).toBe(0);
+  });
+
   it('formats pounds to 2 decimal places', () => {
     expect(formatPounds(3)).toBe('£3.00');
   });

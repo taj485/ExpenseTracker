@@ -157,20 +157,22 @@
       }
     </div>
 
-    <div class="form-group">
-      <label for="receipt-discount">Receipt discount (£)</label>
-      <input
-        id="receipt-discount"
-        class="input-receipt-discount"
-        type="number"
-        step="0.01"
-        min="0"
-        [value]="receiptDiscount() ?? ''"
-        (input)="receiptDiscount.set(parseOptionalAmount($any($event.target).value))"
-      />
-    </div>
-    @if (receiptDiscountError()) {
-      <p class="upload-error">{{ receiptDiscountError() }}</p>
+    @if (showReceiptDiscount()) {
+      <div class="form-group">
+        <label for="receipt-discount">Receipt discount (£)</label>
+        <input
+          id="receipt-discount"
+          class="input-receipt-discount"
+          type="number"
+          step="0.01"
+          min="0"
+          [value]="receiptDiscount() ?? ''"
+          (input)="receiptDiscount.set(parseOptionalAmount($any($event.target).value))"
+        />
+      </div>
+      @if (receiptDiscountError()) {
+        <p class="upload-error">{{ receiptDiscountError() }}</p>
+      }
     }
 
     <div class="extraction-actions">

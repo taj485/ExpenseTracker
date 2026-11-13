@@ -28,6 +28,11 @@ export function formatPounds(amount: number): string {
   return `£${amount.toFixed(2)}`;
 }
 
+/** Two discounts added together, to the penny. Empty (null/undefined) counts as £0.00. */
+export function addDiscounts(a: number | null | undefined, b: number | null | undefined): number {
+  return roundPence((a ?? 0) + (b ?? 0));
+}
+
 /** Line total after its own discount. */
 export function lineTotalAfterDiscount(line: DiscountableLine): number {
   return roundPence(expenseTotal(line) - (line.discount ?? 0));

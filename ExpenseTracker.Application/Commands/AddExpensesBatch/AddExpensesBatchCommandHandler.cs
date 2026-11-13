@@ -39,6 +39,12 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
             ValidateReceiptDiscount(request);
 
+            // A lone item carries every discount on its receipt, so the receipt discount moves onto it.
+            // The check above already keeps the combined discount within the item's line total.
+            var moveReceiptDiscountOntoItem = request.Items.Count == 1 && request.ReceiptDiscount > 0;
+            var receiptDiscount = moveReceiptDiscountOntoItem ? 0 : request.ReceiptDiscount;
+            var movedDiscount = moveReceiptDiscountOntoItem ? request.ReceiptDiscount : 0;
+
             // Every line item on a receipt shares one merchant, so resolve it once rather than per item.
             var merchantId = await _merchantResolver.ResolveOrCreateAsync(
                 request.Items.Select(i => i.Merchant).FirstOrDefault(m => !string.IsNullOrWhiteSpace(m)),
@@ -61,11 +67,11 @@ namespace ExpenseTracker.Application.Commands.AddExpensesBatch
 
                 if (receiptId is null)
                 {
-                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference, request.ReceiptDiscount);
+                    var receipt = Receipt.Create(DateTime.UtcNow, request.ReceiptImageReference, receiptDiscount);
                     receiptId = await _receiptWriter.AddAsync(receipt, cancellationToken);
                 }
 
-                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, merchantId, receiptId, item.Quantity, currentUser.Id, item.Discount, item.Unit);
+                var expense = Expense.Create(item.UnitPrice, item.Category, item.Description, item.Date, item.ExpenseTableId, merchantId, receiptId, item.Quantity, currentUser.Id, item.Discount + movedDiscount, item.Unit);
                 var id = await _expenseWriter.AddAsync(expense, cancellationToken);
                 addedIds.Add(id);
             }

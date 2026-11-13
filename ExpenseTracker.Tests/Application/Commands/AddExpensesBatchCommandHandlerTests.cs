@@ -277,5 +277,42 @@ namespace ExpenseTracker.Tests.Application.Commands
             result.Errors.Should().BeEmpty();
             result.AddedIds.Should().ContainSingle();
         }
+
+        [Fact]
+        public async Task Handle_WithOneItemAndReceiptDiscount_MovesTheReceiptDiscountOntoTheItem()
+        {
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 1.50m, ExpenseCategory.Food, "Milk", DateTime.UtcNow, Quantity: 2, Discount: 0.50m),
+            }, ReceiptDiscount: 1m);
+            Receipt? capturedReceipt = null;
+            Expense? capturedExpense = null;
+            _mockReceiptWriter.Setup(x => x.AddAsync(It.IsAny<Receipt>(), It.IsAny<CancellationToken>()))
+                .Callback<Receipt, CancellationToken>((r, _) => capturedReceipt = r)
+                .ReturnsAsync(1);
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .Callback<Expense, CancellationToken>((e, _) => capturedExpense = e)
+                .ReturnsAsync(1);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            capturedReceipt!.Discount.Should().Be(0m);
+            capturedExpense!.Discount.Should().Be(1.50m);
+        }
+
+        [Fact]
+        public async Task Handle_WithOneItemWithInvalidDiscountAndReceiptDiscount_StillReturnsTheItemError()
+        {
+            // Validated before the receipt discount moves, so a negative item discount isn't hidden by it.
+            var command = new AddExpensesBatchCommand(TableId, new List<AddExpenseCommand>
+            {
+                new(TableId, 2m, ExpenseCategory.Food, "Bread", DateTime.UtcNow, Discount: -0.50m),
+            }, ReceiptDiscount: 1m);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.AddedIds.Should().BeEmpty();
+            result.Errors.Should().ContainSingle().Which.Errors.Should().Equal("Discount can't be negative.");
+        }
     }
 }
