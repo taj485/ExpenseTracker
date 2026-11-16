@@ -71,13 +71,13 @@ namespace ExpenseTracker.Tests.Domain
         [Theory]
         [InlineData(0)]
         [InlineData(-3)]
-        public void Create_WithQuantityBelowOne_ThrowsDomainException(int quantity)
+        public void Create_WithQuantityNotAboveZero_ThrowsDomainException(int quantity)
         {
             // Arrange & Act
             Action act = () => Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId, quantity: quantity);
             // Assert
             act.Should().Throw<DomainException>()
-                .WithMessage("Quantity must be a whole number of at least 1");
+                .WithMessage("Quantity must be greater than 0");
         }
 
         [Fact]
@@ -89,12 +89,12 @@ namespace ExpenseTracker.Tests.Domain
         }
 
         [Fact]
-        public void Create_WithFractionalItemQuantity_ThrowsDomainException()
+        public void Create_WithFractionalItemQuantity_StoresIt()
         {
-            Action act = () => Expense.Create(50m, ExpenseCategory.Food, "Lunch", DateTime.UtcNow, TestTableId, quantity: 1.5m);
+            var expense = Expense.Create(12.99m, ExpenseCategory.Food, "Lamb chops", DateTime.UtcNow, TestTableId, quantity: 0.612m);
 
-            act.Should().Throw<DomainException>()
-                .WithMessage("Quantity must be a whole number of at least 1");
+            expense.Quantity.Should().Be(0.612m);
+            expense.Unit.Should().Be(QuantityUnit.Item);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace ExpenseTracker.Tests.Domain
         {
             var expense = Expense.Create(5m, ExpenseCategory.Food, "Chicken", DateTime.UtcNow, TestTableId, quantity: 2);
 
-            Action act = () => expense.UpdateQuantity(0.5m, QuantityUnit.Item);
+            Action act = () => expense.UpdateQuantity(0m, QuantityUnit.Item);
 
             act.Should().Throw<DomainException>();
             expense.Quantity.Should().Be(2);
@@ -175,7 +175,7 @@ namespace ExpenseTracker.Tests.Domain
         [Theory]
         [InlineData(0)]
         [InlineData(-3)]
-        public void UpdateQuantity_WithQuantityBelowOne_ThrowsDomainException(int quantity)
+        public void UpdateQuantity_WithQuantityNotAboveZero_ThrowsDomainException(int quantity)
         {
             // Arrange
             var expense = Expense.Create(30m, ExpenseCategory.Utilities, "Electricity bill", DateTime.UtcNow, TestTableId);
@@ -183,7 +183,7 @@ namespace ExpenseTracker.Tests.Domain
             Action act = () => expense.UpdateQuantity(quantity);
             // Assert
             act.Should().Throw<DomainException>()
-                .WithMessage("Quantity must be a whole number of at least 1");
+                .WithMessage("Quantity must be greater than 0");
         }
 
         [Fact]

@@ -42,11 +42,11 @@ namespace ExpenseTracker.Tests.Infrastructure
 
         [Theory]
         [InlineData(3, 3)]
-        [InlineData(2.5, 3)]
-        [InlineData(0.4, 1)]
+        [InlineData(0.612, 0.612)]
+        [InlineData(0.6125, 0.613)]
         [InlineData(0, 1)]
         [InlineData(-2, 1)]
-        public void Normalize_ForCountedItem_ReturnsWholeNumberOfAtLeastOne(double raw, double expected)
+        public void Normalize_ForCountedItem_KeepsFractionToThreePlaces(double raw, double expected)
         {
             ReceiptQuantityNormalizer.Normalize((decimal)raw, QuantityUnit.Item).Should().Be((decimal)expected);
         }

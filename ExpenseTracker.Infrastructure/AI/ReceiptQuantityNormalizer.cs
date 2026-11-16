@@ -15,12 +15,9 @@ namespace ExpenseTracker.Infrastructure.AI
                 : QuantityUnit.Item;
         }
 
-        /// <summary>A whole number of at least 1 for items; above 0 with at most 3 decimal places for weights and volumes.</summary>
+        /// <summary>Above 0 with at most 3 decimal places, for any unit; 1 when the model gave nothing usable.</summary>
         public static decimal Normalize(decimal raw, QuantityUnit unit)
         {
-            if (unit == QuantityUnit.Item)
-                return Math.Max(1, decimal.Round(raw, MidpointRounding.AwayFromZero));
-
             var rounded = decimal.Round(raw, 3, MidpointRounding.AwayFromZero);
             return rounded > 0 ? rounded : 1;
         }

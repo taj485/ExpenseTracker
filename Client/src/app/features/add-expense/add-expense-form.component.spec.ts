@@ -24,13 +24,23 @@ describe('AddExpenseFormComponent quantity', () => {
     expect(component.step()).toBe('select-tables');
   });
 
-  it('rejects a fractional quantity of items', () => {
-    component.quantity.set('1.5');
+  it('accepts a fractional quantity of items', () => {
+    component.quantity.set('0.612');
     component.unit.set('Item');
 
     component.onSubmit();
 
-    expect(component.formError()).toBe('Quantity must be a whole number of at least 1.');
+    expect(component.formError()).toBeNull();
+    expect(component.step()).toBe('select-tables');
+  });
+
+  it('rejects a zero quantity', () => {
+    component.quantity.set('0');
+    component.unit.set('Item');
+
+    component.onSubmit();
+
+    expect(component.formError()).toBe('Quantity must be greater than 0.');
     expect(component.step()).toBe('form');
   });
 

@@ -29,7 +29,7 @@ namespace ExpenseTracker.Infrastructure.AI
             "If a discount is printed only as a percentage, convert it to the pound amount it takes off, rounded to the penny. Use 0 when there is no discount. " +
             "For items sold by weight or volume (e.g. '0.612 kg @ £5.00/kg'), report the measured amount as the quantity, " +
             "its unit (Kg, G, Lb or L), and the price per that unit as the unit price. " +
-            "For counted items use unit 'Item' and a whole-number quantity.";
+            "For counted items use unit 'Item'. If a quantity is printed with decimals but no unit, report it exactly as printed.";
 
         private readonly GeminiOptions _options;
 

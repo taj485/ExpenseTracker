@@ -20,8 +20,8 @@ describe('quantity.utils', () => {
   });
 
   describe('quantityStep', () => {
-    it('steps whole numbers for items and thousandths for measured units', () => {
-      expect(quantityStep('Item')).toBe('1');
+    it('steps thousandths for every unit', () => {
+      expect(quantityStep('Item')).toBe('0.001');
       expect(quantityStep('Kg')).toBe('0.001');
     });
   });
@@ -32,9 +32,14 @@ describe('quantity.utils', () => {
       expect(quantityError(3, 'Item')).toBeNull();
     });
 
-    it('rejects fractional, zero or missing item quantities', () => {
-      expect(quantityError(1.5, 'Item')).toBe('Quantity must be a whole number of at least 1.');
-      expect(quantityError(0, 'Item')).toBe('Quantity must be a whole number of at least 1.');
+    it('accepts fractional item quantities, such as meat printed without a unit', () => {
+      expect(quantityError(0.612, 'Item')).toBeNull();
+      expect(quantityError(1.5, 'Item')).toBeNull();
+    });
+
+    it('rejects zero, too precise or missing item quantities', () => {
+      expect(quantityError(0, 'Item')).toBe('Quantity must be greater than 0.');
+      expect(quantityError(0.6125, 'Item')).toBe('Quantity can have at most 3 decimal places.');
       expect(quantityError(NaN, 'Item')).toBe('Quantity is required.');
     });
 
