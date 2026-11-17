@@ -43,7 +43,7 @@ namespace ExpenseTracker.Tests.Infrastructure
         }
 
         [Fact]
-        public void Parse_TreatsAFractionalQuantityWithoutAUnitAsWholeItems()
+        public void Parse_KeepsAFractionalQuantityWithoutAUnit()
         {
             var json = """
                 {"items":[{"unitPrice":1.00,"category":"Food","description":"Bun","date":"2026-11-01","quantity":2.4,"merchant":"Tesco","discount":0}],
@@ -52,7 +52,7 @@ namespace ExpenseTracker.Tests.Infrastructure
 
             var item = Assert.Single(GeminiReceiptParser.Parse(json, Today).Items);
 
-            Assert.Equal(2m, item.Quantity);
+            Assert.Equal(2.4m, item.Quantity);
             Assert.Equal(QuantityUnit.Item, item.Unit);
         }
 

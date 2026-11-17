@@ -99,14 +99,11 @@ namespace ExpenseTracker.Domain.Entities
         }
 
         /// <summary>
-        /// Why a quantity is not allowed for its unit, or null when it is. Items are counted in whole
-        /// numbers; weights and volumes may be fractional, to at most 3 decimal places.
+        /// Why a quantity is not allowed, or null when it is. Any unit may be fractional (e.g. meat
+        /// sold by weight but printed without a unit), to at most 3 decimal places.
         /// </summary>
         public static string? QuantityError(decimal quantity, QuantityUnit unit)
         {
-            if (unit == QuantityUnit.Item && (quantity < 1 || quantity % 1 != 0))
-                return "Quantity must be a whole number of at least 1";
-
             if (quantity <= 0)
                 return "Quantity must be greater than 0";
 

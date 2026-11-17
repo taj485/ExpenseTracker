@@ -17,17 +17,14 @@ export function isMeasured(unit: QuantityUnit): boolean {
   return unit !== 'Item';
 }
 
-/** Step for the quantity input: whole items, or grams-level precision for weights and volumes. */
-export function quantityStep(unit: QuantityUnit): string {
-  return isMeasured(unit) ? '0.001' : '1';
+/** Step for the quantity input: thousandths for every unit, as receipts can print fractional quantities without a unit. */
+export function quantityStep(_unit: QuantityUnit): string {
+  return '0.001';
 }
 
 /** Why a quantity is not allowed for its unit, or null when it is. Mirrors the API's rule. */
-export function quantityError(quantity: number, unit: QuantityUnit): string | null {
+export function quantityError(quantity: number, _unit: QuantityUnit): string | null {
   if (isNaN(quantity)) return 'Quantity is required.';
-  if (!isMeasured(unit)) {
-    return Number.isInteger(quantity) && quantity >= 1 ? null : 'Quantity must be a whole number of at least 1.';
-  }
   if (quantity <= 0) return 'Quantity must be greater than 0.';
   if (Math.round(quantity * 1000) / 1000 !== quantity) return 'Quantity can have at most 3 decimal places.';
   return null;

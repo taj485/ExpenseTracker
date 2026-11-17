@@ -88,14 +88,29 @@ namespace ExpenseTracker.Tests.Application.Commands
         }
 
         [Fact]
-        public async Task Handle_WithFractionalItemQuantity_ThrowsValidationException()
+        public async Task Handle_WithFractionalItemQuantity_PassesItToExpense()
         {
-            var command = new AddExpenseCommand(TableId, 5m, ExpenseCategory.Food, "Apples", DateTime.UtcNow, Quantity: 1.5m);
+            var command = new AddExpenseCommand(TableId, 12.99m, ExpenseCategory.Food, "Lamb chops", DateTime.UtcNow, Quantity: 0.612m);
+
+            _mockExpenseWriter.Setup(x => x.AddAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            await _handler.Handle(command, CancellationToken.None);
+
+            _mockExpenseWriter.Verify(x => x.AddAsync(It.Is<Expense>(e =>
+                e.Quantity == 0.612m &&
+                e.Unit == QuantityUnit.Item), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_WithZeroQuantity_ThrowsValidationException()
+        {
+            var command = new AddExpenseCommand(TableId, 5m, ExpenseCategory.Food, "Apples", DateTime.UtcNow, Quantity: 0m);
 
             Func<Task> act = () => _handler.Handle(command, CancellationToken.None);
 
             await act.Should().ThrowAsync<ValidationException>()
-                .WithMessage("*whole number*");
+                .WithMessage("*greater than 0*");
         }
 
         [Fact]
